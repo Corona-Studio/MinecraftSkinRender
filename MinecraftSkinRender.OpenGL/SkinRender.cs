@@ -33,7 +33,7 @@ public class SkinRender
 
     private uint _colorRenderBuffer;
     private uint _depthRenderBuffer;
-    private uint _frameBufferObj;
+    private uint _frameBuffer;
 
     private uint _width, _height;
 
@@ -267,21 +267,21 @@ public class SkinRender
     {
         _colorRenderBuffer = gl.GenRenderbuffer();
         gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _colorRenderBuffer);
-        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer, 
+        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer,
             8, InternalFormat.Rgba8, _width, _height);
 
         _depthRenderBuffer = gl.GenRenderbuffer();
         gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthRenderBuffer);
-        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer, 
+        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer,
             8, InternalFormat.DepthComponent24, _width, _height);
 
-        _frameBufferObj = gl.GenFramebuffer();
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBufferObj);
+        _frameBuffer = gl.GenFramebuffer();
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBuffer);
 
-        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, 
+        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer,
             FramebufferAttachment.ColorAttachment0, RenderbufferTarget.Renderbuffer, _colorRenderBuffer);
 
-        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, 
+        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer,
             FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, _depthRenderBuffer);
 
         if (gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete)
@@ -290,14 +290,36 @@ public class SkinRender
         }
         gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+        //_frameBuffer = gl.GenFramebuffer();
+        //gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBuffer);
+
+        //_colorRenderBuffer = gl.GenTexture();
+
+        //gl.BindTexture(GLEnum.Texture2DMultisample, _colorRenderBuffer);
+        //gl.TexImage2DMultisample(GLEnum.Texture2DMultisample, 4, GLEnum.Rgb, _width, _height, true);
+        //gl.BindTexture(GLEnum.Texture2DMultisample, 0);
+        //gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, GLEnum.ColorAttachment0, GLEnum.Texture2DMultisample, _colorRenderBuffer, 0);
+
+        //var rbo = gl.GenRenderbuffer();
+        //gl.BindRenderbuffer(GLEnum.Renderbuffer, rbo);
+        //gl.RenderbufferStorageMultisample(GLEnum.Renderbuffer, 4, GLEnum.Depth24Stencil8, _width, _height);
+        //gl.BindRenderbuffer(GLEnum.Renderbuffer, 0);
+        //gl.FramebufferRenderbuffer(GLEnum.Framebuffer, GLEnum.DepthStencilAttachment, GLEnum.Renderbuffer, rbo);
+
+        //if (gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete)
+        //{
+        //    throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
+        //}
+        //gl.BindFramebuffer(GLEnum.Framebuffer, 0);
     }
 
     private void DeleteFrameBuffer(GL gl)
     {
-        if (_frameBufferObj != 0)
+        if (_frameBuffer != 0)
         {
-            gl.DeleteFramebuffer(_frameBufferObj);
-            _frameBufferObj = 0;
+            gl.DeleteFramebuffer(_frameBuffer);
+            _frameBuffer = 0;
         }
 
         if (_colorRenderBuffer != 0)
@@ -345,8 +367,8 @@ public class SkinRender
 
         gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.Nearest);
         gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToEdge);
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToEdge);
+        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToBorder);
+        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToBorder);
 
         var format = PixelFormat.Rgba;
         if (image.ColorType == SKColorType.Bgra8888)
@@ -677,7 +699,7 @@ public class SkinRender
 
         if (EnableMSAA)
         {
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBufferObj);
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBuffer);
         }
 
         gl.Viewport(0, 0, _width, _height);
@@ -698,8 +720,7 @@ public class SkinRender
         var modelLoc = gl.GetUniformLocation(_shaderProgram, "model");
 
         var projection = Matrix4x4.CreatePerspectiveFieldOfView(
-            (float)(Math.PI / 4), (float)_width / _height,
-            0.001f, 1000);
+            (float)(Math.PI / 4), (float)_width / _height, 0.001f, 1000);
 
         var view = Matrix4x4.CreateLookAt(new(0, 0, 7), new(), new(0, 1, 0));
 
@@ -740,9 +761,10 @@ public class SkinRender
         if (EnableMSAA)
         {
             gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, (uint)fb);
-            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _frameBufferObj);
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _frameBuffer);
             gl.BlitFramebuffer(0, 0, (int)_width, (int)_height, 0, 0, (int)_width, 
                 (int)_height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Nearest);
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         CheckError(gl);
