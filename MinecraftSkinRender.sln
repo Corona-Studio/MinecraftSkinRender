@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.OpenGL", "MinecraftSkinRender.OpenGL\MinecraftSkinRender.OpenGL.csproj", "{1C2C471E-E676-4B29-880D-5A29D4E9BB19}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MinecraftSkinRender", "MinecraftSkinRender\MinecraftSkinRender.shproj", "{BAD4F362-8F98-4F96-9C67-1613CFCAC2A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7EBF10A-DDC6-4D2D-9589-C55C99178BB0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenGL", "OpenGL", "{25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.OpenGL.Silk", "MinecraftSkinRender.OpenGL.Silk\MinecraftSkinRender.OpenGL.Silk.csproj", "{DD037A0B-5622-4965-981C-DB1A11721241}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.MojangApi", "MinecraftSkinRender.MojangApi\MinecraftSkinRender.MojangApi.csproj", "{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C2C471E-E676-4B29-880D-5A29D4E9BB19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C2C471E-E676-4B29-880D-5A29D4E9BB19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C2C471E-E676-4B29-880D-5A29D4E9BB19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C2C471E-E676-4B29-880D-5A29D4E9BB19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD037A0B-5622-4965-981C-DB1A11721241}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD037A0B-5622-4965-981C-DB1A11721241}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD037A0B-5622-4965-981C-DB1A11721241}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD037A0B-5622-4965-981C-DB1A11721241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C2C471E-E676-4B29-880D-5A29D4E9BB19} = {25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}
+		{DD037A0B-5622-4965-981C-DB1A11721241} = {25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D419F0CC-FD7E-4029-8FE8-5D679F06E31C}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		MinecraftSkinRender\MinecraftSkinRender.projitems*{1c2c471e-e676-4b29-880d-5a29d4e9bb19}*SharedItemsImports = 5
+		MinecraftSkinRender\MinecraftSkinRender.projitems*{bad4f362-8f98-4f96-9c67-1613cfcac2a7}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal
