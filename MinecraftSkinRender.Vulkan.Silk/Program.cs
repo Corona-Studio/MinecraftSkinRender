@@ -70,7 +70,7 @@ internal class Program
 
         window.Render += (time)=> 
         {
-            skin.VulkanRender(time);
+            skin.VulkanRender(window.Time);
         };
 
         skin.Width = window.FramebufferSize.X;

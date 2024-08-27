@@ -270,9 +270,79 @@ public partial class SkinRenderVulkan
         vk!.FreeCommandBuffers(device, commandPool, 1, ref commandBuffer);
     }
 
+    private unsafe void CreateDrawModelCommand(int i, int a, Buffer buffer, Buffer index, uint indexlen)
+    {
+        //Draw command
+        CommandBufferBeginInfo beginInfo = new()
+        {
+            SType = StructureType.CommandBufferBeginInfo,
+        };
+
+        if (vk.BeginCommandBuffer(commandBuffers[i], ref beginInfo) != Result.Success)
+        {
+            throw new Exception("failed to begin recording command buffer!");
+        }
+
+        RenderPassBeginInfo renderPassInfo = new()
+        {
+            SType = StructureType.RenderPassBeginInfo,
+            RenderPass = renderPass,
+            Framebuffer = swapChainFramebuffers[a],
+            RenderArea =
+            {
+                Offset = { X = 0, Y = 0 },
+                Extent = swapChainExtent,
+            }
+        };
+
+        var clearValues = new ClearValue[]
+        {
+            new()
+            {
+                Color = new (){ Float32_0 = 0, Float32_1 = 1, Float32_2 = 0, Float32_3 = 1 },
+            },
+            new()
+            {
+                DepthStencil = new () { Depth = 1, Stencil = 0 }
+            }
+        };
+
+        fixed (ClearValue* clearValuesPtr = clearValues)
+        {
+            renderPassInfo.ClearValueCount = (uint)clearValues.Length;
+            renderPassInfo.PClearValues = clearValuesPtr;
+
+            vk.CmdBeginRenderPass(commandBuffers[i], &renderPassInfo, SubpassContents.Inline);
+        }
+
+        vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
+
+        var vertexBuffers = new Buffer[]
+        {
+                buffer,
+        };
+        var offsets = new ulong[] { 0 };
+
+        fixed (ulong* offsetsPtr = offsets)
+        fixed (Buffer* vertexBuffersPtr = vertexBuffers)
+        {
+            vk.CmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersPtr, offsetsPtr);
+        }
+
+        vk.CmdBindIndexBuffer(commandBuffers[i], index, 0, IndexType.Uint16);
+        vk.CmdBindDescriptorSets(commandBuffers[i], PipelineBindPoint.Graphics, pipelineLayout, 0, 1, ref descriptorSets[a], 0, null);
+        vk.CmdDrawIndexed(commandBuffers[i], indexlen, 1, 0, 0, 0);
+        vk.CmdEndRenderPass(commandBuffers[i]);
+
+        if (vk.EndCommandBuffer(commandBuffers[i]) != Result.Success)
+        {
+            throw new Exception("failed to record command buffer!");
+        }
+    }
+
     private unsafe void CreateCommandBuffers()
     {
-        commandBuffers = new CommandBuffer[swapChainFramebuffers.Length];
+        commandBuffers = new CommandBuffer[13 * swapChainFramebuffers.Length];
 
         CommandBufferAllocateInfo allocInfo = new()
         {
@@ -290,72 +360,21 @@ public partial class SkinRenderVulkan
             }
         }
 
-        //Draw command
-        for (int i = 0; i < commandBuffers.Length; i++)
+        for (int a = 0; a < swapChainFramebuffers.Length; a++)
         {
-            CommandBufferBeginInfo beginInfo = new()
-            {
-                SType = StructureType.CommandBufferBeginInfo,
-            };
-
-            if (vk.BeginCommandBuffer(commandBuffers[i], ref beginInfo) != Result.Success)
-            {
-                throw new Exception("failed to begin recording command buffer!");
-            }
-
-            RenderPassBeginInfo renderPassInfo = new()
-            {
-                SType = StructureType.RenderPassBeginInfo,
-                RenderPass = renderPass,
-                Framebuffer = swapChainFramebuffers[i],
-                RenderArea =
-                {
-                    Offset = { X = 0, Y = 0 },
-                    Extent = swapChainExtent,
-                }
-            };
-
-            var clearValues = new ClearValue[]
-            {
-                new()
-                {
-                    Color = new (){ Float32_0 = 0, Float32_1 = 1, Float32_2 = 0, Float32_3 = 1 },
-                },
-                new()
-                {
-                    DepthStencil = new () { Depth = 1, Stencil = 0 }
-                }
-            };
-
-            fixed (ClearValue* clearValuesPtr = clearValues)
-            {
-                renderPassInfo.ClearValueCount = (uint)clearValues.Length;
-                renderPassInfo.PClearValues = clearValuesPtr;
-
-                vk.CmdBeginRenderPass(commandBuffers[i], &renderPassInfo, SubpassContents.Inline);
-            }
-
-            vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
-
-            var vertexBuffers = new Buffer[] { draw.Head.VertexBuffer };
-            var offsets = new ulong[] { 0 };
-
-            fixed (ulong* offsetsPtr = offsets)
-            fixed (Buffer* vertexBuffersPtr = vertexBuffers)
-            {
-                vk.CmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersPtr, offsetsPtr);
-            }
-
-            vk.CmdBindIndexBuffer(commandBuffers[i], draw.Head.IndexBuffer, 0, IndexType.Uint16);
-            vk.CmdBindDescriptorSets(commandBuffers[i], PipelineBindPoint.Graphics, pipelineLayout, 0, 1, ref descriptorSets[i], 0, null);
-            vk.CmdDrawIndexed(commandBuffers[i], (uint)model.Head.Indices.Length, 1, 0, 0, 0);
-            vk.CmdEndRenderPass(commandBuffers[i]);
-
-            if (vk.EndCommandBuffer(commandBuffers[i]) != Result.Success)
-            {
-                throw new Exception("failed to record command buffer!");
-            }
-
+            CreateDrawModelCommand(a * 13 + 0, a, draw.Head.VertexBuffer, draw.Head.IndexBuffer, (uint)model.Head.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 1, a, draw.Body.VertexBuffer, draw.Body.IndexBuffer, (uint)model.Body.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 2, a, draw.LeftArm.VertexBuffer, draw.LeftArm.IndexBuffer, (uint)model.LeftArm.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 3, a, draw.RightArm.VertexBuffer, draw.RightArm.IndexBuffer, (uint)model.RightArm.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 4, a, draw.LeftLeg.VertexBuffer, draw.LeftLeg.IndexBuffer, (uint)model.LeftLeg.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 5, a, draw.RightLeg.VertexBuffer, draw.RightLeg.IndexBuffer, (uint)model.RightLeg.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 6, a, draw.TopHead.VertexBuffer, draw.TopHead.IndexBuffer, (uint)model.TopHead.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 7, a, draw.TopBody.VertexBuffer, draw.TopBody.IndexBuffer, (uint)model.TopBody.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 8, a, draw.TopLeftArm.VertexBuffer, draw.TopLeftArm.IndexBuffer, (uint)model.TopLeftArm.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 9, a, draw.TopRightArm.VertexBuffer, draw.TopRightArm.IndexBuffer, (uint)model.TopRightArm.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 10, a, draw.TopLeftLeg.VertexBuffer, draw.TopLeftLeg.IndexBuffer, (uint)model.TopLeftLeg.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 11, a, draw.TopRightLeg.VertexBuffer, draw.TopRightLeg.IndexBuffer, (uint)model.TopRightLeg.Indices.Length);
+            CreateDrawModelCommand(a * 13 + 12, a, draw.Cape.VertexBuffer, draw.Cape.IndexBuffer, (uint)model.Cape.Indices.Length);
         }
     }
 }

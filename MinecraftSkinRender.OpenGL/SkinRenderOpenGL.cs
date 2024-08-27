@@ -264,7 +264,7 @@ public class SkinRenderOpenGL : SkinRender
             {
                 Position = new(model.Model[srci], model.Model[srci + 1], model.Model[srci + 2]),
                 UV = new(uv[srci1], uv[srci1 + 1]),
-                Normal = new(CubeModelOpenGL.Vertices[srci], CubeModelOpenGL.Vertices[srci + 1], CubeModelOpenGL.Vertices[srci + 2])
+                Normal = new(CubeModel.Vertices[srci], CubeModel.Vertices[srci + 1], CubeModel.Vertices[srci + 2])
             };
         }
 
@@ -337,9 +337,9 @@ public class SkinRenderOpenGL : SkinRender
 
             var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
 
-            var mat = Matrix4x4.CreateTranslation(0, -2f * CubeModelOpenGL.Value, -CubeModelOpenGL.Value * 0.1f) *
+            var mat = Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
                Matrix4x4.CreateRotationX((float)(10.8 * Math.PI / 180)) *
-               Matrix4x4.CreateTranslation(0, 1.6f * CubeModelOpenGL.Value, -CubeModelOpenGL.Value * 0.5f);
+               Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f);
             gl.UniformMatrix4(modelLoc, 1, false, (float*)&mat);
 
             gl.BindVertexArray(_normalVAO.Cape.VertexArrayObject);
@@ -363,11 +363,11 @@ public class SkinRenderOpenGL : SkinRender
 
         bool enable = _enableAnimation;
 
-        modelMat = Matrix4x4.CreateTranslation(0, CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
                Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
-               Matrix4x4.CreateTranslation(0, CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Head.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
@@ -375,39 +375,39 @@ public class SkinRenderOpenGL : SkinRender
 
         var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
 
-        modelMat = Matrix4x4.CreateTranslation(CubeModelOpenGL.Value / 2, -(value * CubeModelOpenGL.Value), 0) *
+        modelMat = Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                 Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
                 Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
                 Matrix4x4.CreateTranslation(
-                    value * CubeModelOpenGL.Value - CubeModelOpenGL.Value / 2, value * CubeModelOpenGL.Value, 0);
+                    value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftArm.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(-CubeModelOpenGL.Value / 2, -(value * CubeModelOpenGL.Value), 0) *
+        modelMat = Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                 Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
                 Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
                 Matrix4x4.CreateTranslation(
-                    -value * CubeModelOpenGL.Value + CubeModelOpenGL.Value / 2, value * CubeModelOpenGL.Value, 0);
+                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightArm.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(CubeModelOpenGL.Value * 0.5f, -CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftLeg.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(-CubeModelOpenGL.Value * 0.5f, -CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightLeg.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
@@ -429,11 +429,11 @@ public class SkinRenderOpenGL : SkinRender
 
         bool enable = _enableAnimation;
 
-        modelMat = Matrix4x4.CreateTranslation(0, CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
                Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
-               Matrix4x4.CreateTranslation(0, CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Head.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
@@ -441,39 +441,39 @@ public class SkinRenderOpenGL : SkinRender
 
         var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
 
-        modelMat = Matrix4x4.CreateTranslation(CubeModelOpenGL.Value / 2, -(value * CubeModelOpenGL.Value), 0) *
+        modelMat = Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                 Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
                 Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
                 Matrix4x4.CreateTranslation(
-                    value * CubeModelOpenGL.Value - CubeModelOpenGL.Value / 2, value * CubeModelOpenGL.Value, 0);
+                    value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftArm.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(-CubeModelOpenGL.Value / 2, -(value * CubeModelOpenGL.Value), 0) *
+        modelMat = Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                 Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
                 Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
                 Matrix4x4.CreateTranslation(
-                    -value * CubeModelOpenGL.Value + CubeModelOpenGL.Value / 2, value * CubeModelOpenGL.Value, 0);
+                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightArm.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(CubeModelOpenGL.Value * 0.5f, -CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftLeg.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
            DrawElementsType.UnsignedShort, null);
 
-        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModelOpenGL.Value, 0) *
+        modelMat = Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(-CubeModelOpenGL.Value * 0.5f, -CubeModelOpenGL.Value * 1.5f, 0);
+               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightLeg.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,

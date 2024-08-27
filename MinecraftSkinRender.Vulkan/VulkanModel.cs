@@ -22,7 +22,7 @@ public partial class SkinRenderVulkan
             Vertices = new SkinVertex[size]
         };
 
-        var vertices = CubeModelVulkan.Vertices;
+        var vertices = CubeModel.Vertices;
         int index = 0, index1 = 0, index2 = 0;
         for (int a = 0; a < size; a++)
         {
@@ -39,9 +39,8 @@ public partial class SkinRenderVulkan
 
     private void CreateModel()
     {
-        var model1 = new CubeModelVulkan();
-        var cube = Steve3DModel.GetSteve(model1, SkinType);
-        var cubetop = Steve3DModel.GetSteveTop(model1, SkinType);
+        var cube = Steve3DModel.GetSteve(SkinType);
+        var cubetop = Steve3DModel.GetSteveTop(SkinType);
         var tex = Steve3DTexture.GetSteveTexture(SkinType);
         var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
 

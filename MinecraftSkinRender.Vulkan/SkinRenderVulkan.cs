@@ -86,6 +86,7 @@ public partial class SkinRenderVulkan : SkinRender
 
     private SkinModel model;
     private SkinDraw draw;
+    private UniformBufferObject ubo;
 
     private readonly IVkSurface ivk;
 
@@ -154,7 +155,7 @@ public partial class SkinRenderVulkan : SkinRender
             frameBufferResized = true;
         }
 
-        vk!.WaitForFences(device, 1, ref inFlightFences[currentFrame], true, ulong.MaxValue);
+        vk.WaitForFences(device, 1, ref inFlightFences[currentFrame], true, ulong.MaxValue);
 
         uint imageIndex = 0;
         var result = khrSwapChain!.AcquireNextImage(device, swapChain, ulong.MaxValue, 
@@ -170,47 +171,32 @@ public partial class SkinRenderVulkan : SkinRender
             throw new Exception("failed to acquire swap chain image!");
         }
 
-        UpdateUniformBuffer((float)time, imageIndex);
+        UpdateUniformBuffer();
 
-        if (imagesInFlight![imageIndex].Handle != default)
+        if (imagesInFlight[imageIndex].Handle != default)
         {
-            vk!.WaitForFences(device, 1, ref imagesInFlight[imageIndex], true, ulong.MaxValue);
+            vk.WaitForFences(device, 1, ref imagesInFlight[imageIndex], true, ulong.MaxValue);
         }
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+
+        var waitSemaphores = stackalloc[] { imageAvailableSemaphores[currentFrame] };
+        var waitStages = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
+        var signalSemaphores = stackalloc[] { renderFinishedSemaphores![currentFrame] };
 
         SubmitInfo submitInfo = new()
         {
             SType = StructureType.SubmitInfo,
-        };
-
-        var waitSemaphores = stackalloc[] { imageAvailableSemaphores[currentFrame] };
-        var waitStages = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
-
-        var buffer = commandBuffers![imageIndex];
-
-        submitInfo = submitInfo with
-        {
             WaitSemaphoreCount = 1,
             PWaitSemaphores = waitSemaphores,
             PWaitDstStageMask = waitStages,
-
             CommandBufferCount = 1,
-            PCommandBuffers = &buffer
-        };
-
-        var signalSemaphores = stackalloc[] { renderFinishedSemaphores![currentFrame] };
-        submitInfo = submitInfo with
-        {
             SignalSemaphoreCount = 1,
             PSignalSemaphores = signalSemaphores,
         };
 
-        vk!.ResetFences(device, 1, ref inFlightFences[currentFrame]);
+        vk.ResetFences(device, 1, ref inFlightFences[currentFrame]);
 
-        if (vk!.QueueSubmit(graphicsQueue, 1, ref submitInfo, inFlightFences[currentFrame]) != Result.Success)
-        {
-            throw new Exception("failed to submit draw command buffer!");
-        }
+        DrawSkin(submitInfo, imageIndex);
 
         var swapChains = stackalloc[] { swapChain };
         PresentInfoKHR presentInfo = new()
@@ -275,7 +261,56 @@ public partial class SkinRenderVulkan : SkinRender
         }
     }
 
-    private unsafe void UpdateUniformBuffer(float time, uint currentImage)
+    private unsafe void DrawSkin(SubmitInfo submitInfo, uint currentImage)
+    {
+        bool enable = _enableAnimation;
+
+        var modelMat = Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
+           Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
+           Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
+           Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
+           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0);
+
+        SetUniformBuffer(currentImage, modelMat);
+
+        var command = commandBuffers[currentImage * 13];
+
+        var info = submitInfo with
+        {
+            PCommandBuffers = &command
+        };
+
+        if (vk.QueueSubmit(graphicsQueue, 1, ref info, inFlightFences[currentFrame]) != Result.Success)
+        {
+            throw new Exception("failed to submit draw command buffer!");
+        }
+
+        modelMat = Matrix4x4.Identity;
+
+        SetUniformBuffer(currentImage, modelMat);
+
+        command = commandBuffers[currentImage * 13 + 1];
+        info = submitInfo with
+        {
+            PCommandBuffers = &command
+        };
+
+        if (vk.QueueSubmit(graphicsQueue, 1, ref info, inFlightFences[currentFrame]) != Result.Success)
+        {
+            throw new Exception("failed to submit draw command buffer!");
+        }
+    }
+
+    private unsafe void SetUniformBuffer(uint currentImage, Matrix4x4 self)
+    {
+        ubo.self = self;
+        void* data;
+        vk.MapMemory(device, uniformBuffersMemory[currentImage], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
+        new Span<UniformBufferObject>(data, 1)[0] = ubo;
+        vk.UnmapMemory(device, uniformBuffersMemory[currentImage]);
+    }
+
+    private unsafe void UpdateUniformBuffer()
     {
         if (_rotXY.X != 0 || _rotXY.Y != 0)
         {
@@ -285,30 +320,24 @@ public partial class SkinRenderVulkan : SkinRender
             _rotXY.Y = 0;
         }
 
-        UniformBufferObject ubo = new()
+        ubo = new()
         {
-            self = Matrix4x4.Identity,
-            model = _last
+            model = Matrix4x4.CreateRotationY(Scalar.DegreesToRadians(0f)) * _last
             * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
             * Matrix4x4.CreateScale(_dis),
             view = Matrix4x4.CreateLookAt(new(0, 0, 7), new(0, 0, 0), new(0, 1, 0)),
-            proj = Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)_width / _height, 0.001f, 1000),
+            proj = Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)_width / _height, 0.1f, 10.0f),
             lightColor = new(1.0f, 1.0f, 1.0f)
         };
-        //ubo.proj.M22 *= -1;
-
-        void* data;
-        vk.MapMemory(device, uniformBuffersMemory![currentImage], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
-        new Span<UniformBufferObject>(data, 1)[0] = ubo;
-        vk.UnmapMemory(device, uniformBuffersMemory![currentImage]);
+        ubo.proj.M22 *= -1;
     }
 
     private unsafe void CreateUniformBuffers()
     {
         ulong bufferSize = (ulong)Unsafe.SizeOf<UniformBufferObject>();
 
-        uniformBuffers = new Buffer[swapChainImages!.Length];
-        uniformBuffersMemory = new DeviceMemory[swapChainImages!.Length];
+        uniformBuffers = new Buffer[swapChainImages.Length];
+        uniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
 
         for (int i = 0; i < swapChainImages.Length; i++)
         {
@@ -382,7 +411,7 @@ public partial class SkinRenderVulkan : SkinRender
         {
             DescriptorBufferInfo vertInfo = new()
             {
-                Buffer = uniformBuffers![i],
+                Buffer = uniformBuffers[i],
                 Offset = 0,
                 Range = (ulong)Unsafe.SizeOf<UniformBufferObject>(),
             };

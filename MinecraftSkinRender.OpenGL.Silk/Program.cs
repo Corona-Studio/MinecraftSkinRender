@@ -59,7 +59,7 @@ internal class Program
         skin.ChangeType(SkinType.NewSlim);
         skin.EnableTop = true;
         skin.EnableMSAA = true;
-        skin.SetAnimation(true);
+        skin.SetAnimation(false);
         if (havecape)
         {
             skin.ChangeCape(SKBitmap.Decode("cape.png"));
