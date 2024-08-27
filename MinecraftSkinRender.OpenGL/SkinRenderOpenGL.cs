@@ -378,8 +378,7 @@ public class SkinRenderOpenGL : SkinRender
         modelMat = Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                 Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
                 Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
-                Matrix4x4.CreateTranslation(
-                    value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0);
+                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0);
         gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftArm.VertexArrayObject);
         gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,

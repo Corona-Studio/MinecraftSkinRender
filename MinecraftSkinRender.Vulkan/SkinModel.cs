@@ -54,8 +54,16 @@ internal class SkinDraw
 
 internal class SkinDrawPart
 {
+    public uint IndexLen;
+
     public Buffer VertexBuffer;
     public DeviceMemory VertexBufferMemory;
     public Buffer IndexBuffer;
     public DeviceMemory IndexBufferMemory;
+
+    public Buffer[] uniformBuffers;
+    public DeviceMemory[] uniformBuffersMemory;
+
+    public DescriptorPool descriptorPool;
+    public DescriptorSet[] descriptorSets;
 }

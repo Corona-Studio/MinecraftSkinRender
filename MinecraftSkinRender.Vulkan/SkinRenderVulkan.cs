@@ -56,6 +56,7 @@ public partial class SkinRenderVulkan : SkinRender
     private DescriptorSetLayout descriptorSetLayout;
     private PipelineLayout pipelineLayout;
     private Pipeline graphicsPipeline;
+    private Pipeline graphicsPipelineTop;
 
     private CommandPool commandPool;
 
@@ -68,14 +69,6 @@ public partial class SkinRenderVulkan : SkinRender
     private ImageView textureImageView;
     private Sampler textureSampler;
 
-    private Buffer[] uniformBuffers;
-    private DeviceMemory[] uniformBuffersMemory;
-
-    private DescriptorPool descriptorPool;
-    private DescriptorSet[] descriptorSets;
-
-    private CommandBuffer[] commandBuffers;
-
     private Semaphore[] imageAvailableSemaphores;
     private Semaphore[] renderFinishedSemaphores;
     private Fence[] inFlightFences;
@@ -86,6 +79,7 @@ public partial class SkinRenderVulkan : SkinRender
 
     private SkinModel model;
     private SkinDraw draw;
+    private CommandBuffer[]? commandBuffers;
     private UniformBufferObject ubo;
 
     private readonly IVkSurface ivk;
@@ -155,6 +149,11 @@ public partial class SkinRenderVulkan : SkinRender
             frameBufferResized = true;
         }
 
+        if (_enableAnimation)
+        {
+            _skina.Tick(time);
+        }
+
         vk.WaitForFences(device, 1, ref inFlightFences[currentFrame], true, ulong.MaxValue);
 
         uint imageIndex = 0;
@@ -189,8 +188,8 @@ public partial class SkinRenderVulkan : SkinRender
             WaitSemaphoreCount = 1,
             PWaitSemaphores = waitSemaphores,
             PWaitDstStageMask = waitStages,
-            CommandBufferCount = 1,
             SignalSemaphoreCount = 1,
+            CommandBufferCount = 1,
             PSignalSemaphores = signalSemaphores,
         };
 
@@ -264,35 +263,65 @@ public partial class SkinRenderVulkan : SkinRender
     private unsafe void DrawSkin(SubmitInfo submitInfo, uint currentImage)
     {
         bool enable = _enableAnimation;
+        var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
 
-        var modelMat = Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
+        SetUniformBuffer(draw.Head, currentImage, Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
            Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
            Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
            Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
-           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0);
+           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.Body, currentImage, Matrix4x4.Identity);
+        SetUniformBuffer(draw.LeftArm, currentImage, Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+                Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
+                Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
+                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0));
+        SetUniformBuffer(draw.RightArm, currentImage, Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+                Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
+                Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
+                Matrix4x4.CreateTranslation(
+                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0));
+        SetUniformBuffer(draw.LeftLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+               Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.RightLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+               Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
 
-        SetUniformBuffer(currentImage, modelMat);
+        SetUniformBuffer(draw.TopHead, currentImage, Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
+           Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
+           Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
+           Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
+           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.TopBody, currentImage, Matrix4x4.Identity);
+        SetUniformBuffer(draw.TopLeftArm, currentImage, Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+                Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
+                Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
+                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0));
+        SetUniformBuffer(draw.TopRightArm, currentImage, Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+                Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
+                Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
+                Matrix4x4.CreateTranslation(
+                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0));
+        SetUniformBuffer(draw.TopLeftLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+               Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.TopRightLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+               Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
 
-        var command = commandBuffers[currentImage * 13];
+        SetUniformBuffer(draw.Cape, currentImage, Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
+               Matrix4x4.CreateRotationX((float)(10.8 * Math.PI / 180)) *
+               Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f));
+
+        var command1 = commandBuffers![currentImage] ;
 
         var info = submitInfo with
         {
-            PCommandBuffers = &command
-        };
-
-        if (vk.QueueSubmit(graphicsQueue, 1, ref info, inFlightFences[currentFrame]) != Result.Success)
-        {
-            throw new Exception("failed to submit draw command buffer!");
-        }
-
-        modelMat = Matrix4x4.Identity;
-
-        SetUniformBuffer(currentImage, modelMat);
-
-        command = commandBuffers[currentImage * 13 + 1];
-        info = submitInfo with
-        {
-            PCommandBuffers = &command
+            PCommandBuffers = &command1
         };
 
         if (vk.QueueSubmit(graphicsQueue, 1, ref info, inFlightFences[currentFrame]) != Result.Success)
@@ -301,13 +330,13 @@ public partial class SkinRenderVulkan : SkinRender
         }
     }
 
-    private unsafe void SetUniformBuffer(uint currentImage, Matrix4x4 self)
+    private unsafe void SetUniformBuffer(SkinDrawPart part, uint currentImage, Matrix4x4 self)
     {
         ubo.self = self;
         void* data;
-        vk.MapMemory(device, uniformBuffersMemory[currentImage], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
+        vk.MapMemory(device, part.uniformBuffersMemory[currentImage], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
         new Span<UniformBufferObject>(data, 1)[0] = ubo;
-        vk.UnmapMemory(device, uniformBuffersMemory[currentImage]);
+        vk.UnmapMemory(device, part.uniformBuffersMemory[currentImage]);
     }
 
     private unsafe void UpdateUniformBuffer()
@@ -330,129 +359,6 @@ public partial class SkinRenderVulkan : SkinRender
             lightColor = new(1.0f, 1.0f, 1.0f)
         };
         ubo.proj.M22 *= -1;
-    }
-
-    private unsafe void CreateUniformBuffers()
-    {
-        ulong bufferSize = (ulong)Unsafe.SizeOf<UniformBufferObject>();
-
-        uniformBuffers = new Buffer[swapChainImages.Length];
-        uniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
-
-        for (int i = 0; i < swapChainImages.Length; i++)
-        {
-            CreateBuffer(bufferSize, BufferUsageFlags.UniformBufferBit,
-                MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit,
-                ref uniformBuffers[i], ref uniformBuffersMemory[i]);
-        }
-    }
-
-    private unsafe void CreateDescriptorPool()
-    {
-        var poolSizes = new DescriptorPoolSize[]
-        {
-            new DescriptorPoolSize()
-            {
-                Type = DescriptorType.UniformBuffer,
-                DescriptorCount = (uint)swapChainImages!.Length,
-            },
-            new DescriptorPoolSize()
-            {
-                Type = DescriptorType.CombinedImageSampler,
-                DescriptorCount = (uint)swapChainImages!.Length,
-            },
-        };
-
-        fixed (DescriptorPoolSize* poolSizesPtr = poolSizes)
-        fixed (DescriptorPool* descriptorPoolPtr = &descriptorPool)
-        {
-            DescriptorPoolCreateInfo poolInfo = new()
-            {
-                SType = StructureType.DescriptorPoolCreateInfo,
-                PoolSizeCount = (uint)poolSizes.Length,
-                PPoolSizes = poolSizesPtr,
-                MaxSets = (uint)swapChainImages!.Length,
-            };
-
-            if (vk!.CreateDescriptorPool(device, ref poolInfo, null, descriptorPoolPtr) != Result.Success)
-            {
-                throw new Exception("failed to create descriptor pool!");
-            }
-
-        }
-    }
-
-    private unsafe void CreateDescriptorSets()
-    {
-        var layouts = new DescriptorSetLayout[swapChainImages!.Length];
-        Array.Fill(layouts, descriptorSetLayout);
-
-        fixed (DescriptorSetLayout* layoutsPtr = layouts)
-        {
-            DescriptorSetAllocateInfo allocateInfo = new()
-            {
-                SType = StructureType.DescriptorSetAllocateInfo,
-                DescriptorPool = descriptorPool,
-                DescriptorSetCount = (uint)swapChainImages!.Length,
-                PSetLayouts = layoutsPtr,
-            };
-
-            descriptorSets = new DescriptorSet[swapChainImages.Length];
-            fixed (DescriptorSet* descriptorSetsPtr = descriptorSets)
-            {
-                if (vk!.AllocateDescriptorSets(device, ref allocateInfo, descriptorSetsPtr) != Result.Success)
-                {
-                    throw new Exception("failed to allocate descriptor sets!");
-                }
-            }
-        }
-
-        for (int i = 0; i < swapChainImages.Length; i++)
-        {
-            DescriptorBufferInfo vertInfo = new()
-            {
-                Buffer = uniformBuffers[i],
-                Offset = 0,
-                Range = (ulong)Unsafe.SizeOf<UniformBufferObject>(),
-            };
-
-            DescriptorImageInfo imageInfo = new()
-            {
-                ImageLayout = ImageLayout.ShaderReadOnlyOptimal,
-                ImageView = textureImageView,
-                Sampler = textureSampler,
-            };
-
-            var descriptorWrites = new WriteDescriptorSet[]
-            {
-                new()
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = descriptorSets[i],
-                    DstBinding = 0,
-                    DstArrayElement = 0,
-                    DescriptorType = DescriptorType.UniformBuffer,
-                    DescriptorCount = 1,
-                    PBufferInfo = &vertInfo,
-                },
-                new()
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = descriptorSets[i],
-                    DstBinding = 1,
-                    DstArrayElement = 0,
-                    DescriptorType = DescriptorType.CombinedImageSampler,
-                    DescriptorCount = 1,
-                    PImageInfo = &imageInfo,
-                }
-            };
-
-            fixed (WriteDescriptorSet* descriptorWritesPtr = descriptorWrites)
-            {
-                vk!.UpdateDescriptorSets(device, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);
-            }
-        }
-
     }
 
     private Format FindSupportedFormat(IEnumerable<Format> candidates, ImageTiling tiling, FormatFeatureFlags features)
@@ -515,7 +421,7 @@ public partial class SkinRenderVulkan : SkinRender
 
     private Format FindDepthFormat()
     {
-        return FindSupportedFormat(new[] { Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint }, ImageTiling.Optimal, FormatFeatureFlags.DepthStencilAttachmentBit);
+        return FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint], ImageTiling.Optimal, FormatFeatureFlags.DepthStencilAttachmentBit);
     }
 
     private unsafe void CreateRenderPass()

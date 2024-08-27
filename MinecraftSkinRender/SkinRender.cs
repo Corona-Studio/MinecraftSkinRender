@@ -140,7 +140,7 @@ public abstract class SkinRender
         _dis += x;
     }
 
-    public void ChangeType(SkinType type)
+    public void SetSkinType(SkinType type)
     {
         if (type == SkinType)
         {
@@ -151,7 +151,7 @@ public abstract class SkinRender
         _switchModel = true;
     }
 
-    public void ChangeSkin(SKBitmap? skin)
+    public void SetSkin(SKBitmap? skin)
     {
         Skin = skin;
         if (skin == null)
@@ -159,12 +159,12 @@ public abstract class SkinRender
             HaveSkin = false;
             return;
         }
-        ChangeType(SkinTypeChecker.GetTextType(skin));
+        SetSkinType(SkinTypeChecker.GetTextType(skin));
         _switchSkin = true;
         HaveSkin = true;
     }
 
-    public void ChangeCape(SKBitmap? cape)
+    public void SetCape(SKBitmap? cape)
     {
         Cape = cape;
         if (cape == null)

@@ -8,6 +8,7 @@ namespace MinecraftSkinRender;
 public class SkinAnimation
 {
     private int _frame = 0;
+    private double count = 0;
     private bool _close = false;
 
     public bool Run { get; set; }
@@ -35,53 +36,55 @@ public class SkinAnimation
     {
         if (Run)
         {
-            time *= 1000;
-            _frame+= (int)time;
-            if (_frame > 1200)
+            count += time;
+            while (count > 0.01)
+            {
+                count -= 0.01;
+                _frame ++;
+            }
+            if (_frame >= 120)
             {
                 _frame = 0;
             }
 
-            int down = _frame / 10;
-
-            if (down <= 60)
+            if (_frame <= 60)
             {
                 //0 360
                 //-180 180
-                Arm.Y = down * 6 - 180;
+                Arm.Y = _frame * 6 - 180;
                 //0 180
                 //90 -90
-                Leg.Y = 90 - down * 3;
+                Leg.Y = 90 - _frame * 3;
                 //-30 30
                 if (SkinType == SkinType.NewSlim)
                 {
                     Head.Z = 0;
-                    Head.X = down - 30;
+                    Head.X = _frame - 30;
                 }
                 else
                 {
                     Head.X = 0;
-                    Head.Z = down - 30;
+                    Head.Z = _frame - 30;
                 }
             }
             else
             {
                 //360 720
                 //180 -180
-                Arm.Y = 540 - down * 6;
+                Arm.Y = 540 - _frame * 6;
                 //180 360
                 //-90 90
-                Leg.Y = down * 3 - 270;
+                Leg.Y = _frame * 3 - 270;
                 //30 -30
                 if (SkinType == SkinType.NewSlim)
                 {
                     Head.Z = 0;
-                    Head.X = 90 - down;
+                    Head.X = 90 - _frame;
                 }
                 else
                 {
                     Head.X = 0;
-                    Head.Z = 90 - down;
+                    Head.Z = 90 - _frame;
                 }
             }
         }

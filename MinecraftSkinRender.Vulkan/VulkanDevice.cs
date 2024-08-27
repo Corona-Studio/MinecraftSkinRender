@@ -88,7 +88,7 @@ public partial class SkinRenderVulkan
         }
         else
         {
-            details.Formats = Array.Empty<SurfaceFormatKHR>();
+            details.Formats = [];
         }
 
         uint presentModeCount = 0;
@@ -105,7 +105,7 @@ public partial class SkinRenderVulkan
         }
         else
         {
-            details.PresentModes = Array.Empty<PresentModeKHR>();
+            details.PresentModes = [];
         }
 
         return details;

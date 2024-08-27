@@ -55,14 +55,14 @@ internal class Program
         // Declare some variables
         GL gl = null;
         var skin = new SkinRenderOpenGL();
-        skin.ChangeSkin(SKBitmap.Decode("skin.png"));
-        skin.ChangeType(SkinType.NewSlim);
+        skin.SetSkin(SKBitmap.Decode("skin.png"));
+        skin.SetSkinType(SkinType.NewSlim);
         skin.EnableTop = true;
-        skin.EnableMSAA = true;
+        skin.EnableMSAA = false;
         skin.SetAnimation(false);
         if (havecape)
         {
-            skin.ChangeCape(SKBitmap.Decode("cape.png"));
+            skin.SetCape(SKBitmap.Decode("cape.png"));
         }
 
         // Our loading function

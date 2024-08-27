@@ -12,15 +12,11 @@ namespace MinecraftSkinRender.Vulkan;
 
 public partial class SkinRenderVulkan
 {
-
-    private static SkinPart CreateModelPart(CubeModelItemObj item, float[] uv)
+    private static void CreateModelPart(SkinPart part, CubeModelItemObj item, float[] uv)
     {
         int size = item.Model.Length / 3;
-        var part = new SkinPart
-        {
-            Indices = item.Point,
-            Vertices = new SkinVertex[size]
-        };
+        part.Indices = item.Point;
+        part.Vertices = new SkinVertex[size];
 
         var vertices = CubeModel.Vertices;
         int index = 0, index1 = 0, index2 = 0;
@@ -33,8 +29,6 @@ public partial class SkinRenderVulkan
                 TextCoord = new(uv[index2++], uv[index2++])
             };
         }
-
-        return part;
     }
 
     private void CreateModel()
@@ -44,28 +38,44 @@ public partial class SkinRenderVulkan
         var tex = Steve3DTexture.GetSteveTexture(SkinType);
         var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
 
-        model = new()
+        model ??= new()
         {
-            Head = CreateModelPart(cube.Head, tex.Head),
-            Body = CreateModelPart(cube.Body, tex.Body),
-            LeftArm = CreateModelPart(cube.LeftArm, tex.LeftArm),
-            RightArm = CreateModelPart(cube.RightArm, tex.RightArm),
-            LeftLeg = CreateModelPart(cube.LeftLeg, tex.LeftLeg),
-            RightLeg = CreateModelPart(cube.RightLeg, tex.RightLeg),
-         
-            TopHead = CreateModelPart(cubetop.Head, textop.Head),
-            TopBody = CreateModelPart(cubetop.Body, textop.Body),
-            TopLeftArm = CreateModelPart(cubetop.LeftArm, textop.LeftArm),
-            TopRightArm = CreateModelPart(cubetop.RightArm, textop.RightArm),
-            TopLeftLeg = CreateModelPart(cubetop.LeftLeg, textop.LeftLeg),
-            TopRightLeg = CreateModelPart(cubetop.RightLeg, textop.RightLeg),
-            Cape = CreateModelPart(cube.Cape, tex.Cape),
+            Head = new(),
+            Body = new(),
+            LeftArm = new(),
+            RightArm = new(),
+            LeftLeg = new(),
+            RightLeg = new(),
+            TopHead = new(),
+            TopBody = new(),
+            TopLeftArm = new(),
+            TopRightArm = new(),
+            TopLeftLeg = new(),
+            TopRightLeg = new(),
+            Cape = new(),
         };
+
+        CreateModelPart(model.Head, cube.Head, tex.Head);
+        CreateModelPart(model.Body, cube.Body, tex.Body);
+        CreateModelPart(model.LeftArm, cube.LeftArm, tex.LeftArm);
+        CreateModelPart(model.RightArm, cube.RightArm, tex.RightArm);
+        CreateModelPart(model.LeftLeg, cube.LeftLeg, tex.LeftLeg);
+        CreateModelPart(model.RightLeg, cube.RightLeg, tex.RightLeg);
+
+        CreateModelPart(model.TopHead, cubetop.Head, textop.Head);
+        CreateModelPart(model.TopBody, cubetop.Body, textop.Body);
+        CreateModelPart(model.TopLeftArm, cubetop.LeftArm, textop.LeftArm);
+        CreateModelPart(model.TopRightArm, cubetop.RightArm, textop.RightArm);
+        CreateModelPart(model.TopLeftLeg, cubetop.LeftLeg, textop.LeftLeg);
+        CreateModelPart(model.TopRightLeg, cubetop.RightLeg, textop.RightLeg);
+
+        CreateModelPart(model.Cape, cube.Cape, tex.Cape);
     }
 
     private void DeleteModel()
-    { 
-        
+    {
+        DeleteVertexBuffer();
+        DeleteIndexBuffer();
     }
 
     private void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size)
@@ -113,9 +123,9 @@ public partial class SkinRenderVulkan
         DeleteVertexBufferPart(draw.Cape);
     }
 
-    private unsafe SkinDrawPart CreateVertexBufferPart(SkinPart part)
+    private unsafe void CreateVertexBufferPart(SkinPart part, SkinDrawPart draw)
     {
-        var draw = new SkinDrawPart();
+        draw.IndexLen = (uint)model.Head.Indices.Length;
         ulong bufferSize = (ulong)(Unsafe.SizeOf<SkinVertex>() * model.Head.Vertices.Length);
 
         Buffer stagingBuffer = default;
@@ -129,34 +139,47 @@ public partial class SkinRenderVulkan
         part.Vertices.AsSpan().CopyTo(new Span<SkinVertex>(data, part.Vertices.Length));
         vk.UnmapMemory(device, stagingBufferMemory);
 
-        CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit, MemoryPropertyFlags.DeviceLocalBit, ref draw.VertexBuffer, ref draw.VertexBufferMemory);
+        CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit, 
+            MemoryPropertyFlags.DeviceLocalBit, ref draw.VertexBuffer, ref draw.VertexBufferMemory);
 
         CopyBuffer(stagingBuffer, draw.VertexBuffer, bufferSize);
 
         vk.DestroyBuffer(device, stagingBuffer, null);
         vk.FreeMemory(device, stagingBufferMemory, null);
-
-        return draw;
     }
 
     private unsafe void CreateVertexBuffer()
     {
-        draw = new SkinDraw()
+        draw ??= new SkinDraw()
         {
-            Head = CreateVertexBufferPart(model.Head),
-            Body = CreateVertexBufferPart(model.Body),
-            LeftArm = CreateVertexBufferPart(model.LeftArm),
-            RightArm = CreateVertexBufferPart(model.RightArm),
-            LeftLeg = CreateVertexBufferPart(model.LeftLeg),
-            RightLeg = CreateVertexBufferPart(model.RightLeg),
-            TopHead = CreateVertexBufferPart(model.TopHead),
-            TopBody = CreateVertexBufferPart(model.TopBody),
-            TopLeftArm = CreateVertexBufferPart(model.TopLeftArm),
-            TopRightArm = CreateVertexBufferPart(model.TopRightArm),
-            TopLeftLeg = CreateVertexBufferPart(model.TopLeftLeg),
-            TopRightLeg = CreateVertexBufferPart(model.TopRightLeg),
-            Cape = CreateVertexBufferPart(model.Cape),
+            Head = new(),
+            Body = new(),
+            LeftArm = new(),
+            RightArm = new(),
+            LeftLeg = new(),
+            RightLeg = new(),
+            TopHead = new(),
+            TopBody = new(),
+            TopLeftArm = new(),
+            TopRightArm = new(),
+            TopLeftLeg = new(),
+            TopRightLeg = new(),
+            Cape = new(),
         };
+
+        CreateVertexBufferPart(model.Head, draw.Head);
+        CreateVertexBufferPart(model.Body, draw.Body);
+        CreateVertexBufferPart(model.LeftArm, draw.LeftArm);
+        CreateVertexBufferPart(model.RightArm, draw.RightArm);
+        CreateVertexBufferPart(model.LeftLeg, draw.LeftLeg);
+        CreateVertexBufferPart(model.RightLeg, draw.RightLeg);
+        CreateVertexBufferPart(model.TopHead, draw.TopHead);
+        CreateVertexBufferPart(model.TopBody, draw.TopBody);
+        CreateVertexBufferPart(model.TopLeftArm, draw.TopLeftArm);
+        CreateVertexBufferPart(model.TopRightArm, draw.TopRightArm);
+        CreateVertexBufferPart(model.TopLeftLeg, draw.TopLeftLeg);
+        CreateVertexBufferPart(model.TopRightLeg, draw.TopRightLeg);
+        CreateVertexBufferPart(model.Cape, draw.Cape);
     }
 
     private unsafe void CreateIndexBufferPart(SkinPart part, SkinDrawPart draw)
@@ -226,5 +249,177 @@ public partial class SkinRenderVulkan
         DeleteIndexBufferPart(draw.TopLeftLeg);
         DeleteIndexBufferPart(draw.TopRightLeg);
         DeleteIndexBufferPart(draw.Cape);
+    }
+
+    private unsafe void CreateUniformBuffersPart(SkinDrawPart part)
+    {
+        ulong bufferSize = (ulong)Unsafe.SizeOf<UniformBufferObject>();
+
+        part.uniformBuffers = new Buffer[swapChainImages.Length];
+        part.uniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
+
+        for (int i = 0; i < swapChainImages.Length; i++)
+        {
+            CreateBuffer(bufferSize, BufferUsageFlags.UniformBufferBit,
+                MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit,
+                ref part.uniformBuffers[i], ref part.uniformBuffersMemory[i]);
+        }
+    }
+
+    private unsafe void CreateUniformBuffers()
+    {
+        CreateUniformBuffersPart(draw.Head);
+        CreateUniformBuffersPart(draw.Body);
+        CreateUniformBuffersPart(draw.LeftArm);
+        CreateUniformBuffersPart(draw.RightArm);
+        CreateUniformBuffersPart(draw.LeftLeg);
+        CreateUniformBuffersPart(draw.RightLeg);
+        CreateUniformBuffersPart(draw.TopHead);
+        CreateUniformBuffersPart(draw.TopBody);
+        CreateUniformBuffersPart(draw.TopLeftArm);
+        CreateUniformBuffersPart(draw.TopRightArm);
+        CreateUniformBuffersPart(draw.TopLeftLeg);
+        CreateUniformBuffersPart(draw.TopRightLeg);
+        CreateUniformBuffersPart(draw.Cape);
+    }
+
+    private unsafe void CreateDescriptorPoolPart(SkinDrawPart part)
+    {
+        var poolSizes = new DescriptorPoolSize[]
+        {
+            new()
+            {
+                Type = DescriptorType.UniformBuffer,
+                DescriptorCount = (uint)swapChainImages!.Length,
+            },
+            new()
+            {
+                Type = DescriptorType.CombinedImageSampler,
+                DescriptorCount = (uint)swapChainImages!.Length,
+            },
+        };
+
+        fixed (DescriptorPoolSize* poolSizesPtr = poolSizes)
+        fixed (DescriptorPool* descriptorPoolPtr = &part.descriptorPool)
+        {
+            DescriptorPoolCreateInfo poolInfo = new()
+            {
+                SType = StructureType.DescriptorPoolCreateInfo,
+                PoolSizeCount = (uint)poolSizes.Length,
+                PPoolSizes = poolSizesPtr,
+                MaxSets = (uint)swapChainImages!.Length,
+            };
+
+            if (vk!.CreateDescriptorPool(device, ref poolInfo, null, descriptorPoolPtr) != Result.Success)
+            {
+                throw new Exception("failed to create descriptor pool!");
+            }
+        }
+    }
+
+    private unsafe void CreateDescriptorPool()
+    {
+        CreateDescriptorPoolPart(draw.Head);
+        CreateDescriptorPoolPart(draw.Body);
+        CreateDescriptorPoolPart(draw.LeftArm);
+        CreateDescriptorPoolPart(draw.RightArm);
+        CreateDescriptorPoolPart(draw.LeftLeg);
+        CreateDescriptorPoolPart(draw.RightLeg);
+        CreateDescriptorPoolPart(draw.TopHead);
+        CreateDescriptorPoolPart(draw.TopBody);
+        CreateDescriptorPoolPart(draw.TopLeftArm);
+        CreateDescriptorPoolPart(draw.TopRightArm);
+        CreateDescriptorPoolPart(draw.TopLeftLeg);
+        CreateDescriptorPoolPart(draw.TopRightLeg);
+        CreateDescriptorPoolPart(draw.Cape);
+    }
+
+    private unsafe void CreateDescriptorSetsPart(SkinDrawPart part)
+    {
+        var layouts = new DescriptorSetLayout[swapChainImages!.Length];
+        Array.Fill(layouts, descriptorSetLayout);
+
+        fixed (DescriptorSetLayout* layoutsPtr = layouts)
+        {
+            DescriptorSetAllocateInfo allocateInfo = new()
+            {
+                SType = StructureType.DescriptorSetAllocateInfo,
+                DescriptorPool = part.descriptorPool,
+                DescriptorSetCount = (uint)swapChainImages!.Length,
+                PSetLayouts = layoutsPtr,
+            };
+
+            part.descriptorSets = new DescriptorSet[swapChainImages.Length];
+            fixed (DescriptorSet* descriptorSetsPtr = part.descriptorSets)
+            {
+                if (vk!.AllocateDescriptorSets(device, ref allocateInfo, descriptorSetsPtr) != Result.Success)
+                {
+                    throw new Exception("failed to allocate descriptor sets!");
+                }
+            }
+        }
+
+        for (int i = 0; i < swapChainImages.Length; i++)
+        {
+            DescriptorBufferInfo vertInfo = new()
+            {
+                Buffer = part.uniformBuffers[i],
+                Offset = 0,
+                Range = (ulong)Unsafe.SizeOf<UniformBufferObject>(),
+            };
+
+            DescriptorImageInfo imageInfo = new()
+            {
+                ImageLayout = ImageLayout.ShaderReadOnlyOptimal,
+                ImageView = textureImageView,
+                Sampler = textureSampler,
+            };
+
+            var descriptorWrites = new WriteDescriptorSet[]
+            {
+                new()
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = part.descriptorSets[i],
+                    DstBinding = 0,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.UniformBuffer,
+                    DescriptorCount = 1,
+                    PBufferInfo = &vertInfo,
+                },
+                new()
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = part.descriptorSets[i],
+                    DstBinding = 1,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.CombinedImageSampler,
+                    DescriptorCount = 1,
+                    PImageInfo = &imageInfo,
+                }
+            };
+
+            fixed (WriteDescriptorSet* descriptorWritesPtr = descriptorWrites)
+            {
+                vk!.UpdateDescriptorSets(device, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);
+            }
+        }
+    }
+
+    private unsafe void CreateDescriptorSets()
+    {
+        CreateDescriptorSetsPart(draw.Head);
+        CreateDescriptorSetsPart(draw.Body);
+        CreateDescriptorSetsPart(draw.LeftArm);
+        CreateDescriptorSetsPart(draw.RightArm);
+        CreateDescriptorSetsPart(draw.LeftLeg);
+        CreateDescriptorSetsPart(draw.RightLeg);
+        CreateDescriptorSetsPart(draw.TopHead);
+        CreateDescriptorSetsPart(draw.TopBody);
+        CreateDescriptorSetsPart(draw.TopLeftArm);
+        CreateDescriptorSetsPart(draw.TopRightArm);
+        CreateDescriptorSetsPart(draw.TopLeftLeg);
+        CreateDescriptorSetsPart(draw.TopRightLeg);
+        CreateDescriptorSetsPart(draw.Cape);
     }
 }

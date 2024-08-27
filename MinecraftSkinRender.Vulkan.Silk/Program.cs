@@ -70,16 +70,17 @@ internal class Program
 
         window.Render += (time)=> 
         {
-            skin.VulkanRender(window.Time);
+            skin.VulkanRender(time);
         };
 
         skin.Width = window.FramebufferSize.X;
         skin.Height = window.FramebufferSize.Y;
-        skin.ChangeSkin(SKBitmap.Decode("skin.png"));
-        skin.ChangeType(SkinType.NewSlim);
-        skin.ChangeCape(SKBitmap.Decode("cape.png"));
+        skin.SetSkin(SKBitmap.Decode("skin.png"));
+        skin.SetSkinType(SkinType.NewSlim);
+        skin.SetCape(SKBitmap.Decode("cape.png"));
         skin.EnableTop = true;
-        skin.EnableMSAA = true;
+        skin.EnableMSAA = false;
+        skin.SetAnimation(false);
         skin.VulkanInit();
         window.Run();
     }
