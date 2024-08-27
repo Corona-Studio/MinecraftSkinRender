@@ -54,7 +54,7 @@ internal class Program
 
         // Declare some variables
         GL gl = null;
-        var skin = new SkinRender();
+        var skin = new SkinRenderOpenGL();
         skin.ChangeSkin(SKBitmap.Decode("skin.png"));
         skin.ChangeType(SkinType.NewSlim);
         skin.EnableTop = true;

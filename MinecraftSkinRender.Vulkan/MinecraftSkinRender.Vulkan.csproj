@@ -4,10 +4,31 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="spv\SkinF.spv" />
+    <None Remove="spv\SkinV.spv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="spv\SkinF.spv" />
+    <EmbeddedResource Include="spv\SkinV.spv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="glsl\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.21.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.21.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MinecraftSkinRender\MinecraftSkinRender.csproj" />
   </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

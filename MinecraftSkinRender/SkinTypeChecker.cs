@@ -5,7 +5,7 @@ using SkiaSharp;
 
 namespace MinecraftSkinRender;
 
-internal static class SkinTypeChecker
+public static class SkinTypeChecker
 {
     /// <summary>
     /// 获取皮肤类型

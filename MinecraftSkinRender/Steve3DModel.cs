@@ -3,87 +3,87 @@ namespace MinecraftSkinRender;
 /// <summary>
 /// 生成史蒂夫模型
 /// </summary>
-internal static class Steve3DModel
+public static class Steve3DModel
 {
     /// <summary>
     /// 生成一个模型
     /// </summary>
     /// <param name="type">类型</param>
     /// <returns></returns>
-    public static SteveModelObj GetSteve(SkinType type)
+    public static SteveModelObj GetSteve(CubeModel model, SkinType type)
     {
         return new()
         {
             Head = new()
             {
-                Model = CubeModel.GetSquare(),
-                Point = CubeModel.GetSquareIndicies()
+                Model = model.GetSquare(),
+                Point = model.GetSquareIndicies()
             },
             Body = new()
             {
-                Model = CubeModel.GetSquare(multiplyZ: 0.5f, multiplyY: 1.5f),
-                Point = CubeModel.GetSquareIndicies()
+                Model = model.GetSquare(multiplyZ: 0.5f, multiplyY: 1.5f),
+                Point = model.GetSquareIndicies()
             },
             LeftArm = type == SkinType.NewSlim ? new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.375f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             } : new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             },
             RightArm = type == SkinType.NewSlim ? new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.375f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             } : new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             },
             LeftLeg = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             },
             RightLeg = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             },
             Cape = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = model.GetSquare(
                     multiplyX: 1.25f,
                     multiplyZ: 0.1f,
                     multiplyY: 2f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = model.GetSquareIndicies()
             }
         };
     }
@@ -93,16 +93,16 @@ internal static class Steve3DModel
     /// </summary>
     /// <param name="type">类型</param>
     /// <returns></returns>
-    public static SteveModelObj GetSteveTop(SkinType type)
+    public static SteveModelObj GetSteveTop(CubeModel cube, SkinType type)
     {
         var model = new SteveModelObj
         {
             Head = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             }
         };
 
@@ -110,73 +110,73 @@ internal static class Steve3DModel
         {
             model.Body = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             };
 
             model.LeftArm = type == SkinType.NewSlim ? new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.375f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             } : new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             };
 
             model.RightArm = type == SkinType.NewSlim ? new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.375f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             } : new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             };
 
             model.LeftLeg = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             };
             model.RightLeg = new()
             {
-                Model = CubeModel.GetSquare(
+                Model = cube.GetSquare(
                     multiplyX: 0.5f,
                     multiplyZ: 0.5f,
                     multiplyY: 1.5f,
                     enlarge: 1.125f
                 ),
-                Point = CubeModel.GetSquareIndicies()
+                Point = cube.GetSquareIndicies()
             };
         }
 

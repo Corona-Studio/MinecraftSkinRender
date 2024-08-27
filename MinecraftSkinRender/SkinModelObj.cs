@@ -3,7 +3,7 @@
 /// <summary>
 /// 一个方块模型数据
 /// </summary>
-internal record CubeModelItemObj
+public record CubeModelItemObj
 {
     public float[] Model;
     public ushort[] Point;
@@ -12,7 +12,7 @@ internal record CubeModelItemObj
 /// <summary>
 /// 一个史蒂夫模型数据
 /// </summary>
-internal record SteveModelObj
+public record SteveModelObj
 {
     public CubeModelItemObj Head;
     public CubeModelItemObj Body;
@@ -26,7 +26,7 @@ internal record SteveModelObj
 /// <summary>
 /// 模型贴图数据
 /// </summary>
-internal record SteveTextureObj
+public record SteveTextureObj
 {
     public float[] Head;
     public float[] Body;

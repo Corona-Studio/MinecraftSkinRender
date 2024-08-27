@@ -5,7 +5,7 @@ namespace MinecraftSkinRender;
 /// <summary>
 /// 皮肤的动画
 /// </summary>
-internal class SkinAnimation
+public class SkinAnimation
 {
     private int _frame = 0;
     private bool _close = false;

@@ -22,7 +22,7 @@ internal record ModelVAO
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
-internal struct Vertex
+internal struct VertexOpenGL
 {
     public Vector3 Position;
     public Vector2 UV;

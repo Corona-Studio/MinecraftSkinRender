@@ -2,7 +2,7 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-internal static class SkinShader
+internal static class SkinShaderOpenGL
 {
     private const string VertexShaderSource =
 @"attribute vec3 a_position;

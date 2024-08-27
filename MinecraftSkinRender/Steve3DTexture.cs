@@ -3,7 +3,7 @@ namespace MinecraftSkinRender;
 /// <summary>
 /// 生成史蒂夫贴图UV数据
 /// </summary>
-internal static class Steve3DTexture
+public static class Steve3DTexture
 {
     private static readonly float[] _headTex =
     [

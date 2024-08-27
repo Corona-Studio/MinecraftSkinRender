@@ -5,8 +5,6 @@ VisualStudioVersion = 17.11.35219.272
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.OpenGL", "MinecraftSkinRender.OpenGL\MinecraftSkinRender.OpenGL.csproj", "{1C2C471E-E676-4B29-880D-5A29D4E9BB19}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MinecraftSkinRender", "MinecraftSkinRender\MinecraftSkinRender.shproj", "{BAD4F362-8F98-4F96-9C67-1613CFCAC2A7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7EBF10A-DDC6-4D2D-9589-C55C99178BB0}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -14,13 +12,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenGL", "OpenGL", "{25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.OpenGL.Silk", "MinecraftSkinRender.OpenGL.Silk\MinecraftSkinRender.OpenGL.Silk.csproj", "{DD037A0B-5622-4965-981C-DB1A11721241}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.OpenGL.Silk", "MinecraftSkinRender.OpenGL.Silk\MinecraftSkinRender.OpenGL.Silk.csproj", "{DD037A0B-5622-4965-981C-DB1A11721241}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.MojangApi", "MinecraftSkinRender.MojangApi\MinecraftSkinRender.MojangApi.csproj", "{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.MojangApi", "MinecraftSkinRender.MojangApi\MinecraftSkinRender.MojangApi.csproj", "{76DE579D-1320-420E-BAD4-8F4EEE97E9A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vulkan", "Vulkan", "{F9E862CC-5617-4DD1-94BF-7FAC86584428}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.Vulkan", "MinecraftSkinRender.Vulkan\MinecraftSkinRender.Vulkan.csproj", "{57C6EA6E-353D-4E6C-AF47-0F396BAFA377}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.Vulkan", "MinecraftSkinRender.Vulkan\MinecraftSkinRender.Vulkan.csproj", "{57C6EA6E-353D-4E6C-AF47-0F396BAFA377}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender", "MinecraftSkinRender\MinecraftSkinRender.csproj", "{F25AE007-975E-4554-959F-BC7713A61788}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.Vulkan.Silk", "MinecraftSkinRender.Vulkan.Silk\MinecraftSkinRender.Vulkan.Silk.csproj", "{D2BFBC20-59C5-465A-9C31-E85A4461956D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,14 @@ Global
 		{57C6EA6E-353D-4E6C-AF47-0F396BAFA377}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57C6EA6E-353D-4E6C-AF47-0F396BAFA377}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57C6EA6E-353D-4E6C-AF47-0F396BAFA377}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F25AE007-975E-4554-959F-BC7713A61788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25AE007-975E-4554-959F-BC7713A61788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25AE007-975E-4554-959F-BC7713A61788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25AE007-975E-4554-959F-BC7713A61788}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2BFBC20-59C5-465A-9C31-E85A4461956D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2BFBC20-59C5-465A-9C31-E85A4461956D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2BFBC20-59C5-465A-9C31-E85A4461956D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2BFBC20-59C5-465A-9C31-E85A4461956D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,12 +62,9 @@ Global
 		{1C2C471E-E676-4B29-880D-5A29D4E9BB19} = {25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}
 		{DD037A0B-5622-4965-981C-DB1A11721241} = {25A9F83C-0B0E-42E7-AE4A-4CCD32B0DCF6}
 		{57C6EA6E-353D-4E6C-AF47-0F396BAFA377} = {F9E862CC-5617-4DD1-94BF-7FAC86584428}
+		{D2BFBC20-59C5-465A-9C31-E85A4461956D} = {F9E862CC-5617-4DD1-94BF-7FAC86584428}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D419F0CC-FD7E-4029-8FE8-5D679F06E31C}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		MinecraftSkinRender\MinecraftSkinRender.projitems*{1c2c471e-e676-4b29-880d-5a29d4e9bb19}*SharedItemsImports = 5
-		MinecraftSkinRender\MinecraftSkinRender.projitems*{bad4f362-8f98-4f96-9c67-1613cfcac2a7}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
