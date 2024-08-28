@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -152,13 +147,7 @@ public partial class SkinRenderVulkan
             PipelineColorBlendAttachmentState colorBlendAttachment = new()
             {
                 ColorWriteMask = ColorComponentFlags.RBit | ColorComponentFlags.GBit | ColorComponentFlags.BBit | ColorComponentFlags.ABit,
-                BlendEnable = true,
-                SrcColorBlendFactor = BlendFactor.SrcAlpha,
-                DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
-                ColorBlendOp = BlendOp.Add,
-                SrcAlphaBlendFactor = BlendFactor.One,
-                DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
-                AlphaBlendOp = BlendOp.Add
+                BlendEnable = false
             };
 
             PipelineColorBlendStateCreateInfo colorBlending = new()
@@ -210,6 +199,14 @@ public partial class SkinRenderVulkan
             {
                 throw new Exception("failed to create graphics pipeline!");
             }
+
+            colorBlendAttachment.BlendEnable = true;
+            colorBlendAttachment.SrcColorBlendFactor = BlendFactor.SrcAlpha;
+            colorBlendAttachment.DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha;
+            colorBlendAttachment.ColorBlendOp = BlendOp.Add;
+            colorBlendAttachment.SrcAlphaBlendFactor = BlendFactor.One;
+            colorBlendAttachment.DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha;
+            colorBlendAttachment.AlphaBlendOp = BlendOp.Add;
 
             depthStencil.DepthWriteEnable = false;
 
@@ -339,7 +336,7 @@ public partial class SkinRenderVulkan
             {
                 new()
                 {
-                    Color = new (){ Float32_0 = 0, Float32_1 = 1, Float32_2 = 0, Float32_3 = 1 },
+                    Color = new (){ Float32_0 = BackColor.X, Float32_1 = BackColor.Y, Float32_2 = BackColor.Z, Float32_3 = BackColor.W },
                 },
                 new()
                 {
@@ -407,6 +404,7 @@ public partial class SkinRenderVulkan
             }
         }
 
+        _switchBack = false;
         _switchType = false;
     }
 }

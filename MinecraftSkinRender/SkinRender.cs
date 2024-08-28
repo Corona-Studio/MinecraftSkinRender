@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 using SkiaSharp;
 
 namespace MinecraftSkinRender;
@@ -13,7 +8,9 @@ public abstract class SkinRender
     protected bool _switchModel = false;
     protected bool _switchSkin = false;
     protected bool _switchType = false;
+    protected bool _switchBack = false;
     protected bool _enableAnimation;
+    protected double _time;
 
     protected float _dis = 1;
 
@@ -40,8 +37,7 @@ public abstract class SkinRender
     public SkinType SkinType { get; protected set; } = SkinType.Unkonw;
     public bool HaveCape { get; protected set; }
     public bool HaveSkin { get; protected set; }
-
-    public bool IsLoading { get; protected set; }
+    public Vector4 BackColor { get; protected set; }
 
     public bool EnableCape { get; private set; }
     public bool EnableMSAA { get; private set; }
@@ -51,10 +47,19 @@ public abstract class SkinRender
     public Vector3 LegRotate { get; set; }
     public Vector3 HeadRotate { get; set; }
 
+    public int Fps { get; private set; }
+    public event Action<object?, int>? FpsUpdate;
+
     public SkinRender()
     {
         _skina = new();
         _last = Matrix4x4.Identity;
+    }
+
+    public void SetBackColor(Vector4 color)
+    {
+        BackColor = color;
+        _switchBack = true;
     }
 
     public void SetMSAA(bool enable)
@@ -209,6 +214,31 @@ public abstract class SkinRender
         _last = Matrix4x4.Identity;
     }
 
+    public void Tick(double time)
+    {
+        if (_enableAnimation)
+        {
+            _skina.Tick(time);
+        }
+
+        if (_rotXY.X != 0 || _rotXY.Y != 0)
+        {
+            _last *= Matrix4x4.CreateRotationX(_rotXY.X / 360)
+                    * Matrix4x4.CreateRotationY(_rotXY.Y / 360);
+            _rotXY.X = 0;
+            _rotXY.Y = 0;
+        }
+
+        Fps++;
+        _time += time;
+        if (_time > 1)
+        {
+            _time -= 1;
+            FpsUpdate?.Invoke(this, Fps);
+            Fps = 0;
+        }
+    }
+
     protected void OnErrorChange(ErrorType data)
     {
         Error?.Invoke(this, data);
@@ -217,5 +247,47 @@ public abstract class SkinRender
     protected void OnStateChange(StateType data)
     {
         State?.Invoke(this, data);
+    }
+
+    protected Matrix4x4 GetMatrix4(MatrPartType type)
+    {
+        var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
+        bool enable = _enableAnimation;
+
+        return type switch
+        {
+            MatrPartType.Head => Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
+              Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
+              Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
+              Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
+              Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0),
+            MatrPartType.LeftArm => Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+               Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0),
+            MatrPartType.RightArm => Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+                  Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
+                  Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
+                  Matrix4x4.CreateTranslation(
+                      -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0),
+            MatrPartType.LeftLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+               Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
+               Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
+               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0),
+            MatrPartType.RightLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+            Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
+            Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
+            Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0),
+            MatrPartType.Proj => Matrix4x4.CreatePerspectiveFieldOfView(
+              (float)(Math.PI / 4), (float)Width / Height, 0.1f, 10.0f),
+            MatrPartType.View => Matrix4x4.CreateLookAt(new(0, 0, 7), new(), new(0, 1, 0)),
+            MatrPartType.Model => _last
+            * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
+            * Matrix4x4.CreateScale(_dis),
+            MatrPartType.Cape => Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
+               Matrix4x4.CreateRotationX((float)((enable ? 11.8 : 6.3) * Math.PI / 180)) *
+               Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f),
+            _ => Matrix4x4.Identity
+        };
     }
 }

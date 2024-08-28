@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace MinecraftSkinRender.Vulkan;
 
 public partial class SkinRenderVulkan
 {
-    private unsafe void CreateBuffer(ulong size, BufferUsageFlags usage, 
+    private unsafe void CreateBuffer(ulong size, BufferUsageFlags usage,
         MemoryPropertyFlags properties, ref Buffer buffer, ref DeviceMemory bufferMemory)
     {
         BufferCreateInfo bufferInfo = new()
@@ -129,13 +124,30 @@ public partial class SkinRenderVulkan
 
     private unsafe void DeleteTexture()
     {
-        vk.DestroyImage(device, textureSkinImage, null);
-        vk.FreeMemory(device, textureSkinImageMemory, null);
-        vk.DestroyImageView(device, textureSkinImageView, null);
-
-        vk.DestroyImage(device, textureCapeImage, null);
-        vk.FreeMemory(device, textureCapeImageMemory, null);
-        vk.DestroyImageView(device, textureCapeImageView, null);
+        if (textureSkinImage.Handle != 0)
+        {
+            vk.DestroyImage(device, textureSkinImage, null);
+        }
+        if (textureSkinImageMemory.Handle != 0)
+        {
+            vk.FreeMemory(device, textureSkinImageMemory, null);
+        }
+        if (textureSkinImageView.Handle != 0)
+        {
+            vk.DestroyImageView(device, textureSkinImageView, null);
+        }
+        if (textureCapeImage.Handle != 0)
+        {
+            vk.DestroyImage(device, textureCapeImage, null);
+        }
+        if (textureCapeImageMemory.Handle != 0)
+        {
+            vk.FreeMemory(device, textureCapeImageMemory, null);
+        }
+        if (textureCapeImageView.Handle != 0) 
+        {
+            vk.DestroyImageView(device, textureCapeImageView, null);
+        }
     }
 
     private unsafe void CreateCapeTexture()

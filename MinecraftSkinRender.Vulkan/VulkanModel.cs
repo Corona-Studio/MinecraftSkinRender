@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -127,7 +122,7 @@ public partial class SkinRenderVulkan
         part.Vertices.AsSpan().CopyTo(new Span<SkinVertex>(data, part.Vertices.Length));
         vk.UnmapMemory(device, stagingBufferMemory);
 
-        CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit, 
+        CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit,
             MemoryPropertyFlags.DeviceLocalBit, ref draw.VertexBuffer, ref draw.VertexBufferMemory);
 
         CopyBuffer(stagingBuffer, draw.VertexBuffer, bufferSize);
@@ -237,6 +232,32 @@ public partial class SkinRenderVulkan
         }
     }
 
+    private unsafe void DeleteUniformBufferPart(SkinDrawPart part)
+    {
+        for (int i = 0; i < swapChainImages!.Length; i++)
+        {
+            vk.DestroyBuffer(device, part.uniformBuffers![i], null);
+            vk.FreeMemory(device, part.uniformBuffersMemory![i], null);
+        }
+    }
+
+    private unsafe void DeleteUniformBuffers()
+    {
+        DeleteUniformBufferPart(draw.Head);
+        DeleteUniformBufferPart(draw.Body);
+        DeleteUniformBufferPart(draw.LeftArm);
+        DeleteUniformBufferPart(draw.RightArm);
+        DeleteUniformBufferPart(draw.LeftLeg);
+        DeleteUniformBufferPart(draw.RightLeg);
+        DeleteUniformBufferPart(draw.TopHead);
+        DeleteUniformBufferPart(draw.TopBody);
+        DeleteUniformBufferPart(draw.TopLeftArm);
+        DeleteUniformBufferPart(draw.TopRightArm);
+        DeleteUniformBufferPart(draw.TopLeftLeg);
+        DeleteUniformBufferPart(draw.TopRightLeg);
+        DeleteUniformBufferPart(draw.Cape);
+    }
+
     private unsafe void CreateUniformBuffers()
     {
         CreateUniformBuffersPart(draw.Head);
@@ -252,6 +273,31 @@ public partial class SkinRenderVulkan
         CreateUniformBuffersPart(draw.TopLeftLeg);
         CreateUniformBuffersPart(draw.TopRightLeg);
         CreateUniformBuffersPart(draw.Cape);
+    }
+
+    private unsafe void DeleteDescriptorPoolPart(SkinDrawPart part)
+    {
+        if (part.descriptorPool.Handle != 0)
+        {
+            vk.DestroyDescriptorPool(device, part.descriptorPool, null);
+        }
+    }
+
+    private void DeleteDescriptorPool()
+    {
+        DeleteDescriptorPoolPart(draw.Head);
+        DeleteDescriptorPoolPart(draw.Body);
+        DeleteDescriptorPoolPart(draw.LeftArm);
+        DeleteDescriptorPoolPart(draw.RightArm);
+        DeleteDescriptorPoolPart(draw.LeftLeg);
+        DeleteDescriptorPoolPart(draw.RightLeg);
+        DeleteDescriptorPoolPart(draw.TopHead);
+        DeleteDescriptorPoolPart(draw.TopBody);
+        DeleteDescriptorPoolPart(draw.TopLeftArm);
+        DeleteDescriptorPoolPart(draw.TopRightArm);
+        DeleteDescriptorPoolPart(draw.TopLeftLeg);
+        DeleteDescriptorPoolPart(draw.TopRightLeg);
+        DeleteDescriptorPoolPart(draw.Cape);
     }
 
     private unsafe void CreateDescriptorPoolPart(SkinDrawPart part)
@@ -281,14 +327,14 @@ public partial class SkinRenderVulkan
                 MaxSets = (uint)swapChainImages!.Length,
             };
 
-            if (vk!.CreateDescriptorPool(device, ref poolInfo, null, descriptorPoolPtr) != Result.Success)
+            if (vk.CreateDescriptorPool(device, ref poolInfo, null, descriptorPoolPtr) != Result.Success)
             {
                 throw new Exception("failed to create descriptor pool!");
             }
         }
     }
 
-    private unsafe void CreateDescriptorPool()
+    private void CreateDescriptorPool()
     {
         CreateDescriptorPoolPart(draw.Head);
         CreateDescriptorPoolPart(draw.Body);
@@ -305,9 +351,34 @@ public partial class SkinRenderVulkan
         CreateDescriptorPoolPart(draw.Cape);
     }
 
+    private unsafe void ResetDescriptorPoolPart(SkinDrawPart part)
+    {
+        if (part.descriptorPool.Handle != 0)
+        {
+            vk.ResetDescriptorPool(device, part.descriptorPool, 0);
+        }
+    }
+
+    private void ResetDescriptorPool()
+    {
+        ResetDescriptorPoolPart(draw.Head);
+        ResetDescriptorPoolPart(draw.Body);
+        ResetDescriptorPoolPart(draw.LeftArm);
+        ResetDescriptorPoolPart(draw.RightArm);
+        ResetDescriptorPoolPart(draw.LeftLeg);
+        ResetDescriptorPoolPart(draw.RightLeg);
+        ResetDescriptorPoolPart(draw.TopHead);
+        ResetDescriptorPoolPart(draw.TopBody);
+        ResetDescriptorPoolPart(draw.TopLeftArm);
+        ResetDescriptorPoolPart(draw.TopRightArm);
+        ResetDescriptorPoolPart(draw.TopLeftLeg);
+        ResetDescriptorPoolPart(draw.TopRightLeg);
+        ResetDescriptorPoolPart(draw.Cape);
+    }
+
     private unsafe void CreateDescriptorSetsPart(SkinDrawPart part, bool cape)
     {
-        var layouts = new DescriptorSetLayout[swapChainImages!.Length];
+        var layouts = new DescriptorSetLayout[swapChainImages.Length];
         Array.Fill(layouts, descriptorSetLayout);
 
         fixed (DescriptorSetLayout* layoutsPtr = layouts)
@@ -323,7 +394,7 @@ public partial class SkinRenderVulkan
             part.descriptorSets = new DescriptorSet[swapChainImages.Length];
             fixed (DescriptorSet* descriptorSetsPtr = part.descriptorSets)
             {
-                if (vk!.AllocateDescriptorSets(device, ref allocateInfo, descriptorSetsPtr) != Result.Success)
+                if (vk.AllocateDescriptorSets(device, ref allocateInfo, descriptorSetsPtr) != Result.Success)
                 {
                     throw new Exception("failed to allocate descriptor sets!");
                 }
@@ -372,7 +443,7 @@ public partial class SkinRenderVulkan
 
             fixed (WriteDescriptorSet* descriptorWritesPtr = descriptorWrites)
             {
-                vk!.UpdateDescriptorSets(device, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);
+                vk.UpdateDescriptorSets(device, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);
             }
         }
     }

@@ -1,8 +1,9 @@
 ﻿using System.Runtime.InteropServices;
+using Silk.NET.OpenGL;
 
 namespace MinecraftSkinRender.OpenGL;
 
-internal static class SkinShaderOpenGL
+public partial class SkinRenderOpenGL
 {
     private const string VertexShaderSource =
 @"attribute vec3 a_position;
@@ -35,7 +36,7 @@ void main()
 varying vec3 fragPosIn;
 varying vec3 normalIn;
 varying vec2 texIn;
-//DECLAREGLFRAG
+
 void main()
 {
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -79,8 +80,51 @@ void main()
         return data;
     }
 
-    public static string VertexShader(Version gl, bool isgles, bool fragment)
+    private static string GetShader(Version gl, bool isgles, bool fragment)
     {
         return GetShader(gl, isgles, fragment, fragment ? FragmentShaderSource : VertexShaderSource);
+    }
+
+    private void CreateShader()
+    {
+        int maj = gl.GetInteger(GetPName.MajorVersion);
+        int min = gl.GetInteger(GetPName.MinorVersion);
+
+        var vertexShader = gl.CreateShader(ShaderType.VertexShader);
+        gl.ShaderSource(vertexShader, GetShader(new(maj, min), IsGLES, false));
+        gl.CompileShader(vertexShader);
+        gl.GetShader(vertexShader, ShaderParameterName.CompileStatus, out var state);
+        if (state == 0)
+        {
+            gl.GetShaderInfoLog(vertexShader, out var info);
+            throw new Exception($"GL_VERTEX_SHADER.\n{info}");
+        }
+
+        var fragmentShader = gl.CreateShader(ShaderType.FragmentShader);
+        gl.ShaderSource(fragmentShader, GetShader(new(maj, min), IsGLES, true));
+        gl.CompileShader(fragmentShader);
+        state = gl.GetShader(fragmentShader, ShaderParameterName.CompileStatus);
+        if (state == 0)
+        {
+            gl.GetShaderInfoLog(vertexShader, out var info);
+            throw new Exception($"GL_FRAGMENT_SHADER.\n{info}");
+        }
+
+        _shaderProgram = gl.CreateProgram();
+        gl.AttachShader(_shaderProgram, vertexShader);
+        gl.AttachShader(_shaderProgram, fragmentShader);
+        gl.LinkProgram(_shaderProgram);
+        state = gl.GetProgram(_shaderProgram, ProgramPropertyARB.LinkStatus);
+        if (state == 0)
+        {
+            gl.GetProgramInfoLog(vertexShader, out var info);
+            throw new Exception($"GL_LINK_PROGRAM.\n{info}");
+        }
+
+        //Delete the no longer useful individual shaders;
+        gl.DetachShader(_shaderProgram, vertexShader);
+        gl.DetachShader(_shaderProgram, fragmentShader);
+        gl.DeleteShader(vertexShader);
+        gl.DeleteShader(fragmentShader);
     }
 }

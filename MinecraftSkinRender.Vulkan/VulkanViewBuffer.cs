@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Maths;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
-using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace MinecraftSkinRender.Vulkan;
 
@@ -59,17 +52,6 @@ public partial class SkinRenderVulkan
         }
     }
 
-    private unsafe void CleanUpSwapChainPart(SkinDrawPart part)
-    {
-        for (int i = 0; i < swapChainImages!.Length; i++)
-        {
-            vk.DestroyBuffer(device, part.uniformBuffers![i], null);
-            vk.FreeMemory(device, part.uniformBuffersMemory![i], null);
-        }
-
-        vk.DestroyDescriptorPool(device, part.descriptorPool, null);
-    }
-
     private unsafe void CleanUpSwapChain()
     {
         vk.DestroyImageView(device, depthImageView, null);
@@ -95,19 +77,8 @@ public partial class SkinRenderVulkan
 
         khrSwapChain!.DestroySwapchain(device, swapChain, null);
 
-        CleanUpSwapChainPart(draw.Head);
-        CleanUpSwapChainPart(draw.Body);
-        CleanUpSwapChainPart(draw.LeftArm);
-        CleanUpSwapChainPart(draw.RightArm);
-        CleanUpSwapChainPart(draw.LeftLeg);
-        CleanUpSwapChainPart(draw.RightLeg);
-        CleanUpSwapChainPart(draw.TopHead);
-        CleanUpSwapChainPart(draw.TopBody);
-        CleanUpSwapChainPart(draw.TopLeftArm);
-        CleanUpSwapChainPart(draw.TopRightArm);
-        CleanUpSwapChainPart(draw.TopLeftLeg);
-        CleanUpSwapChainPart(draw.TopRightLeg);
-        CleanUpSwapChainPart(draw.Cape);
+        DeleteUniformBuffers();
+        DeleteDescriptorPool();
     }
 
     private unsafe void CreateSwapChain()

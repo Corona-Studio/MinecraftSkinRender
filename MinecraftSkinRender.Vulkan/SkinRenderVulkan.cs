@@ -2,16 +2,14 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Silk.NET.Core.Contexts;
-using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
-using Buffer = Silk.NET.Vulkan.Buffer;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace MinecraftSkinRender.Vulkan;
 
-public partial class SkinRenderVulkan : SkinRender
+public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 {
     private uint _width, _height;
 
@@ -28,9 +26,6 @@ public partial class SkinRenderVulkan : SkinRender
     [
         KhrSwapchain.ExtensionName
     ];
-
-    private Vk vk;
-
     private Instance instance;
 
     private ExtDebugUtils? debugUtils;
@@ -88,14 +83,6 @@ public partial class SkinRenderVulkan : SkinRender
     private CommandBuffer[]? commandBuffers;
     private UniformBufferObject ubo;
 
-    private readonly IVkSurface ivk;
-
-    public unsafe SkinRenderVulkan(IVkSurface ivk)
-    {
-        vk = Vk.GetApi();
-        this.ivk = ivk;
-    }
-
     public void VulkanInit()
     {
         _width = (uint)Width;
@@ -144,9 +131,12 @@ public partial class SkinRenderVulkan : SkinRender
         imagesInFlight = new Fence[swapChainImages.Length];
     }
 
-    public unsafe void VulkanRender(double time)
+    public unsafe void VulkanRender()
     {
-        _rotXY.Y = 0.1f;
+        if (!HaveSkin)
+        {
+            return;
+        }
 
         if (Width == 0 || Height == 0)
         {
@@ -165,39 +155,37 @@ public partial class SkinRenderVulkan : SkinRender
             return;
         }
 
-        if (_enableAnimation)
-        {
-            _skina.Tick(time);
-        }
-
         vk.WaitForFences(device, 1, ref inFlightFences[currentFrame], true, ulong.MaxValue);
 
-        if (_switchModel)
-        {
-            vk.DeviceWaitIdle(device);
-
-            DeleteModel();
-            CreateModel();
-        }
-
-        if (_switchType)
+        if (_switchType || _switchSkin || _switchModel)
         {
             vk.DeviceWaitIdle(device);
 
             DeleteCommandBuffers();
+
+            if (_switchSkin)
+            {
+                //DeleteDescriptorPool();
+
+                DeleteTexture();
+                CreateTexture();
+
+                //CreateDescriptorPool();
+                ResetDescriptorPool();
+                CreateDescriptorSets();
+            }
+
+            if (_switchModel)
+            {
+                DeleteModel();
+                CreateModel();
+            }
+
             CreateCommandBuffers();
         }
 
-        if (_switchSkin)
-        {
-            vk.DeviceWaitIdle(device);
-
-            DeleteTexture();
-            CreateTexture();
-        }
-
         uint imageIndex = 0;
-        var result = khrSwapChain!.AcquireNextImage(device, swapChain, ulong.MaxValue, 
+        var result = khrSwapChain!.AcquireNextImage(device, swapChain, ulong.MaxValue,
             imageAvailableSemaphores![currentFrame], default, ref imageIndex);
 
         if (result == Result.ErrorOutOfDateKhr)
@@ -328,62 +316,23 @@ public partial class SkinRenderVulkan : SkinRender
 
     private unsafe void DrawSkin(SubmitInfo submitInfo, uint currentImage)
     {
-        bool enable = _enableAnimation;
-        var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
+        SetUniformBuffer(draw.Head, currentImage, GetMatrix4(MatrPartType.Head));
+        SetUniformBuffer(draw.Body, currentImage, GetMatrix4(MatrPartType.Body));
+        SetUniformBuffer(draw.LeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
+        SetUniformBuffer(draw.RightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
+        SetUniformBuffer(draw.LeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
+        SetUniformBuffer(draw.RightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
 
-        SetUniformBuffer(draw.Head, currentImage, Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
-           Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
-           Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
-           Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
-           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0));
-        SetUniformBuffer(draw.Body, currentImage, Matrix4x4.Identity);
-        SetUniformBuffer(draw.LeftArm, currentImage, Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
-                Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
-                Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
-                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0));
-        SetUniformBuffer(draw.RightArm, currentImage, Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
-                Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
-                Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
-                Matrix4x4.CreateTranslation(
-                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0));
-        SetUniformBuffer(draw.LeftLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
-               Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
-               Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
-        SetUniformBuffer(draw.RightLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
-               Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
-               Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.TopHead, currentImage, GetMatrix4(MatrPartType.Head));
+        SetUniformBuffer(draw.TopBody, currentImage, GetMatrix4(MatrPartType.Body));
+        SetUniformBuffer(draw.TopLeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
+        SetUniformBuffer(draw.TopRightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
+        SetUniformBuffer(draw.TopLeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
+        SetUniformBuffer(draw.TopRightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
 
-        SetUniformBuffer(draw.TopHead, currentImage, Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
-           Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
-           Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
-           Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
-           Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0));
-        SetUniformBuffer(draw.TopBody, currentImage, Matrix4x4.Identity);
-        SetUniformBuffer(draw.TopLeftArm, currentImage, Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
-                Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
-                Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
-                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0));
-        SetUniformBuffer(draw.TopRightArm, currentImage, Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
-                Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
-                Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
-                Matrix4x4.CreateTranslation(
-                    -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0));
-        SetUniformBuffer(draw.TopLeftLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
-               Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
-               Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
-        SetUniformBuffer(draw.TopRightLeg, currentImage, Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
-               Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
-               Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
-               Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0));
+        SetUniformBuffer(draw.Cape, currentImage, GetMatrix4(MatrPartType.Cape));
 
-        SetUniformBuffer(draw.Cape, currentImage, Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
-               Matrix4x4.CreateRotationX((float)(10.8 * Math.PI / 180)) *
-               Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f));
-
-        var command1 = commandBuffers![currentImage] ;
+        var command1 = commandBuffers![currentImage];
 
         var info = submitInfo with
         {
@@ -407,21 +356,11 @@ public partial class SkinRenderVulkan : SkinRender
 
     private unsafe void UpdateUniformBuffer()
     {
-        if (_rotXY.X != 0 || _rotXY.Y != 0)
-        {
-            _last *= Matrix4x4.CreateRotationX(_rotXY.X / 360)
-                    * Matrix4x4.CreateRotationY(_rotXY.Y / 360);
-            _rotXY.X = 0;
-            _rotXY.Y = 0;
-        }
-
         ubo = new()
         {
-            model = _last
-            * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
-            * Matrix4x4.CreateScale(_dis),
-            view = Matrix4x4.CreateLookAt(new(0, 0, 7), new(0, 0, 0), new(0, 1, 0)),
-            proj = Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)_width / _height, 0.1f, 10.0f),
+            model = GetMatrix4(MatrPartType.Model),
+            view = GetMatrix4(MatrPartType.View),
+            proj = GetMatrix4(MatrPartType.Proj),
             lightColor = new(1.0f, 1.0f, 1.0f)
         };
         ubo.proj.M22 *= -1;

@@ -1,7 +1,5 @@
-﻿using System.Text;
-using MinecraftSkinRender.MojangApi;
-using Newtonsoft.Json;
-using Silk.NET.Maths;
+﻿using Silk.NET.Maths;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 using SkiaSharp;
 
@@ -50,6 +48,7 @@ internal class Program
         {
             Size = new Vector2D<int>(400, 400),
             Title = "Vulkan",
+            VSync = true
         };
 
         var window = Window.Create(options)!;
@@ -60,28 +59,36 @@ internal class Program
             throw new Exception("Windowing platform doesn't support Vulkan.");
         }
 
-        var skin = new SkinRenderVulkan(window.VkSurface);
+        var skin = new SkinRenderVulkan(Vk.GetApi(), window.VkSurface);
 
-        window.Resize += (size)=> 
+        window.Resize += (size) =>
         {
             skin.Width = size.X;
             skin.Height = size.Y;
         };
 
-        window.Render += (time)=> 
+        window.Render += (time) =>
         {
-            skin.VulkanRender(time);
+            skin.Rot(0, 0.1f);
+            skin.Tick(time);
+            skin.VulkanRender();
         };
 
         skin.Width = window.FramebufferSize.X;
         skin.Height = window.FramebufferSize.Y;
-        skin.SetSkin(SKBitmap.Decode("skin.png"));
+        skin.SetBackColor(new(0, 1, 0, 1));
+        var img = SKBitmap.Decode("skin.png");
+        skin.SetSkin(img);
         skin.SetSkinType(SkinType.NewSlim);
         skin.SetCape(SKBitmap.Decode("cape.png"));
         skin.SetTopModel(true);
         skin.SetCape(true);
         skin.SetMSAA(false);
         skin.SetAnimation(true);
+        skin.FpsUpdate += (a, b) =>
+        {
+            Console.WriteLine("Fps: " + b);
+        };
         skin.VulkanInit();
 
         _ = Task.Run(() =>
@@ -89,9 +96,7 @@ internal class Program
             while (true)
             {
                 Thread.Sleep(2000);
-                skin.SetTopModel(false);
-                Thread.Sleep(2000);
-                skin.SetTopModel(true);
+                //skin.SetSkin(img);
             }
         });
 

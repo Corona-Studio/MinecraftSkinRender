@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Text;
-using MinecraftSkinRender.MojangApi;
-using Newtonsoft.Json;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using SkiaSharp;
 
@@ -48,35 +44,46 @@ internal class Program
 
         // Create a Silk.NET window as usual
         using var window = Window.Create(WindowOptions.Default with
-        { 
-            Size = new(400, 400)
+        {
+            Size = new(400, 400),
+            VSync = true
         });
 
         // Declare some variables
         GL gl = null;
-        var skin = new SkinRenderOpenGL();
-        skin.SetSkin(SKBitmap.Decode("skin.png"));
-        skin.SetSkinType(SkinType.NewSlim);
-        skin.SetTopModel(true);
-        skin.SetMSAA(false);
-        skin.SetAnimation(false);
-        if (havecape)
-        {
-            skin.SetCape(SKBitmap.Decode("cape.png"));
-        }
+        SkinRenderOpenGL? skin = null;
 
         // Our loading function
         window.Load += () =>
         {
             gl = window.CreateOpenGL();
-            skin.OpenGlInit(gl);
+            skin = new SkinRenderOpenGL(gl);
+            skin.SetSkin(SKBitmap.Decode("skin.png"));
+            skin.SetSkinType(SkinType.NewSlim);
+            skin.SetTopModel(true);
+            skin.SetMSAA(false);
+            skin.SetAnimation(true);
+            if (havecape)
+            {
+                skin.SetCape(SKBitmap.Decode("cape.png"));
+            }
+            skin.FpsUpdate += (a, b) =>
+            {
+                Console.WriteLine("Fps: " + b);
+            };
+            skin.SetBackColor(new(0, 1, 0, 1));
             skin.Width = window.FramebufferSize.X;
             skin.Height = window.FramebufferSize.Y;
+            skin.OpenGlInit();
         };
 
         // Handle resizes
         window.FramebufferResize += s =>
         {
+            if (skin == null)
+            {
+                return;
+            }
             skin.Width = s.X;
             skin.Height = s.Y;
         };
@@ -84,7 +91,13 @@ internal class Program
         // The render function
         window.Render += delta =>
         {
-            skin.OpenGlRender(gl, 0, delta);
+            if (skin == null)
+            {
+                return;
+            }
+            skin.Rot(0, 0.1f);
+            skin.Tick(delta);
+            skin.OpenGlRender(0);
             //gl.Clear(ClearBufferMask.ColorBufferBit);
             //gl.ClearColor(0, 0, 1, 0);
             //window.SwapBuffers();
@@ -93,7 +106,11 @@ internal class Program
         // The closing function
         window.Closing += () =>
         {
-            skin.OpenGlDeinit(gl);
+            if (skin == null)
+            {
+                return;
+            }
+            skin.OpenGlDeinit();
             // Unload OpenGL
             gl?.Dispose();
         };

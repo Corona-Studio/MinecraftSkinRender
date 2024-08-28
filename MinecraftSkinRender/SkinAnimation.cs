@@ -40,7 +40,7 @@ public class SkinAnimation
             while (count > 0.01)
             {
                 count -= 0.01;
-                _frame ++;
+                _frame++;
             }
             if (_frame >= 120)
             {

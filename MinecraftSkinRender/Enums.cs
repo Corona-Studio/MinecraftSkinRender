@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MinecraftSkinRender;
+﻿namespace MinecraftSkinRender;
 
 /// <summary>
 /// 皮肤类型
@@ -28,18 +24,24 @@ public enum SkinType
 }
 
 public enum KeyType
-{ 
+{
     None,
     Left,
     Right
 }
 
 public enum ErrorType
-{ 
+{
     UnknowSkinType, SkinNotFind
 }
 
 public enum StateType
-{ 
+{
     SkinReload
+}
+
+public enum MatrPartType
+{ 
+    Head, Body, LeftArm, RightArm, LeftLeg, RightLeg, Cape,
+    Proj, View, Model
 }
