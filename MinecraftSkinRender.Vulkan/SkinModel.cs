@@ -58,6 +58,7 @@ internal class SkinDrawPart
 
     public Buffer[] uniformBuffers;
     public DeviceMemory[] uniformBuffersMemory;
+    public IntPtr[] uniformBuffersPtr;
 
     public DescriptorPool descriptorPool;
     public DescriptorSet[] descriptorSets;

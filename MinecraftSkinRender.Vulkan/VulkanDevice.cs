@@ -50,12 +50,12 @@ public partial class SkinRenderVulkan
     private unsafe bool CheckDeviceExtensionsSupport(PhysicalDevice device)
     {
         uint extentionsCount = 0;
-        vk!.EnumerateDeviceExtensionProperties(device, (byte*)null, ref extentionsCount, null);
+        vk.EnumerateDeviceExtensionProperties(device, (byte*)null, ref extentionsCount, null);
 
         var availableExtensions = new ExtensionProperties[extentionsCount];
         fixed (ExtensionProperties* availableExtensionsPtr = availableExtensions)
         {
-            vk!.EnumerateDeviceExtensionProperties(device, (byte*)null, ref extentionsCount, availableExtensionsPtr);
+            vk.EnumerateDeviceExtensionProperties(device, (byte*)null, ref extentionsCount, availableExtensionsPtr);
         }
 
         var availableExtensionNames = availableExtensions.Select(extension => Marshal.PtrToStringAnsi((IntPtr)extension.ExtensionName)).ToHashSet();
@@ -126,7 +126,7 @@ public partial class SkinRenderVulkan
 
     private void PickPhysicalDevice()
     {
-        var devices = vk!.GetPhysicalDevices(instance);
+        var devices = vk.GetPhysicalDevices(instance);
 
         foreach (var device in devices)
         {

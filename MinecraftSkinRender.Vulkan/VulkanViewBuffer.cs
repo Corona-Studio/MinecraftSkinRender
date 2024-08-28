@@ -212,7 +212,7 @@ public partial class SkinRenderVulkan
 
     private uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
     {
-        vk!.GetPhysicalDeviceMemoryProperties(physicalDevice, out PhysicalDeviceMemoryProperties memProperties);
+        vk.GetPhysicalDeviceMemoryProperties(physicalDevice, out PhysicalDeviceMemoryProperties memProperties);
 
         for (int i = 0; i < memProperties.MemoryTypeCount; i++)
         {

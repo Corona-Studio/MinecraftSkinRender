@@ -25,7 +25,7 @@ public partial class SkinRenderVulkan
         }
 
         MemoryRequirements memRequirements = new();
-        vk!.GetBufferMemoryRequirements(device, buffer, out memRequirements);
+        vk.GetBufferMemoryRequirements(device, buffer, out memRequirements);
 
         MemoryAllocateInfo allocateInfo = new()
         {

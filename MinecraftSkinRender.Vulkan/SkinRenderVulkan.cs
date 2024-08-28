@@ -81,7 +81,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
     private readonly SkinDraw draw = new();
 
     private CommandBuffer[]? commandBuffers;
-    private UniformBufferObject ubo;
+    private UniformBufferObject ubo = new();
 
     public void VulkanInit()
     {
@@ -343,27 +343,6 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
         {
             throw new Exception("failed to submit draw command buffer!");
         }
-    }
-
-    private unsafe void SetUniformBuffer(SkinDrawPart part, uint currentImage, Matrix4x4 self)
-    {
-        ubo.self = self;
-        void* data;
-        vk.MapMemory(device, part.uniformBuffersMemory[currentImage], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
-        new Span<UniformBufferObject>(data, 1)[0] = ubo;
-        vk.UnmapMemory(device, part.uniformBuffersMemory[currentImage]);
-    }
-
-    private unsafe void UpdateUniformBuffer()
-    {
-        ubo = new()
-        {
-            model = GetMatrix4(MatrPartType.Model),
-            view = GetMatrix4(MatrPartType.View),
-            proj = GetMatrix4(MatrPartType.Proj),
-            lightColor = new(1.0f, 1.0f, 1.0f)
-        };
-        ubo.proj.M22 *= -1;
     }
 
     private Format FindSupportedFormat(IEnumerable<Format> candidates, ImageTiling tiling, FormatFeatureFlags features)

@@ -48,7 +48,7 @@ internal class Program
         {
             Size = new Vector2D<int>(400, 400),
             Title = "Vulkan",
-            VSync = true
+            FramesPerSecond = 60
         };
 
         var window = Window.Create(options)!;
@@ -69,7 +69,7 @@ internal class Program
 
         window.Render += (time) =>
         {
-            skin.Rot(0, 0.1f);
+            skin.Rot(0, 1f);
             skin.Tick(time);
             skin.VulkanRender();
         };

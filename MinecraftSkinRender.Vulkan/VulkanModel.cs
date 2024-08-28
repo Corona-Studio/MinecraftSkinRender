@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -223,12 +224,50 @@ public partial class SkinRenderVulkan
 
         part.uniformBuffers = new Buffer[swapChainImages.Length];
         part.uniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
+        part.uniformBuffersPtr = new IntPtr[swapChainImages.Length];
 
         for (int i = 0; i < swapChainImages.Length; i++)
         {
-            CreateBuffer(bufferSize, BufferUsageFlags.UniformBufferBit,
-                MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit,
-                ref part.uniformBuffers[i], ref part.uniformBuffersMemory[i]);
+            BufferCreateInfo bufferInfo = new()
+            {
+                SType = StructureType.BufferCreateInfo,
+                Size = bufferSize,
+                Usage = BufferUsageFlags.UniformBufferBit,
+                SharingMode = SharingMode.Exclusive,
+            };
+
+            fixed (Buffer* bufferPtr = &part.uniformBuffers[i])
+            {
+                if (vk.CreateBuffer(device, ref bufferInfo, null, bufferPtr) != Result.Success)
+                {
+                    throw new Exception("failed to create vertex buffer!");
+                }
+            }
+
+            MemoryRequirements memRequirements = new();
+            vk.GetBufferMemoryRequirements(device, part.uniformBuffers[i], out memRequirements);
+
+            MemoryAllocateInfo allocateInfo = new()
+            {
+                SType = StructureType.MemoryAllocateInfo,
+                AllocationSize = memRequirements.Size,
+                MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits, MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit
+                | MemoryPropertyFlags.DeviceLocalBit),
+            };
+
+            fixed (DeviceMemory* bufferMemoryPtr = &part.uniformBuffersMemory[i])
+            {
+                if (vk.AllocateMemory(device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
+                {
+                    throw new Exception("failed to allocate vertex buffer memory!");
+                }
+            }
+
+            vk.BindBufferMemory(device, part.uniformBuffers[i], part.uniformBuffersMemory[i], 0);
+
+            void* data;
+            vk.MapMemory(device, part.uniformBuffersMemory[i], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
+            part.uniformBuffersPtr[i] = (IntPtr)data;
         }
     }
 
@@ -273,6 +312,21 @@ public partial class SkinRenderVulkan
         CreateUniformBuffersPart(draw.TopLeftLeg);
         CreateUniformBuffersPart(draw.TopRightLeg);
         CreateUniformBuffersPart(draw.Cape);
+    }
+
+    private unsafe void SetUniformBuffer(SkinDrawPart part, uint i, Matrix4x4 self)
+    {
+        ubo.self = self;
+        new Span<UniformBufferObject>((void*)part.uniformBuffersPtr[i], 1)[0] = ubo;
+    }
+
+    private unsafe void UpdateUniformBuffer()
+    {
+        ubo.model = GetMatrix4(MatrPartType.Model);
+        ubo.view = GetMatrix4(MatrPartType.View);
+        ubo.proj = GetMatrix4(MatrPartType.Proj);
+        ubo.lightColor = new(1.0f, 1.0f, 1.0f);
+        ubo.proj.M22 *= -1;
     }
 
     private unsafe void DeleteDescriptorPoolPart(SkinDrawPart part)
