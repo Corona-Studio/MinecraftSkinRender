@@ -8,3 +8,5 @@
 - 支持双层皮肤
 - 支持披风显示
 - 提供动画模式（走路）
+
+编译vulkan工程时，需要安装[vulkan SDK](https://www.lunarg.com/vulkan-sdk/)和glsl着色程序编译器
