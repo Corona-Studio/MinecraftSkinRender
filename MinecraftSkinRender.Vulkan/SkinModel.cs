@@ -10,21 +10,21 @@ namespace MinecraftSkinRender.Vulkan;
 
 internal class SkinModel
 {
-    public SkinPart Head;
-    public SkinPart Body;
-    public SkinPart LeftArm;
-    public SkinPart RightArm;
-    public SkinPart LeftLeg;
-    public SkinPart RightLeg;
+    public SkinPart Head = new();
+    public SkinPart Body = new();
+    public SkinPart LeftArm = new();
+    public SkinPart RightArm = new();
+    public SkinPart LeftLeg = new();
+    public SkinPart RightLeg = new();
 
-    public SkinPart TopHead;
-    public SkinPart TopBody;
-    public SkinPart TopLeftArm;
-    public SkinPart TopRightArm;
-    public SkinPart TopLeftLeg;
-    public SkinPart TopRightLeg;
+    public SkinPart TopHead = new();
+    public SkinPart TopBody = new();
+    public SkinPart TopLeftArm = new();
+    public SkinPart TopRightArm = new();
+    public SkinPart TopLeftLeg = new();
+    public SkinPart TopRightLeg = new();
 
-    public SkinPart Cape;
+    public SkinPart Cape = new();
 }
 
 internal class SkinPart
@@ -35,21 +35,21 @@ internal class SkinPart
 
 internal class SkinDraw
 {
-    public SkinDrawPart Head;
-    public SkinDrawPart Body;
-    public SkinDrawPart LeftArm;
-    public SkinDrawPart RightArm;
-    public SkinDrawPart LeftLeg;
-    public SkinDrawPart RightLeg;
+    public SkinDrawPart Head = new();
+    public SkinDrawPart Body = new();
+    public SkinDrawPart LeftArm = new();
+    public SkinDrawPart RightArm = new();
+    public SkinDrawPart LeftLeg = new();
+    public SkinDrawPart RightLeg = new();
 
-    public SkinDrawPart TopHead;
-    public SkinDrawPart TopBody;
-    public SkinDrawPart TopLeftArm;
-    public SkinDrawPart TopRightArm;
-    public SkinDrawPart TopLeftLeg;
-    public SkinDrawPart TopRightLeg;
+    public SkinDrawPart TopHead = new();
+    public SkinDrawPart TopBody = new();
+    public SkinDrawPart TopLeftArm = new();
+    public SkinDrawPart TopRightArm = new();
+    public SkinDrawPart TopLeftLeg = new();
+    public SkinDrawPart TopRightLeg = new();
 
-    public SkinDrawPart Cape;
+    public SkinDrawPart Cape = new();
 }
 
 internal class SkinDrawPart

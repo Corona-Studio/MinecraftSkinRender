@@ -78,10 +78,23 @@ internal class Program
         skin.SetSkin(SKBitmap.Decode("skin.png"));
         skin.SetSkinType(SkinType.NewSlim);
         skin.SetCape(SKBitmap.Decode("cape.png"));
-        skin.EnableTop = true;
-        skin.EnableMSAA = false;
-        skin.SetAnimation(false);
+        skin.SetTopModel(true);
+        skin.SetCape(true);
+        skin.SetMSAA(false);
+        skin.SetAnimation(true);
         skin.VulkanInit();
+
+        _ = Task.Run(() =>
+        {
+            while (true)
+            {
+                Thread.Sleep(2000);
+                skin.SetTopModel(false);
+                Thread.Sleep(2000);
+                skin.SetTopModel(true);
+            }
+        });
+
         window.Run();
     }
 }

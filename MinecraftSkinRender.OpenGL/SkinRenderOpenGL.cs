@@ -25,7 +25,9 @@ public class SkinRenderOpenGL : SkinRender
 
     private readonly ModelVAO _normalVAO = new();
     private readonly ModelVAO _topVAO = new();
-    
+
+    public bool IsGLES { get; set; }
+
     public unsafe void OpenGlInit(GL gl)
     {
         if (_init)

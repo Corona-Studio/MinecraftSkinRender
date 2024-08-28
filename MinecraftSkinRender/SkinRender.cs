@@ -12,6 +12,7 @@ public abstract class SkinRender
 {
     protected bool _switchModel = false;
     protected bool _switchSkin = false;
+    protected bool _switchType = false;
     protected bool _enableAnimation;
 
     protected float _dis = 1;
@@ -37,14 +38,14 @@ public abstract class SkinRender
     public SKBitmap? Skin { get; private set; }
     public SKBitmap? Cape { get; private set; }
     public SkinType SkinType { get; protected set; } = SkinType.Unkonw;
-    public bool HaveCape { get; private set; }
-    public bool HaveSkin { get; private set; }
+    public bool HaveCape { get; protected set; }
+    public bool HaveSkin { get; protected set; }
+
     public bool IsLoading { get; protected set; }
 
-    public bool EnableCape { get; set; }
-    public bool IsGLES { get; set; }
-    public bool EnableMSAA { get; set; }
-    public bool EnableTop { get; set; }
+    public bool EnableCape { get; private set; }
+    public bool EnableMSAA { get; private set; }
+    public bool EnableTop { get; private set; }
 
     public Vector3 ArmRotate { get; set; }
     public Vector3 LegRotate { get; set; }
@@ -54,6 +55,24 @@ public abstract class SkinRender
     {
         _skina = new();
         _last = Matrix4x4.Identity;
+    }
+
+    public void SetMSAA(bool enable)
+    {
+        EnableMSAA = enable;
+        _switchType = true;
+    }
+
+    public void SetCape(bool enable)
+    {
+        EnableCape = enable;
+        _switchType = true;
+    }
+
+    public void SetTopModel(bool top)
+    {
+        EnableTop = top;
+        _switchType = true;
     }
 
     public void SetAnimation(bool enable)

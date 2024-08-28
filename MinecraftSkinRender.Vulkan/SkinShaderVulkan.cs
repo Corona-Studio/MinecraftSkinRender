@@ -79,7 +79,6 @@ public partial class SkinRenderVulkan
         fixed (VertexInputAttributeDescription* attributeDescriptionsPtr = attributeDescriptions)
         fixed (DescriptorSetLayout* descriptorSetLayoutPtr = &descriptorSetLayout)
         {
-
             PipelineVertexInputStateCreateInfo vertexInputInfo = new()
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
@@ -277,23 +276,23 @@ public partial class SkinRenderVulkan
             PCommandBuffers = &commandBuffer,
         };
 
-        vk!.QueueSubmit(graphicsQueue, 1, ref submitInfo, default);
-        vk!.QueueWaitIdle(graphicsQueue);
+        vk.QueueSubmit(graphicsQueue, 1, ref submitInfo, default);
+        vk.QueueWaitIdle(graphicsQueue);
 
-        vk!.FreeCommandBuffers(device, commandPool, 1, ref commandBuffer);
+        vk.FreeCommandBuffers(device, commandPool, 1, ref commandBuffer);
+    }
+
+    private unsafe void DeleteCommandBuffers()
+    {
+        fixed (CommandBuffer* commandBuffersPtr = commandBuffers!)
+        {
+            vk.FreeCommandBuffers(device, commandPool, (uint)commandBuffers!.Length, commandBuffersPtr);
+        }
     }
 
     private unsafe void CreateCommandBuffers()
     {
-        if (commandBuffers != null)
-        {
-            fixed (CommandBuffer* commandBuffersPtr = commandBuffers)
-            {
-                vk.FreeCommandBuffers(device, commandPool, (uint)commandBuffers.Length, commandBuffersPtr);
-            }
-        }
-
-        commandBuffers = new CommandBuffer[swapChainFramebuffers.Length];
+        commandBuffers ??= new CommandBuffer[swapChainFramebuffers.Length];
 
         CommandBufferAllocateInfo allocInfo = new()
         {
@@ -407,5 +406,7 @@ public partial class SkinRenderVulkan
                 throw new Exception("failed to record command buffer!");
             }
         }
+
+        _switchType = false;
     }
 }

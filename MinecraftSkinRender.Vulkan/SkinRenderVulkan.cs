@@ -64,9 +64,14 @@ public partial class SkinRenderVulkan : SkinRender
     private DeviceMemory depthImageMemory;
     private ImageView depthImageView;
 
-    private Image textureImage;
-    private DeviceMemory textureImageMemory;
-    private ImageView textureImageView;
+    private Image textureSkinImage;
+    private DeviceMemory textureSkinImageMemory;
+    private ImageView textureSkinImageView;
+
+    private Image textureCapeImage;
+    private DeviceMemory textureCapeImageMemory;
+    private ImageView textureCapeImageView;
+
     private Sampler textureSampler;
 
     private Semaphore[] imageAvailableSemaphores;
@@ -77,8 +82,9 @@ public partial class SkinRenderVulkan : SkinRender
 
     private bool frameBufferResized = false;
 
-    private SkinModel model;
-    private SkinDraw draw;
+    private readonly SkinModel model = new();
+    private readonly SkinDraw draw = new();
+
     private CommandBuffer[]? commandBuffers;
     private UniformBufferObject ubo;
 
@@ -108,11 +114,9 @@ public partial class SkinRenderVulkan : SkinRender
         CreateCommandPool();
         CreateDepthResources();
         CreateFramebuffers();
-        CreateTextureImage();
+        CreateTexture();
         CreateTextureSampler();
         CreateModel();
-        CreateVertexBuffer();
-        CreateIndexBuffer();
         CreateUniformBuffers();
         CreateDescriptorPool();
         CreateDescriptorSets();
@@ -142,11 +146,23 @@ public partial class SkinRenderVulkan : SkinRender
 
     public unsafe void VulkanRender(double time)
     {
+        _rotXY.Y = 0.1f;
+
+        if (Width == 0 || Height == 0)
+        {
+            return;
+        }
+
         if (Width != _width || Height != _height)
         {
             _width = (uint)Width;
             _height = (uint)Height;
             frameBufferResized = true;
+        }
+
+        if (_width == 0 || _height == 0)
+        {
+            return;
         }
 
         if (_enableAnimation)
@@ -155,6 +171,30 @@ public partial class SkinRenderVulkan : SkinRender
         }
 
         vk.WaitForFences(device, 1, ref inFlightFences[currentFrame], true, ulong.MaxValue);
+
+        if (_switchModel)
+        {
+            vk.DeviceWaitIdle(device);
+
+            DeleteModel();
+            CreateModel();
+        }
+
+        if (_switchType)
+        {
+            vk.DeviceWaitIdle(device);
+
+            DeleteCommandBuffers();
+            CreateCommandBuffers();
+        }
+
+        if (_switchSkin)
+        {
+            vk.DeviceWaitIdle(device);
+
+            DeleteTexture();
+            CreateTexture();
+        }
 
         uint imageIndex = 0;
         var result = khrSwapChain!.AcquireNextImage(device, swapChain, ulong.MaxValue, 
@@ -226,9 +266,35 @@ public partial class SkinRenderVulkan : SkinRender
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    public void VulkanDeinit()
-    { 
-        
+    public unsafe void VulkanDeinit()
+    {
+        CleanUpSwapChain();
+        DeleteModel();
+        DeleteTexture();
+
+        vk.DestroySampler(device, textureSampler, null);
+
+        vk.DestroyDescriptorSetLayout(device, descriptorSetLayout, null);
+
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vk.DestroySemaphore(device, renderFinishedSemaphores[i], null);
+            vk.DestroySemaphore(device, imageAvailableSemaphores[i], null);
+            vk.DestroyFence(device, inFlightFences![i], null);
+        }
+
+        vk.DestroyCommandPool(device, commandPool, null);
+
+        vk.DestroyDevice(device, null);
+
+        if (EnableValidationLayers)
+        {
+            //DestroyDebugUtilsMessenger equivilant to method DestroyDebugUtilsMessengerEXT from original tutorial.
+            debugUtils!.DestroyDebugUtilsMessenger(instance, debugMessenger, null);
+        }
+
+        khrSurface!.DestroySurface(instance, surface, null);
+        vk.DestroyInstance(instance, null);
     }
 
     private unsafe void CreateSyncObjects()
@@ -351,7 +417,7 @@ public partial class SkinRenderVulkan : SkinRender
 
         ubo = new()
         {
-            model = Matrix4x4.CreateRotationY(Scalar.DegreesToRadians(0f)) * _last
+            model = _last
             * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
             * Matrix4x4.CreateScale(_dis),
             view = Matrix4x4.CreateLookAt(new(0, 0, 7), new(0, 0, 0), new(0, 1, 0)),
@@ -494,7 +560,7 @@ public partial class SkinRenderVulkan : SkinRender
                 PDependencies = &dependency,
             };
 
-            if (vk!.CreateRenderPass(device, renderPassInfo, null, out renderPass) != Result.Success)
+            if (vk.CreateRenderPass(device, ref renderPassInfo, null, out renderPass) != Result.Success)
             {
                 throw new Exception("failed to create render pass!");
             }
@@ -524,7 +590,7 @@ public partial class SkinRenderVulkan : SkinRender
         var availableLayers = new LayerProperties[layerCount];
         fixed (LayerProperties* availableLayersPtr = availableLayers)
         {
-            vk!.EnumerateInstanceLayerProperties(ref layerCount, availableLayersPtr);
+            vk.EnumerateInstanceLayerProperties(ref layerCount, availableLayersPtr);
         }
 
         var availableLayerNames = availableLayers.Select(layer => Marshal.PtrToStringAnsi((IntPtr)layer.LayerName)).ToHashSet();

@@ -38,23 +38,6 @@ public partial class SkinRenderVulkan
         var tex = Steve3DTexture.GetSteveTexture(SkinType);
         var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
 
-        model ??= new()
-        {
-            Head = new(),
-            Body = new(),
-            LeftArm = new(),
-            RightArm = new(),
-            LeftLeg = new(),
-            RightLeg = new(),
-            TopHead = new(),
-            TopBody = new(),
-            TopLeftArm = new(),
-            TopRightArm = new(),
-            TopLeftLeg = new(),
-            TopRightLeg = new(),
-            Cape = new(),
-        };
-
         CreateModelPart(model.Head, cube.Head, tex.Head);
         CreateModelPart(model.Body, cube.Body, tex.Body);
         CreateModelPart(model.LeftArm, cube.LeftArm, tex.LeftArm);
@@ -70,6 +53,11 @@ public partial class SkinRenderVulkan
         CreateModelPart(model.TopRightLeg, cubetop.RightLeg, textop.RightLeg);
 
         CreateModelPart(model.Cape, cube.Cape, tex.Cape);
+
+        CreateVertexBuffer();
+        CreateIndexBuffer();
+
+        _switchModel = false;
     }
 
     private void DeleteModel()
@@ -150,23 +138,6 @@ public partial class SkinRenderVulkan
 
     private unsafe void CreateVertexBuffer()
     {
-        draw ??= new SkinDraw()
-        {
-            Head = new(),
-            Body = new(),
-            LeftArm = new(),
-            RightArm = new(),
-            LeftLeg = new(),
-            RightLeg = new(),
-            TopHead = new(),
-            TopBody = new(),
-            TopLeftArm = new(),
-            TopRightArm = new(),
-            TopLeftLeg = new(),
-            TopRightLeg = new(),
-            Cape = new(),
-        };
-
         CreateVertexBufferPart(model.Head, draw.Head);
         CreateVertexBufferPart(model.Body, draw.Body);
         CreateVertexBufferPart(model.LeftArm, draw.LeftArm);
@@ -334,7 +305,7 @@ public partial class SkinRenderVulkan
         CreateDescriptorPoolPart(draw.Cape);
     }
 
-    private unsafe void CreateDescriptorSetsPart(SkinDrawPart part)
+    private unsafe void CreateDescriptorSetsPart(SkinDrawPart part, bool cape)
     {
         var layouts = new DescriptorSetLayout[swapChainImages!.Length];
         Array.Fill(layouts, descriptorSetLayout);
@@ -371,7 +342,7 @@ public partial class SkinRenderVulkan
             DescriptorImageInfo imageInfo = new()
             {
                 ImageLayout = ImageLayout.ShaderReadOnlyOptimal,
-                ImageView = textureImageView,
+                ImageView = cape ? textureCapeImageView : textureSkinImageView,
                 Sampler = textureSampler,
             };
 
@@ -408,18 +379,18 @@ public partial class SkinRenderVulkan
 
     private unsafe void CreateDescriptorSets()
     {
-        CreateDescriptorSetsPart(draw.Head);
-        CreateDescriptorSetsPart(draw.Body);
-        CreateDescriptorSetsPart(draw.LeftArm);
-        CreateDescriptorSetsPart(draw.RightArm);
-        CreateDescriptorSetsPart(draw.LeftLeg);
-        CreateDescriptorSetsPart(draw.RightLeg);
-        CreateDescriptorSetsPart(draw.TopHead);
-        CreateDescriptorSetsPart(draw.TopBody);
-        CreateDescriptorSetsPart(draw.TopLeftArm);
-        CreateDescriptorSetsPart(draw.TopRightArm);
-        CreateDescriptorSetsPart(draw.TopLeftLeg);
-        CreateDescriptorSetsPart(draw.TopRightLeg);
-        CreateDescriptorSetsPart(draw.Cape);
+        CreateDescriptorSetsPart(draw.Head, false);
+        CreateDescriptorSetsPart(draw.Body, false);
+        CreateDescriptorSetsPart(draw.LeftArm, false);
+        CreateDescriptorSetsPart(draw.RightArm, false);
+        CreateDescriptorSetsPart(draw.LeftLeg, false);
+        CreateDescriptorSetsPart(draw.RightLeg, false);
+        CreateDescriptorSetsPart(draw.TopHead, false);
+        CreateDescriptorSetsPart(draw.TopBody, false);
+        CreateDescriptorSetsPart(draw.TopLeftArm, false);
+        CreateDescriptorSetsPart(draw.TopRightArm, false);
+        CreateDescriptorSetsPart(draw.TopLeftLeg, false);
+        CreateDescriptorSetsPart(draw.TopRightLeg, false);
+        CreateDescriptorSetsPart(draw.Cape, true);
     }
 }

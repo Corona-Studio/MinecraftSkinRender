@@ -57,8 +57,8 @@ internal class Program
         var skin = new SkinRenderOpenGL();
         skin.SetSkin(SKBitmap.Decode("skin.png"));
         skin.SetSkinType(SkinType.NewSlim);
-        skin.EnableTop = true;
-        skin.EnableMSAA = false;
+        skin.SetTopModel(true);
+        skin.SetMSAA(false);
         skin.SetAnimation(false);
         if (havecape)
         {

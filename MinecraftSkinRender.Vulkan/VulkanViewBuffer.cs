@@ -81,12 +81,10 @@ public partial class SkinRenderVulkan
             vk.DestroyFramebuffer(device, framebuffer, null);
         }
 
-        fixed (CommandBuffer* commandBuffersPtr = commandBuffers!)
-        {
-            vk.FreeCommandBuffers(device, commandPool, (uint)commandBuffers!.Length, commandBuffersPtr);
-        }
+        DeleteCommandBuffers();
 
         vk.DestroyPipeline(device, graphicsPipeline, null);
+        vk.DestroyPipeline(device, graphicsPipelineTop, null);
         vk.DestroyPipelineLayout(device, pipelineLayout, null);
         vk.DestroyRenderPass(device, renderPass, null);
 
@@ -227,7 +225,6 @@ public partial class SkinRenderVulkan
 
         for (int i = 0; i < swapChainImages.Length; i++)
         {
-
             swapChainImageViews[i] = CreateImageView(swapChainImages[i], swapChainImageFormat, ImageAspectFlags.ColorBit);
         }
     }
