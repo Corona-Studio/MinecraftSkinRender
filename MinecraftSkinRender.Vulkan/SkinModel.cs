@@ -55,11 +55,21 @@ internal class SkinDrawPart
     public DeviceMemory VertexBufferMemory;
     public Buffer IndexBuffer;
     public DeviceMemory IndexBufferMemory;
+}
 
-    public Buffer[] uniformBuffers;
-    public DeviceMemory[] uniformBuffersMemory;
-    public IntPtr[] uniformBuffersPtr;
-
-    public DescriptorPool descriptorPool;
-    public DescriptorSet[] descriptorSets;
+internal class SkinPartIndex
+{
+    public const int Head = 0;
+    public const int Body = 1;
+    public const int LeftArm = 2;
+    public const int RightArm = 3;
+    public const int LeftLeg = 4;
+    public const int RightLeg = 5;
+    public const int TopHead = 6;
+    public const int TopBody = 7;
+    public const int TopLeftArm = 8;
+    public const int TopRightArm = 9;
+    public const int TopLeftLeg = 10;
+    public const int TopRightLeg = 11;
+    public const int Cape = 12;
 }

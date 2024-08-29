@@ -218,14 +218,39 @@ public partial class SkinRenderVulkan
         DeleteIndexBufferPart(draw.Cape);
     }
 
-    private unsafe void CreateUniformBuffersPart(SkinDrawPart part)
+
+    private unsafe void DeleteUniformBuffers()
     {
-        ulong bufferSize = (ulong)Unsafe.SizeOf<UniformBufferObject>();
+        for (int i = 0; i < swapChainImages!.Length; i++)
+        {
+            vk.DestroyBuffer(device, UniformBuffers![i], null);
+            vk.FreeMemory(device, UniformBuffersMemory![i], null);
+        }
+    }
 
-        part.uniformBuffers = new Buffer[swapChainImages.Length];
-        part.uniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
-        part.uniformBuffersPtr = new IntPtr[swapChainImages.Length];
+    private unsafe void CreateUniformBuffers()
+    {
+        for (int a = 0; a < PartCount; a++)
+        {
+            ubo[a] = new();
+        }
 
+        ulong size = (ulong)Unsafe.SizeOf<UniformBufferObject>();
+
+        UniformBuffers = new Buffer[swapChainImages.Length];
+        UniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
+        UniformBuffersPtr = new IntPtr[swapChainImages.Length];
+
+        vk.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+        ulong minUboAlignment = properties.Limits.MinUniformBufferOffsetAlignment;
+
+        UniformDynamicAlignment = size;
+        if (minUboAlignment > 0)
+        {
+            UniformDynamicAlignment = (UniformDynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+        }
+
+        ulong bufferSize = UniformDynamicAlignment * PartCount;
         for (int i = 0; i < swapChainImages.Length; i++)
         {
             BufferCreateInfo bufferInfo = new()
@@ -236,7 +261,7 @@ public partial class SkinRenderVulkan
                 SharingMode = SharingMode.Exclusive,
             };
 
-            fixed (Buffer* bufferPtr = &part.uniformBuffers[i])
+            fixed (Buffer* bufferPtr = &UniformBuffers[i])
             {
                 if (vk.CreateBuffer(device, ref bufferInfo, null, bufferPtr) != Result.Success)
                 {
@@ -245,17 +270,18 @@ public partial class SkinRenderVulkan
             }
 
             MemoryRequirements memRequirements = new();
-            vk.GetBufferMemoryRequirements(device, part.uniformBuffers[i], out memRequirements);
+            vk.GetBufferMemoryRequirements(device, UniformBuffers[i], out memRequirements);
 
             MemoryAllocateInfo allocateInfo = new()
             {
                 SType = StructureType.MemoryAllocateInfo,
                 AllocationSize = memRequirements.Size,
-                MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits, MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit
+                MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits,
+                    MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit
                 | MemoryPropertyFlags.DeviceLocalBit),
             };
 
-            fixed (DeviceMemory* bufferMemoryPtr = &part.uniformBuffersMemory[i])
+            fixed (DeviceMemory* bufferMemoryPtr = &UniformBuffersMemory[i])
             {
                 if (vk.AllocateMemory(device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
                 {
@@ -263,259 +289,39 @@ public partial class SkinRenderVulkan
                 }
             }
 
-            vk.BindBufferMemory(device, part.uniformBuffers[i], part.uniformBuffersMemory[i], 0);
+            vk.BindBufferMemory(device, UniformBuffers[i], UniformBuffersMemory[i], 0);
 
             void* data;
-            vk.MapMemory(device, part.uniformBuffersMemory[i], 0, (ulong)Unsafe.SizeOf<UniformBufferObject>(), 0, &data);
-            part.uniformBuffersPtr[i] = (IntPtr)data;
+            vk.MapMemory(device, UniformBuffersMemory[i], 0, bufferSize, 0, &data);
+            UniformBuffersPtr[i] = (IntPtr)data;
         }
     }
 
-    private unsafe void DeleteUniformBufferPart(SkinDrawPart part)
+    private unsafe void SetUniformBuffer(int part, uint i, Matrix4x4 self)
     {
-        for (int i = 0; i < swapChainImages!.Length; i++)
-        {
-            vk.DestroyBuffer(device, part.uniformBuffers![i], null);
-            vk.FreeMemory(device, part.uniformBuffersMemory![i], null);
-        }
-    }
+        ulong offset = (ulong)part * UniformDynamicAlignment;
+        ubo[part].self = self;
 
-    private unsafe void DeleteUniformBuffers()
-    {
-        DeleteUniformBufferPart(draw.Head);
-        DeleteUniformBufferPart(draw.Body);
-        DeleteUniformBufferPart(draw.LeftArm);
-        DeleteUniformBufferPart(draw.RightArm);
-        DeleteUniformBufferPart(draw.LeftLeg);
-        DeleteUniformBufferPart(draw.RightLeg);
-        DeleteUniformBufferPart(draw.TopHead);
-        DeleteUniformBufferPart(draw.TopBody);
-        DeleteUniformBufferPart(draw.TopLeftArm);
-        DeleteUniformBufferPart(draw.TopRightArm);
-        DeleteUniformBufferPart(draw.TopLeftLeg);
-        DeleteUniformBufferPart(draw.TopRightLeg);
-        DeleteUniformBufferPart(draw.Cape);
-    }
+        void* ptr = (void*)(UniformBuffersPtr[i] + (long)offset);
+        UniformBufferObject obj = ubo[part];
+        void* ptr1 = &obj;
 
-    private unsafe void CreateUniformBuffers()
-    {
-        CreateUniformBuffersPart(draw.Head);
-        CreateUniformBuffersPart(draw.Body);
-        CreateUniformBuffersPart(draw.LeftArm);
-        CreateUniformBuffersPart(draw.RightArm);
-        CreateUniformBuffersPart(draw.LeftLeg);
-        CreateUniformBuffersPart(draw.RightLeg);
-        CreateUniformBuffersPart(draw.TopHead);
-        CreateUniformBuffersPart(draw.TopBody);
-        CreateUniformBuffersPart(draw.TopLeftArm);
-        CreateUniformBuffersPart(draw.TopRightArm);
-        CreateUniformBuffersPart(draw.TopLeftLeg);
-        CreateUniformBuffersPart(draw.TopRightLeg);
-        CreateUniformBuffersPart(draw.Cape);
-    }
-
-    private unsafe void SetUniformBuffer(SkinDrawPart part, uint i, Matrix4x4 self)
-    {
-        ubo.self = self;
-        new Span<UniformBufferObject>((void*)part.uniformBuffersPtr[i], 1)[0] = ubo;
+        System.Buffer.MemoryCopy(ptr1, ptr, UniformDynamicAlignment, UniformDynamicAlignment);
     }
 
     private unsafe void UpdateUniformBuffer()
     {
-        ubo.model = GetMatrix4(MatrPartType.Model);
-        ubo.view = GetMatrix4(MatrPartType.View);
-        ubo.proj = GetMatrix4(MatrPartType.Proj);
-        ubo.lightColor = new(1.0f, 1.0f, 1.0f);
-        ubo.proj.M22 *= -1;
-    }
+        var model = GetMatrix4(MatrPartType.Model);
+        var view = GetMatrix4(MatrPartType.View);
+        var proj = GetMatrix4(MatrPartType.Proj);
 
-    private unsafe void DeleteDescriptorPoolPart(SkinDrawPart part)
-    {
-        if (part.descriptorPool.Handle != 0)
+        for (int a = 0; a < PartCount; a++)
         {
-            vk.DestroyDescriptorPool(device, part.descriptorPool, null);
+            ubo[a].model = model;
+            ubo[a].view = view;
+            ubo[a].proj = proj;
+            ubo[a].lightColor = new(1.0f, 1.0f, 1.0f);
+            ubo[a].proj.M22 *= -1;
         }
-    }
-
-    private void DeleteDescriptorPool()
-    {
-        DeleteDescriptorPoolPart(draw.Head);
-        DeleteDescriptorPoolPart(draw.Body);
-        DeleteDescriptorPoolPart(draw.LeftArm);
-        DeleteDescriptorPoolPart(draw.RightArm);
-        DeleteDescriptorPoolPart(draw.LeftLeg);
-        DeleteDescriptorPoolPart(draw.RightLeg);
-        DeleteDescriptorPoolPart(draw.TopHead);
-        DeleteDescriptorPoolPart(draw.TopBody);
-        DeleteDescriptorPoolPart(draw.TopLeftArm);
-        DeleteDescriptorPoolPart(draw.TopRightArm);
-        DeleteDescriptorPoolPart(draw.TopLeftLeg);
-        DeleteDescriptorPoolPart(draw.TopRightLeg);
-        DeleteDescriptorPoolPart(draw.Cape);
-    }
-
-    private unsafe void CreateDescriptorPoolPart(SkinDrawPart part)
-    {
-        var poolSizes = new DescriptorPoolSize[]
-        {
-            new()
-            {
-                Type = DescriptorType.UniformBuffer,
-                DescriptorCount = (uint)swapChainImages!.Length,
-            },
-            new()
-            {
-                Type = DescriptorType.CombinedImageSampler,
-                DescriptorCount = (uint)swapChainImages!.Length,
-            },
-        };
-
-        fixed (DescriptorPoolSize* poolSizesPtr = poolSizes)
-        fixed (DescriptorPool* descriptorPoolPtr = &part.descriptorPool)
-        {
-            DescriptorPoolCreateInfo poolInfo = new()
-            {
-                SType = StructureType.DescriptorPoolCreateInfo,
-                PoolSizeCount = (uint)poolSizes.Length,
-                PPoolSizes = poolSizesPtr,
-                MaxSets = (uint)swapChainImages!.Length,
-            };
-
-            if (vk.CreateDescriptorPool(device, ref poolInfo, null, descriptorPoolPtr) != Result.Success)
-            {
-                throw new Exception("failed to create descriptor pool!");
-            }
-        }
-    }
-
-    private void CreateDescriptorPool()
-    {
-        CreateDescriptorPoolPart(draw.Head);
-        CreateDescriptorPoolPart(draw.Body);
-        CreateDescriptorPoolPart(draw.LeftArm);
-        CreateDescriptorPoolPart(draw.RightArm);
-        CreateDescriptorPoolPart(draw.LeftLeg);
-        CreateDescriptorPoolPart(draw.RightLeg);
-        CreateDescriptorPoolPart(draw.TopHead);
-        CreateDescriptorPoolPart(draw.TopBody);
-        CreateDescriptorPoolPart(draw.TopLeftArm);
-        CreateDescriptorPoolPart(draw.TopRightArm);
-        CreateDescriptorPoolPart(draw.TopLeftLeg);
-        CreateDescriptorPoolPart(draw.TopRightLeg);
-        CreateDescriptorPoolPart(draw.Cape);
-    }
-
-    private unsafe void ResetDescriptorPoolPart(SkinDrawPart part)
-    {
-        if (part.descriptorPool.Handle != 0)
-        {
-            vk.ResetDescriptorPool(device, part.descriptorPool, 0);
-        }
-    }
-
-    private void ResetDescriptorPool()
-    {
-        ResetDescriptorPoolPart(draw.Head);
-        ResetDescriptorPoolPart(draw.Body);
-        ResetDescriptorPoolPart(draw.LeftArm);
-        ResetDescriptorPoolPart(draw.RightArm);
-        ResetDescriptorPoolPart(draw.LeftLeg);
-        ResetDescriptorPoolPart(draw.RightLeg);
-        ResetDescriptorPoolPart(draw.TopHead);
-        ResetDescriptorPoolPart(draw.TopBody);
-        ResetDescriptorPoolPart(draw.TopLeftArm);
-        ResetDescriptorPoolPart(draw.TopRightArm);
-        ResetDescriptorPoolPart(draw.TopLeftLeg);
-        ResetDescriptorPoolPart(draw.TopRightLeg);
-        ResetDescriptorPoolPart(draw.Cape);
-    }
-
-    private unsafe void CreateDescriptorSetsPart(SkinDrawPart part, bool cape)
-    {
-        var layouts = new DescriptorSetLayout[swapChainImages.Length];
-        Array.Fill(layouts, descriptorSetLayout);
-
-        fixed (DescriptorSetLayout* layoutsPtr = layouts)
-        {
-            DescriptorSetAllocateInfo allocateInfo = new()
-            {
-                SType = StructureType.DescriptorSetAllocateInfo,
-                DescriptorPool = part.descriptorPool,
-                DescriptorSetCount = (uint)swapChainImages!.Length,
-                PSetLayouts = layoutsPtr,
-            };
-
-            part.descriptorSets = new DescriptorSet[swapChainImages.Length];
-            fixed (DescriptorSet* descriptorSetsPtr = part.descriptorSets)
-            {
-                if (vk.AllocateDescriptorSets(device, ref allocateInfo, descriptorSetsPtr) != Result.Success)
-                {
-                    throw new Exception("failed to allocate descriptor sets!");
-                }
-            }
-        }
-
-        for (int i = 0; i < swapChainImages.Length; i++)
-        {
-            DescriptorBufferInfo vertInfo = new()
-            {
-                Buffer = part.uniformBuffers[i],
-                Offset = 0,
-                Range = (ulong)Unsafe.SizeOf<UniformBufferObject>(),
-            };
-
-            DescriptorImageInfo imageInfo = new()
-            {
-                ImageLayout = ImageLayout.ShaderReadOnlyOptimal,
-                ImageView = cape ? textureCapeImageView : textureSkinImageView,
-                Sampler = textureSampler,
-            };
-
-            var descriptorWrites = new WriteDescriptorSet[]
-            {
-                new()
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = part.descriptorSets[i],
-                    DstBinding = 0,
-                    DstArrayElement = 0,
-                    DescriptorType = DescriptorType.UniformBuffer,
-                    DescriptorCount = 1,
-                    PBufferInfo = &vertInfo,
-                },
-                new()
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = part.descriptorSets[i],
-                    DstBinding = 1,
-                    DstArrayElement = 0,
-                    DescriptorType = DescriptorType.CombinedImageSampler,
-                    DescriptorCount = 1,
-                    PImageInfo = &imageInfo,
-                }
-            };
-
-            fixed (WriteDescriptorSet* descriptorWritesPtr = descriptorWrites)
-            {
-                vk.UpdateDescriptorSets(device, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);
-            }
-        }
-    }
-
-    private unsafe void CreateDescriptorSets()
-    {
-        CreateDescriptorSetsPart(draw.Head, false);
-        CreateDescriptorSetsPart(draw.Body, false);
-        CreateDescriptorSetsPart(draw.LeftArm, false);
-        CreateDescriptorSetsPart(draw.RightArm, false);
-        CreateDescriptorSetsPart(draw.LeftLeg, false);
-        CreateDescriptorSetsPart(draw.RightLeg, false);
-        CreateDescriptorSetsPart(draw.TopHead, false);
-        CreateDescriptorSetsPart(draw.TopBody, false);
-        CreateDescriptorSetsPart(draw.TopLeftArm, false);
-        CreateDescriptorSetsPart(draw.TopRightArm, false);
-        CreateDescriptorSetsPart(draw.TopLeftLeg, false);
-        CreateDescriptorSetsPart(draw.TopRightLeg, false);
-        CreateDescriptorSetsPart(draw.Cape, true);
     }
 }

@@ -5,6 +5,7 @@ using Silk.NET.Core.Contexts;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
+using Buffer = Silk.NET.Vulkan.Buffer;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace MinecraftSkinRender.Vulkan;
@@ -14,6 +15,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
     private uint _width, _height;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
+    const int PartCount = 13;
 
     public const bool EnableValidationLayers = true;
 
@@ -69,6 +71,14 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 
     private Sampler textureSampler;
 
+    public Buffer[] UniformBuffers;
+    public DeviceMemory[] UniformBuffersMemory;
+    public IntPtr[] UniformBuffersPtr;
+    public ulong UniformDynamicAlignment;
+
+    public DescriptorPool DescriptorPool;
+    public DescriptorSet[] DescriptorSets;
+
     private Semaphore[] imageAvailableSemaphores;
     private Semaphore[] renderFinishedSemaphores;
     private Fence[] inFlightFences;
@@ -81,7 +91,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
     private readonly SkinDraw draw = new();
 
     private CommandBuffer[]? commandBuffers;
-    private UniformBufferObject ubo = new();
+    private readonly UniformBufferObject[] ubo = new UniformBufferObject[PartCount];
 
     public void VulkanInit()
     {
@@ -316,21 +326,21 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 
     private unsafe void DrawSkin(SubmitInfo submitInfo, uint currentImage)
     {
-        SetUniformBuffer(draw.Head, currentImage, GetMatrix4(MatrPartType.Head));
-        SetUniformBuffer(draw.Body, currentImage, GetMatrix4(MatrPartType.Body));
-        SetUniformBuffer(draw.LeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
-        SetUniformBuffer(draw.RightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
-        SetUniformBuffer(draw.LeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
-        SetUniformBuffer(draw.RightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
+        SetUniformBuffer(SkinPartIndex.Head, currentImage, GetMatrix4(MatrPartType.Head));
+        SetUniformBuffer(SkinPartIndex.Body, currentImage, GetMatrix4(MatrPartType.Body));
+        SetUniformBuffer(SkinPartIndex.LeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
+        SetUniformBuffer(SkinPartIndex.RightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
+        SetUniformBuffer(SkinPartIndex.LeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
+        SetUniformBuffer(SkinPartIndex.RightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
 
-        SetUniformBuffer(draw.TopHead, currentImage, GetMatrix4(MatrPartType.Head));
-        SetUniformBuffer(draw.TopBody, currentImage, GetMatrix4(MatrPartType.Body));
-        SetUniformBuffer(draw.TopLeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
-        SetUniformBuffer(draw.TopRightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
-        SetUniformBuffer(draw.TopLeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
-        SetUniformBuffer(draw.TopRightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
+        SetUniformBuffer(SkinPartIndex.TopHead, currentImage, GetMatrix4(MatrPartType.Head));
+        SetUniformBuffer(SkinPartIndex.TopBody, currentImage, GetMatrix4(MatrPartType.Body));
+        SetUniformBuffer(SkinPartIndex.TopLeftArm, currentImage, GetMatrix4(MatrPartType.LeftArm));
+        SetUniformBuffer(SkinPartIndex.TopRightArm, currentImage, GetMatrix4(MatrPartType.RightArm));
+        SetUniformBuffer(SkinPartIndex.TopLeftLeg, currentImage, GetMatrix4(MatrPartType.LeftLeg));
+        SetUniformBuffer(SkinPartIndex.TopRightLeg, currentImage, GetMatrix4(MatrPartType.RightLeg));
 
-        SetUniformBuffer(draw.Cape, currentImage, GetMatrix4(MatrPartType.Cape));
+        SetUniformBuffer(SkinPartIndex.Cape, currentImage, GetMatrix4(MatrPartType.Cape));
 
         var command1 = commandBuffers![currentImage];
 
@@ -370,7 +380,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
         {
             Binding = 0,
             DescriptorCount = 1,
-            DescriptorType = DescriptorType.UniformBuffer,
+            DescriptorType = DescriptorType.UniformBufferDynamic,
             PImmutableSamplers = null,
             StageFlags = ShaderStageFlags.VertexBit,
         };
@@ -396,7 +406,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
                 PBindings = bindingsPtr,
             };
 
-            if (vk!.CreateDescriptorSetLayout(device, ref layoutInfo, null, descriptorSetLayoutPtr) != Result.Success)
+            if (vk.CreateDescriptorSetLayout(device, ref layoutInfo, null, descriptorSetLayoutPtr) != Result.Success)
             {
                 throw new Exception("failed to create descriptor set layout!");
             }
@@ -405,7 +415,8 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 
     private Format FindDepthFormat()
     {
-        return FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint], ImageTiling.Optimal, FormatFeatureFlags.DepthStencilAttachmentBit);
+        return FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint], 
+            ImageTiling.Optimal, FormatFeatureFlags.DepthStencilAttachmentBit);
     }
 
     private unsafe void CreateRenderPass()

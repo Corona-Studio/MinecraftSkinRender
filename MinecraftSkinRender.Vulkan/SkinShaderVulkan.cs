@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -34,7 +35,7 @@ public partial class SkinRenderVulkan
 
             if (vk.CreateShaderModule(device, ref createInfo, null, out shaderModule) != Result.Success)
             {
-                Console.WriteLine("failed to create shader module!");
+                throw new Exception("failed to create shader module!");
             }
         }
 
@@ -354,7 +355,7 @@ public partial class SkinRenderVulkan
 
             vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
 
-            void Push(SkinDrawPart draw)
+            void Push(SkinDrawPart draw, int index, bool cape = false)
             {
                 Buffer[] vertexBuffers = [draw.VertexBuffer];
                 ulong[] offsets = [0];
@@ -365,35 +366,38 @@ public partial class SkinRenderVulkan
                     vk.CmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersPtr, offsetsPtr);
                 }
 
+                uint offset = (uint)(index * (int)UniformDynamicAlignment);
+
                 vk.CmdBindIndexBuffer(commandBuffers[i], draw.IndexBuffer, 0, IndexType.Uint16);
-                vk.CmdBindDescriptorSets(commandBuffers[i], PipelineBindPoint.Graphics, pipelineLayout, 0, 1, ref draw.descriptorSets[i], 0, null);
+                vk.CmdBindDescriptorSets(commandBuffers[i], PipelineBindPoint.Graphics, 
+                    pipelineLayout, 0, 1, ref DescriptorSets[cape ? i + swapChainFramebuffers.Length : i], 1, ref offset);
                 vk.CmdDrawIndexed(commandBuffers[i], draw.IndexLen, 1, 0, 0, 0);
             }
 
-            Push(draw.Body);
-            Push(draw.Head);
-            Push(draw.LeftArm);
-            Push(draw.RightArm);
-            Push(draw.LeftLeg);
-            Push(draw.RightLeg);
+            Push(draw.Body, SkinPartIndex.Body);
+            Push(draw.Head, SkinPartIndex.Head);
+            Push(draw.LeftArm, SkinPartIndex.LeftArm);
+            Push(draw.RightArm, SkinPartIndex.RightArm);
+            Push(draw.LeftLeg, SkinPartIndex.LeftLeg);
+            Push(draw.RightLeg, SkinPartIndex.RightLeg);
 
             if (EnableTop)
             {
                 vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipelineTop);
 
-                Push(draw.TopBody);
-                Push(draw.TopHead);
-                Push(draw.TopLeftArm);
-                Push(draw.TopRightArm);
-                Push(draw.TopLeftLeg);
-                Push(draw.TopRightLeg);
+                Push(draw.TopBody, SkinPartIndex.TopBody);
+                Push(draw.TopHead, SkinPartIndex.TopHead);
+                Push(draw.TopLeftArm, SkinPartIndex.TopLeftArm);
+                Push(draw.TopRightArm, SkinPartIndex.TopRightArm);
+                Push(draw.TopLeftLeg, SkinPartIndex.TopLeftLeg);
+                Push(draw.TopRightLeg, SkinPartIndex.TopRightLeg);
             }
 
             if (EnableCape && HaveCape)
             {
                 vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
 
-                Push(draw.Cape);
+                Push(draw.Cape, SkinPartIndex.Cape, true);
             }
 
             vk.CmdEndRenderPass(commandBuffers[i]);
