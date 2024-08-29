@@ -12,12 +12,12 @@ public partial class SkinRenderVulkan
     {
         var glfwExtensions = ivk.GetRequiredExtensions(out var glfwExtensionCount);
         var extensions = SilkMarshal.PtrToStringArray((nint)glfwExtensions, (int)glfwExtensionCount);
-
+#if DEBUG
         if (EnableValidationLayers)
         {
-            return extensions.Append(ExtDebugUtils.ExtensionName).ToArray();
+            return [.. extensions, ExtDebugUtils.ExtensionName];
         }
-
+#endif
         return extensions;
     }
 
@@ -46,8 +46,11 @@ public partial class SkinRenderVulkan
 
         var extensions = GetRequiredExtensions();
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(extensions); ;
+        createInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(extensions);
+        createInfo.EnabledLayerCount = 0;
+        createInfo.PNext = null;
 
+#if DEBUG
         if (EnableValidationLayers)
         {
             createInfo.EnabledLayerCount = (uint)validationLayers.Length;
@@ -57,13 +60,9 @@ public partial class SkinRenderVulkan
             PopulateDebugMessengerCreateInfo(ref debugCreateInfo);
             createInfo.PNext = &debugCreateInfo;
         }
-        else
-        {
-            createInfo.EnabledLayerCount = 0;
-            createInfo.PNext = null;
-        }
+#endif
 
-        if (vk.CreateInstance(createInfo, null, out instance) != Result.Success)
+        if (vk.CreateInstance(ref createInfo, null, out instance) != Result.Success)
         {
             throw new Exception("failed to create instance!");
         }
@@ -71,10 +70,11 @@ public partial class SkinRenderVulkan
         Marshal.FreeHGlobal((IntPtr)appInfo.PApplicationName);
         Marshal.FreeHGlobal((IntPtr)appInfo.PEngineName);
         SilkMarshal.Free((nint)createInfo.PpEnabledExtensionNames);
-
+#if DEBUG
         if (EnableValidationLayers)
         {
             SilkMarshal.Free((nint)createInfo.PpEnabledLayerNames);
         }
+#endif
     }
 }

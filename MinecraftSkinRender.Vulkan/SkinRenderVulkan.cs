@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -16,9 +14,11 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
     const int PartCount = 13;
-
+#if DEBUG
     public const bool EnableValidationLayers = true;
-
+#else
+    public const bool EnableValidationLayers = false;
+#endif
     private readonly string[] validationLayers =
     [
         "VK_LAYER_KHRONOS_validation"
@@ -284,13 +284,13 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
         vk.DestroyCommandPool(device, commandPool, null);
 
         vk.DestroyDevice(device, null);
-
+#if DEBUG
         if (EnableValidationLayers)
         {
             //DestroyDebugUtilsMessenger equivilant to method DestroyDebugUtilsMessengerEXT from original tutorial.
             debugUtils!.DestroyDebugUtilsMessenger(instance, debugMessenger, null);
         }
-
+#endif
         khrSurface!.DestroySurface(instance, surface, null);
         vk.DestroyInstance(instance, null);
     }
@@ -498,6 +498,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
 
     private unsafe void SetupDebugMessenger()
     {
+#if DEBUG
         if (!EnableValidationLayers) return;
 
         //TryGetInstanceExtension equivilant to method CreateDebugUtilsMessengerEXT from original tutorial.
@@ -510,6 +511,7 @@ public partial class SkinRenderVulkan(Vk vk, IVkSurface ivk) : SkinRender
         {
             throw new Exception("failed to set up debug messenger!");
         }
+#endif
     }
 
     private unsafe bool CheckValidationLayerSupport()

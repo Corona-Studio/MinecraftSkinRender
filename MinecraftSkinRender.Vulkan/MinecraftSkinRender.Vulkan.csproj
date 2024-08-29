@@ -32,7 +32,7 @@
   </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-	    <Exec Command="PowerShell glsl/glslbuild.ps1" />
+	    <Exec Command="if &quot;$(OS)&quot; == &quot;Windows_NT&quot; (&#xD;&#xA;    PowerShell glsl/glslbuild.ps1&#xD;&#xA;) else (&#xD;&#xA;    sh glsl/glslbuild.sh&#xD;&#xA;)" />
     </Target>
 
 </Project>

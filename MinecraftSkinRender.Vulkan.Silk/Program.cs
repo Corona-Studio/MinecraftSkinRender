@@ -48,7 +48,7 @@ internal class Program
         {
             Size = new Vector2D<int>(400, 400),
             Title = "Vulkan",
-            FramesPerSecond = 60
+            FramesPerSecond = 0
         };
 
         var window = Window.Create(options)!;

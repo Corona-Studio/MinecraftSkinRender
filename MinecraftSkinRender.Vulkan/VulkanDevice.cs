@@ -183,6 +183,7 @@ public partial class SkinRenderVulkan
             PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(deviceExtensions)
         };
 
+#if DEBUG
         if (EnableValidationLayers)
         {
             createInfo.EnabledLayerCount = (uint)validationLayers.Length;
@@ -197,15 +198,15 @@ public partial class SkinRenderVulkan
         {
             throw new Exception("failed to create logical device!");
         }
-
+#endif
         vk!.GetDeviceQueue(device, indices.GraphicsFamily!.Value, 0, out graphicsQueue);
         vk!.GetDeviceQueue(device, indices.PresentFamily!.Value, 0, out presentQueue);
-
+#if DEBUG
         if (EnableValidationLayers)
         {
             SilkMarshal.Free((nint)createInfo.PpEnabledLayerNames);
         }
-
+#endif
         SilkMarshal.Free((nint)createInfo.PpEnabledExtensionNames);
     }
 }

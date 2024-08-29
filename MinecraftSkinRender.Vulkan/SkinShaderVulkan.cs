@@ -353,8 +353,6 @@ public partial class SkinRenderVulkan
                 vk.CmdBeginRenderPass(commandBuffers[i], &renderPassInfo, SubpassContents.Inline);
             }
 
-            vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
-
             void Push(SkinDrawPart draw, int index, bool cape = false)
             {
                 Buffer[] vertexBuffers = [draw.VertexBuffer];
@@ -373,6 +371,8 @@ public partial class SkinRenderVulkan
                     pipelineLayout, 0, 1, ref DescriptorSets[cape ? i + swapChainFramebuffers.Length : i], 1, ref offset);
                 vk.CmdDrawIndexed(commandBuffers[i], draw.IndexLen, 1, 0, 0, 0);
             }
+
+            vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
 
             Push(draw.Body, SkinPartIndex.Body);
             Push(draw.Head, SkinPartIndex.Head);
