@@ -31,7 +31,7 @@ for shader in $shaderFiles; do
     compiledShadersFramework+=("$outputFile")
 
     # 创建自定义命令以编译着色器
-    command="$VK_SDK_PATH/Bin/glslc \"$shader\" -o \"$outputFile\""
+    command="glslc \"$shader\" -o \"$outputFile\""
 
     # 执行命令
     eval $command

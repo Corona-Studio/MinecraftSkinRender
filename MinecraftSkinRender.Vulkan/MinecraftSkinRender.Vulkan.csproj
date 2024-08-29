@@ -31,8 +31,4 @@
     <ProjectReference Include="..\MinecraftSkinRender\MinecraftSkinRender.csproj" />
   </ItemGroup>
 
-    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-	    <Exec Command="if &quot;$(OS)&quot; == &quot;Windows_NT&quot; (&#xD;&#xA;    PowerShell glsl/glslbuild.ps1&#xD;&#xA;) else (&#xD;&#xA;    sh glsl/glslbuild.sh&#xD;&#xA;)" />
-    </Target>
-
 </Project>
