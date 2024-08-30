@@ -1,4 +1,7 @@
-﻿using Silk.NET.Maths;
+﻿//using System.Text;
+//using MinecraftSkinRender.MojangApi;
+//using Newtonsoft.Json;
+using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 using SkiaSharp;
@@ -11,7 +14,7 @@ internal class Program
     {
         bool havecape = true;
 
-        //Console.WriteLine("Download skin");
+        Console.WriteLine("Download skin");
 
         //var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
         //var res1 = await MinecraftAPI.GetUserProfile(res!.UUID);
