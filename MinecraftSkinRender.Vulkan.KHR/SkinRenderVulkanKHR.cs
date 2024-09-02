@@ -77,9 +77,9 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
+        CreateDepthResources();
         CreateFramebuffers();
         CreateCommandPool();
-        CreateDepthResources();
 
         _width = swapChainExtent.Width;
         _height = swapChainExtent.Height;

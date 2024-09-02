@@ -131,7 +131,7 @@ public partial class SkinRenderVulkan
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
                 SampleShadingEnable = false,
-                RasterizationSamples = msaaSamples,
+                RasterizationSamples = SampleCountFlags.Count1Bit,
             };
 
             PipelineDepthStencilStateCreateInfo depthStencil = new()

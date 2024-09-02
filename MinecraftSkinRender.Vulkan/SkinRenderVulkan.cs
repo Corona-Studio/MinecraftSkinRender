@@ -15,8 +15,6 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
     public PhysicalDevice PhysicalDevice => _physicalDevice;
     protected PhysicalDevice _physicalDevice;
 
-    protected SampleCountFlags msaaSamples = SampleCountFlags.Count1Bit;
-
     private DescriptorSetLayout descriptorSetLayout;
     private PipelineLayout pipelineLayout;
     private Pipeline graphicsPipeline;
