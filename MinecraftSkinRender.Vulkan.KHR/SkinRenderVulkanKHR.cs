@@ -31,8 +31,8 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         KhrSwapchain.ExtensionName
     ];
 
-    protected KhrSwapchain khrSwapChain;
-    protected SwapchainKHR swapChain;
+    private KhrSwapchain khrSwapChain;
+    private SwapchainKHR swapChain;
 
     private Image[] swapChainImages;
     private Format swapChainImageFormat;
@@ -77,9 +77,9 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
-        CreateDepthResources();
         CreateFramebuffers();
         CreateCommandPool();
+        CreateDepthResources();
 
         _width = swapChainExtent.Width;
         _height = swapChainExtent.Height;
@@ -255,6 +255,13 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         vk.ResetFences(_device, 1, ref inFlightFences[currentFrame]);
 
         SkinRender(imageIndex, swapChainImages.Length, commandPool, graphicsQueue);
+
+        if (commandReload)
+        {
+            DeleteCommandBuffers();
+            CreateCommandBuffers();
+            commandReload = false;
+        }
 
         if (vk.QueueSubmit(graphicsQueue, 1, ref submitInfo, inFlightFences[currentFrame]) != Result.Success)
         {

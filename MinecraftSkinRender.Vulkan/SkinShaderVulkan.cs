@@ -131,7 +131,7 @@ public partial class SkinRenderVulkan
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
                 SampleShadingEnable = false,
-                RasterizationSamples = SampleCountFlags.Count1Bit,
+                RasterizationSamples = msaaSamples,
             };
 
             PipelineDepthStencilStateCreateInfo depthStencil = new()
@@ -147,7 +147,13 @@ public partial class SkinRenderVulkan
             PipelineColorBlendAttachmentState colorBlendAttachment = new()
             {
                 ColorWriteMask = ColorComponentFlags.RBit | ColorComponentFlags.GBit | ColorComponentFlags.BBit | ColorComponentFlags.ABit,
-                BlendEnable = false
+                BlendEnable = true,
+                SrcColorBlendFactor = BlendFactor.SrcAlpha,
+                DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                ColorBlendOp = BlendOp.Add,
+                SrcAlphaBlendFactor = BlendFactor.SrcAlpha,
+                DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha,
+                AlphaBlendOp = BlendOp.Add
             };
 
             PipelineColorBlendStateCreateInfo colorBlending = new()

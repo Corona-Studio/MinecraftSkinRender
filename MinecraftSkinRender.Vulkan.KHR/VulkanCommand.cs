@@ -63,22 +63,22 @@ public partial class SkinRenderVulkanKHR
                 RenderPass = renderPass,
                 Framebuffer = swapChainFramebuffers[i],
                 RenderArea =
-            {
-                Offset = { X = 0, Y = 0 },
-                Extent = swapChainExtent,
-            }
+                {
+                    Offset = { X = 0, Y = 0 },
+                    Extent = swapChainExtent,
+                }
             };
 
             var clearValues = new ClearValue[]
             {
-            new()
-            {
-                Color = new (){ Float32_0 = BackColor.X, Float32_1 = BackColor.Y, Float32_2 = BackColor.Z, Float32_3 = BackColor.W },
-            },
-            new()
-            {
-                DepthStencil = new () { Depth = 1, Stencil = 0 }
-            }
+                new()
+                {
+                    Color = new (){ Float32_0 = BackColor.X, Float32_1 = BackColor.Y, Float32_2 = BackColor.Z, Float32_3 = BackColor.W },
+                },
+                new()
+                {
+                    DepthStencil = new () { Depth = 1, Stencil = 0 }
+                }
             };
 
             fixed (ClearValue* clearValuesPtr = clearValues)

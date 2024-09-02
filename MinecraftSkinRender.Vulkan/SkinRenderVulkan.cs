@@ -15,6 +15,8 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
     public PhysicalDevice PhysicalDevice => _physicalDevice;
     protected PhysicalDevice _physicalDevice;
 
+    protected SampleCountFlags msaaSamples = SampleCountFlags.Count1Bit;
+
     private DescriptorSetLayout descriptorSetLayout;
     private PipelineLayout pipelineLayout;
     private Pipeline graphicsPipeline;
@@ -23,6 +25,8 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
     private Image textureSkinImage;
     private DeviceMemory textureSkinImageMemory;
     private ImageView textureSkinImageView;
+
+    protected bool commandReload;
 
     protected Image textureCapeImage;
     protected DeviceMemory textureCapeImageMemory;
@@ -101,6 +105,8 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
                 DeleteModel();
                 CreateModel(commandPool, queue);
             }
+
+            commandReload = true;
         }
 
         UpdateUboState();
