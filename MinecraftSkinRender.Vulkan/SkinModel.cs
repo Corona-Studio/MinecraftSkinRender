@@ -3,7 +3,7 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace MinecraftSkinRender.Vulkan;
 
-internal class SkinModel
+public class SkinModel
 {
     public SkinPart Head = new();
     public SkinPart Body = new();
@@ -22,13 +22,13 @@ internal class SkinModel
     public SkinPart Cape = new();
 }
 
-internal class SkinPart
+public class SkinPart
 {
     public SkinVertex[] Vertices;
     public ushort[] Indices;
 }
 
-internal class SkinDraw
+public class SkinDraw
 {
     public SkinDrawPart Head = new();
     public SkinDrawPart Body = new();
@@ -47,7 +47,7 @@ internal class SkinDraw
     public SkinDrawPart Cape = new();
 }
 
-internal class SkinDrawPart
+public class SkinDrawPart
 {
     public uint IndexLen;
 
@@ -57,7 +57,7 @@ internal class SkinDrawPart
     public DeviceMemory IndexBufferMemory;
 }
 
-internal class SkinPartIndex
+public class SkinPartIndex
 {
     public const int Head = 0;
     public const int Body = 1;

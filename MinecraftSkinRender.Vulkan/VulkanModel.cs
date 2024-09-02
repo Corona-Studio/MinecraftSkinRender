@@ -27,7 +27,7 @@ public partial class SkinRenderVulkan
         }
     }
 
-    private void CreateModel()
+    private void CreateModel(CommandPool commandPool, Queue queue)
     {
         var cube = Steve3DModel.GetSteve(SkinType);
         var cubetop = Steve3DModel.GetSteveTop(SkinType);
@@ -50,21 +50,21 @@ public partial class SkinRenderVulkan
 
         CreateModelPart(model.Cape, cube.Cape, tex.Cape);
 
-        CreateVertexBuffer();
-        CreateIndexBuffer();
+        CreateVertexBuffer(commandPool, queue);
+        CreateIndexBuffer(commandPool, queue);
 
         _switchModel = false;
     }
 
-    private void DeleteModel()
+    protected void DeleteModel()
     {
         DeleteVertexBuffer();
         DeleteIndexBuffer();
     }
 
-    private void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size)
+    private void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size, CommandPool commandPool, Queue queue)
     {
-        CommandBuffer commandBuffer = BeginSingleTimeCommands();
+        CommandBuffer commandBuffer = BeginSingleTimeCommands(commandPool);
 
         BufferCopy copyRegion = new()
         {
@@ -73,19 +73,19 @@ public partial class SkinRenderVulkan
 
         vk!.CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, ref copyRegion);
 
-        EndSingleTimeCommands(commandBuffer);
+        EndSingleTimeCommands(commandBuffer, commandPool, queue);
     }
 
     private unsafe void DeleteVertexBufferPart(SkinDrawPart part)
     {
         if (part.VertexBuffer.Handle != 0)
         {
-            vk.DestroyBuffer(device, part.VertexBuffer, null);
+            vk.DestroyBuffer(_device, part.VertexBuffer, null);
             part.VertexBuffer.Handle = 0;
         }
         if (part.VertexBufferMemory.Handle != 0)
         {
-            vk.FreeMemory(device, part.VertexBufferMemory, null);
+            vk.FreeMemory(_device, part.VertexBufferMemory, null);
             part.VertexBufferMemory.Handle = 0;
         }
     }
@@ -107,7 +107,7 @@ public partial class SkinRenderVulkan
         DeleteVertexBufferPart(draw.Cape);
     }
 
-    private unsafe void CreateVertexBufferPart(SkinPart part, SkinDrawPart draw)
+    private unsafe void CreateVertexBufferPart(SkinPart part, SkinDrawPart draw, CommandPool commandPool, Queue queue)
     {
         draw.IndexLen = (uint)model.Head.Indices.Length;
         ulong bufferSize = (ulong)(Unsafe.SizeOf<SkinVertex>() * model.Head.Vertices.Length);
@@ -119,37 +119,37 @@ public partial class SkinRenderVulkan
             ref stagingBuffer, ref stagingBufferMemory);
 
         void* data;
-        vk.MapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        vk.MapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
         part.Vertices.AsSpan().CopyTo(new Span<SkinVertex>(data, part.Vertices.Length));
-        vk.UnmapMemory(device, stagingBufferMemory);
+        vk.UnmapMemory(_device, stagingBufferMemory);
 
         CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit,
             MemoryPropertyFlags.DeviceLocalBit, ref draw.VertexBuffer, ref draw.VertexBufferMemory);
 
-        CopyBuffer(stagingBuffer, draw.VertexBuffer, bufferSize);
+        CopyBuffer(stagingBuffer, draw.VertexBuffer, bufferSize, commandPool, queue);
 
-        vk.DestroyBuffer(device, stagingBuffer, null);
-        vk.FreeMemory(device, stagingBufferMemory, null);
+        vk.DestroyBuffer(_device, stagingBuffer, null);
+        vk.FreeMemory(_device, stagingBufferMemory, null);
     }
 
-    private unsafe void CreateVertexBuffer()
+    private unsafe void CreateVertexBuffer(CommandPool commandPool, Queue queue)
     {
-        CreateVertexBufferPart(model.Head, draw.Head);
-        CreateVertexBufferPart(model.Body, draw.Body);
-        CreateVertexBufferPart(model.LeftArm, draw.LeftArm);
-        CreateVertexBufferPart(model.RightArm, draw.RightArm);
-        CreateVertexBufferPart(model.LeftLeg, draw.LeftLeg);
-        CreateVertexBufferPart(model.RightLeg, draw.RightLeg);
-        CreateVertexBufferPart(model.TopHead, draw.TopHead);
-        CreateVertexBufferPart(model.TopBody, draw.TopBody);
-        CreateVertexBufferPart(model.TopLeftArm, draw.TopLeftArm);
-        CreateVertexBufferPart(model.TopRightArm, draw.TopRightArm);
-        CreateVertexBufferPart(model.TopLeftLeg, draw.TopLeftLeg);
-        CreateVertexBufferPart(model.TopRightLeg, draw.TopRightLeg);
-        CreateVertexBufferPart(model.Cape, draw.Cape);
+        CreateVertexBufferPart(model.Head, draw.Head, commandPool, queue);
+        CreateVertexBufferPart(model.Body, draw.Body, commandPool, queue);
+        CreateVertexBufferPart(model.LeftArm, draw.LeftArm, commandPool, queue);
+        CreateVertexBufferPart(model.RightArm, draw.RightArm, commandPool, queue);
+        CreateVertexBufferPart(model.LeftLeg, draw.LeftLeg, commandPool, queue);
+        CreateVertexBufferPart(model.RightLeg, draw.RightLeg, commandPool, queue);
+        CreateVertexBufferPart(model.TopHead, draw.TopHead, commandPool, queue);
+        CreateVertexBufferPart(model.TopBody, draw.TopBody, commandPool, queue);
+        CreateVertexBufferPart(model.TopLeftArm, draw.TopLeftArm, commandPool, queue);
+        CreateVertexBufferPart(model.TopRightArm, draw.TopRightArm, commandPool, queue);
+        CreateVertexBufferPart(model.TopLeftLeg, draw.TopLeftLeg, commandPool, queue);
+        CreateVertexBufferPart(model.TopRightLeg, draw.TopRightLeg, commandPool, queue);
+        CreateVertexBufferPart(model.Cape, draw.Cape, commandPool, queue);
     }
 
-    private unsafe void CreateIndexBufferPart(SkinPart part, SkinDrawPart draw)
+    private unsafe void CreateIndexBufferPart(SkinPart part, SkinDrawPart draw, CommandPool commandPool, Queue queue)
     {
         ulong bufferSize = (ulong)(Unsafe.SizeOf<ushort>() * part.Indices.Length);
 
@@ -158,45 +158,45 @@ public partial class SkinRenderVulkan
         CreateBuffer(bufferSize, BufferUsageFlags.TransferSrcBit, MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, ref stagingBuffer, ref stagingBufferMemory);
 
         void* data;
-        vk!.MapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        vk!.MapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
         part.Indices.AsSpan().CopyTo(new Span<ushort>(data, part.Indices.Length));
-        vk!.UnmapMemory(device, stagingBufferMemory);
+        vk!.UnmapMemory(_device, stagingBufferMemory);
 
         CreateBuffer(bufferSize, BufferUsageFlags.TransferDstBit | BufferUsageFlags.IndexBufferBit, MemoryPropertyFlags.DeviceLocalBit, ref draw.IndexBuffer, ref draw.IndexBufferMemory);
 
-        CopyBuffer(stagingBuffer, draw.IndexBuffer, bufferSize);
+        CopyBuffer(stagingBuffer, draw.IndexBuffer, bufferSize, commandPool, queue);
 
-        vk.DestroyBuffer(device, stagingBuffer, null);
-        vk.FreeMemory(device, stagingBufferMemory, null);
+        vk.DestroyBuffer(_device, stagingBuffer, null);
+        vk.FreeMemory(_device, stagingBufferMemory, null);
     }
 
-    private void CreateIndexBuffer()
+    private void CreateIndexBuffer(CommandPool commandPool, Queue queue)
     {
-        CreateIndexBufferPart(model.Head, draw.Head);
-        CreateIndexBufferPart(model.Body, draw.Body);
-        CreateIndexBufferPart(model.LeftArm, draw.LeftArm);
-        CreateIndexBufferPart(model.RightArm, draw.RightArm);
-        CreateIndexBufferPart(model.LeftLeg, draw.LeftLeg);
-        CreateIndexBufferPart(model.RightLeg, draw.RightLeg);
-        CreateIndexBufferPart(model.TopHead, draw.TopHead);
-        CreateIndexBufferPart(model.TopBody, draw.TopBody);
-        CreateIndexBufferPart(model.TopLeftArm, draw.TopLeftArm);
-        CreateIndexBufferPart(model.TopRightArm, draw.TopRightArm);
-        CreateIndexBufferPart(model.TopLeftLeg, draw.TopLeftLeg);
-        CreateIndexBufferPart(model.TopRightLeg, draw.TopRightLeg);
-        CreateIndexBufferPart(model.Cape, draw.Cape);
+        CreateIndexBufferPart(model.Head, draw.Head, commandPool, queue);
+        CreateIndexBufferPart(model.Body, draw.Body, commandPool, queue);
+        CreateIndexBufferPart(model.LeftArm, draw.LeftArm, commandPool, queue);
+        CreateIndexBufferPart(model.RightArm, draw.RightArm, commandPool, queue);
+        CreateIndexBufferPart(model.LeftLeg, draw.LeftLeg, commandPool, queue);
+        CreateIndexBufferPart(model.RightLeg, draw.RightLeg, commandPool, queue);
+        CreateIndexBufferPart(model.TopHead, draw.TopHead, commandPool, queue);
+        CreateIndexBufferPart(model.TopBody, draw.TopBody, commandPool, queue);
+        CreateIndexBufferPart(model.TopLeftArm, draw.TopLeftArm, commandPool, queue);
+        CreateIndexBufferPart(model.TopRightArm, draw.TopRightArm, commandPool, queue);
+        CreateIndexBufferPart(model.TopLeftLeg, draw.TopLeftLeg, commandPool, queue);
+        CreateIndexBufferPart(model.TopRightLeg, draw.TopRightLeg, commandPool, queue);
+        CreateIndexBufferPart(model.Cape, draw.Cape, commandPool, queue);
     }
 
     private unsafe void DeleteIndexBufferPart(SkinDrawPart part)
     {
         if (part.IndexBuffer.Handle != 0)
         {
-            vk.DestroyBuffer(device, part.IndexBuffer, null);
+            vk.DestroyBuffer(_device, part.IndexBuffer, null);
             part.IndexBuffer.Handle = 0;
         }
         if (part.IndexBufferMemory.Handle != 0)
         {
-            vk.FreeMemory(device, part.IndexBufferMemory, null);
+            vk.FreeMemory(_device, part.IndexBufferMemory, null);
             part.IndexBufferMemory.Handle = 0;
         }
     }
@@ -218,17 +218,16 @@ public partial class SkinRenderVulkan
         DeleteIndexBufferPart(draw.Cape);
     }
 
-
-    private unsafe void DeleteUniformBuffers()
+    protected unsafe void DeleteUniformBuffers()
     {
-        for (int i = 0; i < swapChainImages!.Length; i++)
+        for (int i = 0; i < UniformBuffers!.Length; i++)
         {
-            vk.DestroyBuffer(device, UniformBuffers![i], null);
-            vk.FreeMemory(device, UniformBuffersMemory![i], null);
+            vk.DestroyBuffer(_device, UniformBuffers![i], null);
+            vk.FreeMemory(_device, UniformBuffersMemory![i], null);
         }
     }
 
-    private unsafe void CreateUniformBuffers()
+    protected unsafe void CreateUniformBuffers(int length)
     {
         for (int a = 0; a < PartCount; a++)
         {
@@ -237,21 +236,22 @@ public partial class SkinRenderVulkan
 
         ulong size = (ulong)Unsafe.SizeOf<UniformBufferObject>();
 
-        UniformBuffers = new Buffer[swapChainImages.Length];
-        UniformBuffersMemory = new DeviceMemory[swapChainImages.Length];
-        UniformBuffersPtr = new IntPtr[swapChainImages.Length];
-
-        vk.GetPhysicalDeviceProperties(physicalDevice, out var properties);
-        ulong minUboAlignment = properties.Limits.MinUniformBufferOffsetAlignment;
+        UniformBuffers = new Buffer[length];
+        UniformBuffersMemory = new DeviceMemory[length];
+        UniformBuffersPtr = new IntPtr[length];
 
         UniformDynamicAlignment = size;
+
+        vk.GetPhysicalDeviceProperties(PhysicalDevice, out var properties);
+        ulong minUboAlignment = properties.Limits.MinUniformBufferOffsetAlignment;
+
         if (minUboAlignment > 0)
         {
             UniformDynamicAlignment = (UniformDynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
         }
 
         ulong bufferSize = UniformDynamicAlignment * PartCount;
-        for (int i = 0; i < swapChainImages.Length; i++)
+        for (int i = 0; i < length; i++)
         {
             BufferCreateInfo bufferInfo = new()
             {
@@ -263,14 +263,14 @@ public partial class SkinRenderVulkan
 
             fixed (Buffer* bufferPtr = &UniformBuffers[i])
             {
-                if (vk.CreateBuffer(device, ref bufferInfo, null, bufferPtr) != Result.Success)
+                if (vk.CreateBuffer(_device, ref bufferInfo, null, bufferPtr) != Result.Success)
                 {
                     throw new Exception("failed to create vertex buffer!");
                 }
             }
 
             MemoryRequirements memRequirements = new();
-            vk.GetBufferMemoryRequirements(device, UniformBuffers[i], out memRequirements);
+            vk.GetBufferMemoryRequirements(_device, UniformBuffers[i], out memRequirements);
 
             MemoryAllocateInfo allocateInfo = new()
             {
@@ -283,16 +283,16 @@ public partial class SkinRenderVulkan
 
             fixed (DeviceMemory* bufferMemoryPtr = &UniformBuffersMemory[i])
             {
-                if (vk.AllocateMemory(device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
+                if (vk.AllocateMemory(_device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
                 {
                     throw new Exception("failed to allocate vertex buffer memory!");
                 }
             }
 
-            vk.BindBufferMemory(device, UniformBuffers[i], UniformBuffersMemory[i], 0);
+            vk.BindBufferMemory(_device, UniformBuffers[i], UniformBuffersMemory[i], 0);
 
             void* data;
-            vk.MapMemory(device, UniformBuffersMemory[i], 0, bufferSize, 0, &data);
+            vk.MapMemory(_device, UniformBuffersMemory[i], 0, bufferSize, 0, &data);
             UniformBuffersPtr[i] = (IntPtr)data;
         }
     }
@@ -309,7 +309,7 @@ public partial class SkinRenderVulkan
         System.Buffer.MemoryCopy(ptr1, ptr, UniformDynamicAlignment, UniformDynamicAlignment);
     }
 
-    private unsafe void UpdateUniformBuffer()
+    private unsafe void UpdateUboState()
     {
         var model = GetMatrix4(MatrPartType.Model);
         var view = GetMatrix4(MatrPartType.View);

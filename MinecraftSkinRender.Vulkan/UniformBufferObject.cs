@@ -2,7 +2,7 @@
 
 namespace MinecraftSkinRender.Vulkan;
 
-internal struct UniformBufferObject
+public struct UniformBufferObject
 {
     public Matrix4x4 model;
     public Matrix4x4 proj;

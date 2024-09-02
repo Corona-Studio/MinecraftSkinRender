@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -8,7 +7,7 @@ namespace MinecraftSkinRender.Vulkan;
 
 public partial class SkinRenderVulkan
 {
-    public unsafe ShaderModule CreateShaderModule(string filename)
+    private unsafe ShaderModule CreateShaderModule(string filename)
     {
         var assm = Assembly.GetExecutingAssembly();
         string name = "MinecraftSkinRender.Vulkan.spv." + filename;
@@ -33,7 +32,7 @@ public partial class SkinRenderVulkan
         {
             createInfo.PCode = (uint*)codePtr;
 
-            if (vk.CreateShaderModule(device, ref createInfo, null, out shaderModule) != Result.Success)
+            if (vk.CreateShaderModule(_device, ref createInfo, null, out shaderModule) != Result.Success)
             {
                 throw new Exception("failed to create shader module!");
             }
@@ -42,7 +41,7 @@ public partial class SkinRenderVulkan
         return shaderModule;
     }
 
-    private unsafe void CreateGraphicsPipeline()
+    protected unsafe void CreateGraphicsPipeline(RenderPass renderPass)
     {
         var vertShaderModule = CreateShaderModule("SkinV.spv");
         var fragShaderModule = CreateShaderModule("SkinF.spv");
@@ -95,8 +94,8 @@ public partial class SkinRenderVulkan
             {
                 X = 0,
                 Y = 0,
-                Width = swapChainExtent.Width,
-                Height = swapChainExtent.Height,
+                Width = _width,
+                Height = _height,
                 MinDepth = 0,
                 MaxDepth = 1,
             };
@@ -104,7 +103,7 @@ public partial class SkinRenderVulkan
             Rect2D scissor = new()
             {
                 Offset = { X = 0, Y = 0 },
-                Extent = swapChainExtent,
+                Extent = { Width = _width, Height = _height },
             };
 
             PipelineViewportStateCreateInfo viewportState = new()
@@ -173,7 +172,7 @@ public partial class SkinRenderVulkan
                 PSetLayouts = descriptorSetLayoutPtr
             };
 
-            if (vk.CreatePipelineLayout(device, ref pipelineLayoutInfo, null, out pipelineLayout) != Result.Success)
+            if (vk.CreatePipelineLayout(_device, ref pipelineLayoutInfo, null, out pipelineLayout) != Result.Success)
             {
                 throw new Exception("failed to create pipeline layout!");
             }
@@ -196,7 +195,7 @@ public partial class SkinRenderVulkan
                 BasePipelineHandle = default
             };
 
-            if (vk.CreateGraphicsPipelines(device, default, 1, ref pipelineInfo, null, out graphicsPipeline) != Result.Success)
+            if (vk.CreateGraphicsPipelines(_device, default, 1, ref pipelineInfo, null, out graphicsPipeline) != Result.Success)
             {
                 throw new Exception("failed to create graphics pipeline!");
             }
@@ -211,36 +210,20 @@ public partial class SkinRenderVulkan
 
             depthStencil.DepthWriteEnable = false;
 
-            if (vk.CreateGraphicsPipelines(device, default, 1, ref pipelineInfo, null, out graphicsPipelineTop) != Result.Success)
+            if (vk.CreateGraphicsPipelines(_device, default, 1, ref pipelineInfo, null, out graphicsPipelineTop) != Result.Success)
             {
                 throw new Exception("failed to create graphics pipeline!");
             }
         }
 
-        vk.DestroyShaderModule(device, fragShaderModule, null);
-        vk.DestroyShaderModule(device, vertShaderModule, null);
+        vk.DestroyShaderModule(_device, fragShaderModule, null);
+        vk.DestroyShaderModule(_device, vertShaderModule, null);
 
         SilkMarshal.Free((nint)vertShaderStageInfo.PName);
         SilkMarshal.Free((nint)fragShaderStageInfo.PName);
     }
 
-    private unsafe void CreateCommandPool()
-    {
-        var queueFamiliyIndicies = FindQueueFamilies(physicalDevice);
-
-        CommandPoolCreateInfo poolInfo = new()
-        {
-            SType = StructureType.CommandPoolCreateInfo,
-            QueueFamilyIndex = queueFamiliyIndicies.GraphicsFamily!.Value,
-        };
-
-        if (vk.CreateCommandPool(device, ref poolInfo, null, out commandPool) != Result.Success)
-        {
-            throw new Exception("failed to create command pool!");
-        }
-    }
-
-    private CommandBuffer BeginSingleTimeCommands()
+    private CommandBuffer BeginSingleTimeCommands(CommandPool commandPool)
     {
         CommandBufferAllocateInfo allocateInfo = new()
         {
@@ -250,7 +233,7 @@ public partial class SkinRenderVulkan
             CommandBufferCount = 1,
         };
 
-        vk!.AllocateCommandBuffers(device, ref allocateInfo, out CommandBuffer commandBuffer);
+        vk!.AllocateCommandBuffers(_device, ref allocateInfo, out CommandBuffer commandBuffer);
 
         CommandBufferBeginInfo beginInfo = new()
         {
@@ -263,7 +246,7 @@ public partial class SkinRenderVulkan
         return commandBuffer;
     }
 
-    private unsafe void EndSingleTimeCommands(CommandBuffer commandBuffer)
+    private unsafe void EndSingleTimeCommands(CommandBuffer commandBuffer, CommandPool commandPool, Queue graphicsQueue)
     {
         vk!.EndCommandBuffer(commandBuffer);
 
@@ -277,138 +260,67 @@ public partial class SkinRenderVulkan
         vk.QueueSubmit(graphicsQueue, 1, ref submitInfo, default);
         vk.QueueWaitIdle(graphicsQueue);
 
-        vk.FreeCommandBuffers(device, commandPool, 1, ref commandBuffer);
+        vk.FreeCommandBuffers(_device, commandPool, 1, ref commandBuffer);
     }
 
-    private unsafe void DeleteCommandBuffers()
+    public unsafe void CreateCommandBuffers(CommandBuffer buffer, int length, int index, Framebuffer framebuffer)
     {
-        fixed (CommandBuffer* commandBuffersPtr = commandBuffers!)
-        {
-            vk.FreeCommandBuffers(device, commandPool, (uint)commandBuffers!.Length, commandBuffersPtr);
-        }
-    }
-
-    private unsafe void CreateCommandBuffers()
-    {
-        commandBuffers ??= new CommandBuffer[swapChainFramebuffers.Length];
-
-        CommandBufferAllocateInfo allocInfo = new()
-        {
-            SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = commandPool,
-            Level = CommandBufferLevel.Primary,
-            CommandBufferCount = (uint)commandBuffers.Length,
-        };
-
-        fixed (CommandBuffer* commandBuffersPtr = commandBuffers)
-        {
-            if (vk.AllocateCommandBuffers(device, ref allocInfo, commandBuffersPtr) != Result.Success)
-            {
-                throw new Exception("failed to allocate command buffers!");
-            }
-        }
-
         //Draw command
-        for (int i = 0; i < swapChainFramebuffers.Length; i++)
+        void Push(SkinDrawPart draw, int part, bool cape = false)
         {
-            CommandBufferBeginInfo beginInfo = new()
-            {
-                SType = StructureType.CommandBufferBeginInfo,
-            };
+            Buffer[] vertexBuffers = [draw.VertexBuffer];
+            ulong[] offsets = [0];
 
-            if (vk.BeginCommandBuffer(commandBuffers[i], ref beginInfo) != Result.Success)
+            fixed (ulong* offsetsPtr = offsets)
+            fixed (Buffer* vertexBuffersPtr = vertexBuffers)
             {
-                throw new Exception("failed to begin recording command buffer!");
+                vk.CmdBindVertexBuffers(buffer, 0, 1, vertexBuffersPtr, offsetsPtr);
             }
 
-            RenderPassBeginInfo renderPassInfo = new()
-            {
-                SType = StructureType.RenderPassBeginInfo,
-                RenderPass = renderPass,
-                Framebuffer = swapChainFramebuffers[i],
-                RenderArea =
-                {
-                    Offset = { X = 0, Y = 0 },
-                    Extent = swapChainExtent,
-                }
-            };
+            uint offset = (uint)(part * (int)UniformDynamicAlignment);
 
-            var clearValues = new ClearValue[]
-            {
-                new()
-                {
-                    Color = new (){ Float32_0 = BackColor.X, Float32_1 = BackColor.Y, Float32_2 = BackColor.Z, Float32_3 = BackColor.W },
-                },
-                new()
-                {
-                    DepthStencil = new () { Depth = 1, Stencil = 0 }
-                }
-            };
+            vk.CmdBindIndexBuffer(buffer, draw.IndexBuffer, 0, IndexType.Uint16);
+            vk.CmdBindDescriptorSets(buffer, PipelineBindPoint.Graphics,
+                pipelineLayout, 0, 1, ref DescriptorSets[cape ? index + length : index], 1, ref offset);
+            vk.CmdDrawIndexed(buffer, draw.IndexLen, 1, 0, 0, 0);
+        }
 
-            fixed (ClearValue* clearValuesPtr = clearValues)
-            {
-                renderPassInfo.ClearValueCount = (uint)clearValues.Length;
-                renderPassInfo.PClearValues = clearValuesPtr;
+        vk.CmdBindPipeline(buffer, PipelineBindPoint.Graphics, graphicsPipeline);
 
-                vk.CmdBeginRenderPass(commandBuffers[i], &renderPassInfo, SubpassContents.Inline);
-            }
+        Push(draw.Body, SkinPartIndex.Body);
+        Push(draw.Head, SkinPartIndex.Head);
+        Push(draw.LeftArm, SkinPartIndex.LeftArm);
+        Push(draw.RightArm, SkinPartIndex.RightArm);
+        Push(draw.LeftLeg, SkinPartIndex.LeftLeg);
+        Push(draw.RightLeg, SkinPartIndex.RightLeg);
 
-            void Push(SkinDrawPart draw, int index, bool cape = false)
-            {
-                Buffer[] vertexBuffers = [draw.VertexBuffer];
-                ulong[] offsets = [0];
+        if (EnableTop)
+        {
+            vk.CmdBindPipeline(buffer, PipelineBindPoint.Graphics, graphicsPipelineTop);
 
-                fixed (ulong* offsetsPtr = offsets)
-                fixed (Buffer* vertexBuffersPtr = vertexBuffers)
-                {
-                    vk.CmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersPtr, offsetsPtr);
-                }
+            Push(draw.TopBody, SkinPartIndex.TopBody);
+            Push(draw.TopHead, SkinPartIndex.TopHead);
+            Push(draw.TopLeftArm, SkinPartIndex.TopLeftArm);
+            Push(draw.TopRightArm, SkinPartIndex.TopRightArm);
+            Push(draw.TopLeftLeg, SkinPartIndex.TopLeftLeg);
+            Push(draw.TopRightLeg, SkinPartIndex.TopRightLeg);
+        }
 
-                uint offset = (uint)(index * (int)UniformDynamicAlignment);
+        if (EnableCape && HaveCape)
+        {
+            vk.CmdBindPipeline(buffer, PipelineBindPoint.Graphics, graphicsPipeline);
 
-                vk.CmdBindIndexBuffer(commandBuffers[i], draw.IndexBuffer, 0, IndexType.Uint16);
-                vk.CmdBindDescriptorSets(commandBuffers[i], PipelineBindPoint.Graphics, 
-                    pipelineLayout, 0, 1, ref DescriptorSets[cape ? i + swapChainFramebuffers.Length : i], 1, ref offset);
-                vk.CmdDrawIndexed(commandBuffers[i], draw.IndexLen, 1, 0, 0, 0);
-            }
-
-            vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
-
-            Push(draw.Body, SkinPartIndex.Body);
-            Push(draw.Head, SkinPartIndex.Head);
-            Push(draw.LeftArm, SkinPartIndex.LeftArm);
-            Push(draw.RightArm, SkinPartIndex.RightArm);
-            Push(draw.LeftLeg, SkinPartIndex.LeftLeg);
-            Push(draw.RightLeg, SkinPartIndex.RightLeg);
-
-            if (EnableTop)
-            {
-                vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipelineTop);
-
-                Push(draw.TopBody, SkinPartIndex.TopBody);
-                Push(draw.TopHead, SkinPartIndex.TopHead);
-                Push(draw.TopLeftArm, SkinPartIndex.TopLeftArm);
-                Push(draw.TopRightArm, SkinPartIndex.TopRightArm);
-                Push(draw.TopLeftLeg, SkinPartIndex.TopLeftLeg);
-                Push(draw.TopRightLeg, SkinPartIndex.TopRightLeg);
-            }
-
-            if (EnableCape && HaveCape)
-            {
-                vk.CmdBindPipeline(commandBuffers[i], PipelineBindPoint.Graphics, graphicsPipeline);
-
-                Push(draw.Cape, SkinPartIndex.Cape, true);
-            }
-
-            vk.CmdEndRenderPass(commandBuffers[i]);
-
-            if (vk.EndCommandBuffer(commandBuffers[i]) != Result.Success)
-            {
-                throw new Exception("failed to record command buffer!");
-            }
+            Push(draw.Cape, SkinPartIndex.Cape, true);
         }
 
         _switchBack = false;
         _switchType = false;
+    }
+
+    protected unsafe void DeleteGraphicsPipeline()
+    {
+        vk.DestroyPipeline(_device, graphicsPipeline, null);
+        vk.DestroyPipeline(_device, graphicsPipelineTop, null);
+        vk.DestroyPipelineLayout(_device, pipelineLayout, null);
     }
 }

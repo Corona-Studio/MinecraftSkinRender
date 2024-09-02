@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 
-namespace MinecraftSkinRender.Vulkan;
+namespace MinecraftSkinRender.Vulkan.KHR;
 
-public partial class SkinRenderVulkan
+public partial class SkinRenderVulkanKHR
 {
     private unsafe QueueFamilyIndices FindQueueFamilies(PhysicalDevice device)
     {
@@ -64,80 +64,20 @@ public partial class SkinRenderVulkan
 
     }
 
-    private unsafe SwapChainSupportDetails QuerySwapChainSupport(PhysicalDevice physicalDevice)
-    {
-        var details = new SwapChainSupportDetails();
-
-        khrSurface!.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, surface, out details.Capabilities);
-
-        uint formatCount = 0;
-        khrSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, ref formatCount, null);
-
-        if (formatCount != 0)
-        {
-            details.Formats = new SurfaceFormatKHR[formatCount];
-            fixed (SurfaceFormatKHR* formatsPtr = details.Formats)
-            {
-                khrSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, ref formatCount, formatsPtr);
-            }
-        }
-        else
-        {
-            details.Formats = [];
-        }
-
-        uint presentModeCount = 0;
-        khrSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, ref presentModeCount, null);
-
-        if (presentModeCount != 0)
-        {
-            details.PresentModes = new PresentModeKHR[presentModeCount];
-            fixed (PresentModeKHR* formatsPtr = details.PresentModes)
-            {
-                khrSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, ref presentModeCount, formatsPtr);
-            }
-
-        }
-        else
-        {
-            details.PresentModes = [];
-        }
-
-        return details;
-    }
-
-    private bool IsDeviceSuitable(PhysicalDevice device)
-    {
-        var indices = FindQueueFamilies(device);
-
-        bool extensionsSupported = CheckDeviceExtensionsSupport(device);
-
-        bool swapChainAdequate = false;
-        if (extensionsSupported)
-        {
-            var swapChainSupport = QuerySwapChainSupport(device);
-            swapChainAdequate = swapChainSupport.Formats.Length != 0 && swapChainSupport.PresentModes.Length != 0;
-        }
-
-        vk!.GetPhysicalDeviceFeatures(device, out PhysicalDeviceFeatures supportedFeatures);
-
-        return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.SamplerAnisotropy;
-    }
-
     private void PickPhysicalDevice()
     {
-        var devices = vk.GetPhysicalDevices(instance);
+        var devices = vk.GetPhysicalDevices(_instance);
 
         foreach (var device in devices)
         {
             if (IsDeviceSuitable(device))
             {
-                physicalDevice = device;
+                _physicalDevice = device;
                 break;
             }
         }
 
-        if (physicalDevice.Handle == 0)
+        if (_physicalDevice.Handle == 0)
         {
             throw new Exception("failed to find a suitable GPU!");
         }
@@ -145,7 +85,7 @@ public partial class SkinRenderVulkan
 
     private unsafe void CreateLogicalDevice()
     {
-        var indices = FindQueueFamilies(physicalDevice);
+        var indices = FindQueueFamilies(_physicalDevice);
 
         var uniqueQueueFamilies = new[] { indices.GraphicsFamily!.Value, indices.PresentFamily!.Value };
         uniqueQueueFamilies = uniqueQueueFamilies.Distinct().ToArray();
@@ -194,13 +134,13 @@ public partial class SkinRenderVulkan
             createInfo.EnabledLayerCount = 0;
         }
 
-        if (vk!.CreateDevice(physicalDevice, in createInfo, null, out device) != Result.Success)
+        if (vk!.CreateDevice(_physicalDevice, in createInfo, null, out _device) != Result.Success)
         {
             throw new Exception("failed to create logical device!");
         }
 #endif
-        vk!.GetDeviceQueue(device, indices.GraphicsFamily!.Value, 0, out graphicsQueue);
-        vk!.GetDeviceQueue(device, indices.PresentFamily!.Value, 0, out presentQueue);
+        vk!.GetDeviceQueue(_device, indices.GraphicsFamily!.Value, 0, out graphicsQueue);
+        vk!.GetDeviceQueue(_device, indices.PresentFamily!.Value, 0, out presentQueue);
 #if DEBUG
         if (EnableValidationLayers)
         {

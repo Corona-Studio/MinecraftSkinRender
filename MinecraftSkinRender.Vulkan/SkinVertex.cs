@@ -5,7 +5,7 @@ using Silk.NET.Vulkan;
 
 namespace MinecraftSkinRender.Vulkan;
 
-internal struct SkinVertex
+public struct SkinVertex
 {
     /// <summary>
     /// 顶点

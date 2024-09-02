@@ -4,21 +4,19 @@ using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 
-namespace MinecraftSkinRender.Vulkan;
+namespace MinecraftSkinRender.Vulkan.KHR;
 
-public partial class SkinRenderVulkan
+public partial class SkinRenderVulkanKHR
 {
     private unsafe string[] GetRequiredExtensions()
     {
-        var glfwExtensions = ivk.GetRequiredExtensions(out var glfwExtensionCount);
-        var extensions = SilkMarshal.PtrToStringArray((nint)glfwExtensions, (int)glfwExtensionCount);
 #if DEBUG
         if (EnableValidationLayers)
         {
-            return [.. extensions, ExtDebugUtils.ExtensionName];
+            return [.. ivk.GetRequiredExtensions(), ExtDebugUtils.ExtensionName];
         }
 #endif
-        return extensions;
+        return [.. ivk.GetRequiredExtensions()];
     }
 
     private unsafe void CreateInstance()
@@ -62,7 +60,7 @@ public partial class SkinRenderVulkan
         }
 #endif
 
-        if (vk.CreateInstance(ref createInfo, null, out instance) != Result.Success)
+        if (vk.CreateInstance(ref createInfo, null, out _instance) != Result.Success)
         {
             throw new Exception("failed to create instance!");
         }

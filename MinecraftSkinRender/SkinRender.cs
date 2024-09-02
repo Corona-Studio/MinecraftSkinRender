@@ -175,14 +175,49 @@ public abstract class SkinRender
         _switchModel = true;
     }
 
+    public static SKBitmap MakeImage(SKBitmap image)
+    {
+        var image2 = new SKBitmap(256, 256);
+
+        int sec = 256 / image.Width;
+
+        for (int i = 0; i < image.Width; i++)
+        {
+            int ax = sec * i;
+            for (int j = 0; j < image.Height; j++)
+            {
+                int bx = sec * j;
+                var color = image.GetPixel(i, j);
+
+                for (int a = 0; a < sec; a++)
+                {
+                    for (int b = 0; b < sec; b++)
+                    {
+                        image2.SetPixel(a + ax, b + bx, color);
+                    }
+                }
+            }
+        }
+
+        return image2;
+    }
+
     public void SetSkin(SKBitmap? skin)
     {
-        Skin = skin;
+        Skin?.Dispose();
         if (skin == null)
         {
             HaveSkin = false;
             return;
         }
+        if (skin.Width != 64)
+        {
+            throw new Exception("This is not skin image");
+        }
+
+        //Skin = MakeImage(skin);
+        Skin = skin;
+
         SetSkinType(SkinTypeChecker.GetTextType(skin));
         _switchSkin = true;
         HaveSkin = true;

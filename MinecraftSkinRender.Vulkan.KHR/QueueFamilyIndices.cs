@@ -1,4 +1,4 @@
-﻿namespace MinecraftSkinRender.Vulkan;
+﻿namespace MinecraftSkinRender.Vulkan.KHR;
 
 internal struct QueueFamilyIndices
 {

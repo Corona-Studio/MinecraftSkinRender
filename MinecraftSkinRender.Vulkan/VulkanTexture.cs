@@ -18,14 +18,14 @@ public partial class SkinRenderVulkan
 
         fixed (Buffer* bufferPtr = &buffer)
         {
-            if (vk!.CreateBuffer(device, ref bufferInfo, null, bufferPtr) != Result.Success)
+            if (vk!.CreateBuffer(_device, ref bufferInfo, null, bufferPtr) != Result.Success)
             {
                 throw new Exception("failed to create vertex buffer!");
             }
         }
 
         MemoryRequirements memRequirements = new();
-        vk.GetBufferMemoryRequirements(device, buffer, out memRequirements);
+        vk.GetBufferMemoryRequirements(_device, buffer, out memRequirements);
 
         MemoryAllocateInfo allocateInfo = new()
         {
@@ -36,18 +36,18 @@ public partial class SkinRenderVulkan
 
         fixed (DeviceMemory* bufferMemoryPtr = &bufferMemory)
         {
-            if (vk!.AllocateMemory(device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
+            if (vk!.AllocateMemory(_device, ref allocateInfo, null, bufferMemoryPtr) != Result.Success)
             {
                 throw new Exception("failed to allocate vertex buffer memory!");
             }
         }
 
-        vk.BindBufferMemory(device, buffer, bufferMemory, 0);
+        vk.BindBufferMemory(_device, buffer, bufferMemory, 0);
     }
 
-    private unsafe void TransitionImageLayout(Image image, Format format, ImageLayout oldLayout, ImageLayout newLayout)
+    private unsafe void TransitionImageLayout(Image image, Format format, ImageLayout oldLayout, ImageLayout newLayout, CommandPool commandPool, Queue queue)
     {
-        CommandBuffer commandBuffer = BeginSingleTimeCommands();
+        var commandBuffer = BeginSingleTimeCommands(commandPool);
 
         ImageMemoryBarrier barrier = new()
         {
@@ -93,12 +93,12 @@ public partial class SkinRenderVulkan
 
         vk.CmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, null, 0, null, 1, ref barrier);
 
-        EndSingleTimeCommands(commandBuffer);
+        EndSingleTimeCommands(commandBuffer, commandPool, queue);
     }
 
-    private void CopyBufferToImage(Buffer buffer, Image image, uint width, uint height)
+    private void CopyBufferToImage(Buffer buffer, Image image, uint width, uint height, CommandPool commandPool, Queue queue)
     {
-        CommandBuffer commandBuffer = BeginSingleTimeCommands();
+        var commandBuffer = BeginSingleTimeCommands(commandPool);
 
         BufferImageCopy region = new()
         {
@@ -119,38 +119,38 @@ public partial class SkinRenderVulkan
 
         vk.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.TransferDstOptimal, 1, ref region);
 
-        EndSingleTimeCommands(commandBuffer);
+        EndSingleTimeCommands(commandBuffer, commandPool, queue);
     }
 
-    private unsafe void DeleteTexture()
+    protected unsafe void DeleteTexture()
     {
         if (textureSkinImage.Handle != 0)
         {
-            vk.DestroyImage(device, textureSkinImage, null);
+            vk.DestroyImage(_device, textureSkinImage, null);
         }
         if (textureSkinImageMemory.Handle != 0)
         {
-            vk.FreeMemory(device, textureSkinImageMemory, null);
+            vk.FreeMemory(_device, textureSkinImageMemory, null);
         }
         if (textureSkinImageView.Handle != 0)
         {
-            vk.DestroyImageView(device, textureSkinImageView, null);
+            vk.DestroyImageView(_device, textureSkinImageView, null);
         }
         if (textureCapeImage.Handle != 0)
         {
-            vk.DestroyImage(device, textureCapeImage, null);
+            vk.DestroyImage(_device, textureCapeImage, null);
         }
         if (textureCapeImageMemory.Handle != 0)
         {
-            vk.FreeMemory(device, textureCapeImageMemory, null);
+            vk.FreeMemory(_device, textureCapeImageMemory, null);
         }
         if (textureCapeImageView.Handle != 0) 
         {
-            vk.DestroyImageView(device, textureCapeImageView, null);
+            vk.DestroyImageView(_device, textureCapeImageView, null);
         }
     }
 
-    private unsafe void CreateCapeTexture()
+    private unsafe void CreateCapeTexture(CommandPool commandPool, Queue queue)
     {
         HaveCape = false;
 
@@ -166,9 +166,9 @@ public partial class SkinRenderVulkan
             | MemoryPropertyFlags.HostCoherentBit, ref stagingBuffer, ref stagingBufferMemory);
 
         void* data;
-        vk.MapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+        vk.MapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
         System.Buffer.MemoryCopy((void*)Cape.GetPixels(), data, imageSize, imageSize);
-        vk.UnmapMemory(device, stagingBufferMemory);
+        vk.UnmapMemory(_device, stagingBufferMemory);
 
         var fmt = Format.R8G8B8A8Srgb;
         if (Cape.ColorType == SkiaSharp.SKColorType.Bgra8888)
@@ -181,20 +181,20 @@ public partial class SkinRenderVulkan
             MemoryPropertyFlags.DeviceLocalBit, ref textureCapeImage, ref textureCapeImageMemory);
 
         TransitionImageLayout(textureCapeImage, Format.R8G8B8A8Srgb, ImageLayout.Undefined,
-            ImageLayout.TransferDstOptimal);
-        CopyBufferToImage(stagingBuffer, textureCapeImage, (uint)Cape.Width, (uint)Cape.Height);
+            ImageLayout.TransferDstOptimal, commandPool, queue);
+        CopyBufferToImage(stagingBuffer, textureCapeImage, (uint)Cape.Width, (uint)Cape.Height, commandPool, queue);
         TransitionImageLayout(textureCapeImage, Format.R8G8B8A8Srgb, ImageLayout.TransferDstOptimal,
-            ImageLayout.ShaderReadOnlyOptimal);
+            ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 
-        vk.DestroyBuffer(device, stagingBuffer, null);
-        vk.FreeMemory(device, stagingBufferMemory, null);
+        vk.DestroyBuffer(_device, stagingBuffer, null);
+        vk.FreeMemory(_device, stagingBufferMemory, null);
 
         textureCapeImageView = CreateImageView(textureCapeImage, fmt, ImageAspectFlags.ColorBit);
 
         HaveCape = true;
     }
 
-    private unsafe void CreateSkinTexture()
+    private unsafe void CreateSkinTexture(CommandPool commandPool, Queue queue)
     {
         HaveSkin = false;
 
@@ -210,9 +210,9 @@ public partial class SkinRenderVulkan
             | MemoryPropertyFlags.HostCoherentBit, ref stagingBuffer, ref stagingBufferMemory);
 
         void* data;
-        vk.MapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+        vk.MapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
         System.Buffer.MemoryCopy((void*)Skin.GetPixels(), data, imageSize, imageSize);
-        vk.UnmapMemory(device, stagingBufferMemory);
+        vk.UnmapMemory(_device, stagingBufferMemory);
 
         var fmt = Format.R8G8B8A8Srgb;
         if (Skin.ColorType == SkiaSharp.SKColorType.Bgra8888)
@@ -225,30 +225,30 @@ public partial class SkinRenderVulkan
             MemoryPropertyFlags.DeviceLocalBit, ref textureSkinImage, ref textureSkinImageMemory);
 
         TransitionImageLayout(textureSkinImage, Format.R8G8B8A8Srgb, ImageLayout.Undefined,
-            ImageLayout.TransferDstOptimal);
-        CopyBufferToImage(stagingBuffer, textureSkinImage, (uint)Skin.Width, (uint)Skin.Height);
+            ImageLayout.TransferDstOptimal, commandPool, queue);
+        CopyBufferToImage(stagingBuffer, textureSkinImage, (uint)Skin.Width, (uint)Skin.Height, commandPool, queue);
         TransitionImageLayout(textureSkinImage, Format.R8G8B8A8Srgb, ImageLayout.TransferDstOptimal,
-            ImageLayout.ShaderReadOnlyOptimal);
+            ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 
-        vk.DestroyBuffer(device, stagingBuffer, null);
-        vk.FreeMemory(device, stagingBufferMemory, null);
+        vk.DestroyBuffer(_device, stagingBuffer, null);
+        vk.FreeMemory(_device, stagingBufferMemory, null);
 
         textureSkinImageView = CreateImageView(textureSkinImage, fmt, ImageAspectFlags.ColorBit);
 
         HaveSkin = true;
     }
 
-    private void CreateTexture()
+    private void CreateTexture(CommandPool commandPool, Queue queue)
     {
-        CreateSkinTexture();
-        CreateCapeTexture();
+        CreateSkinTexture(commandPool, queue);
+        CreateCapeTexture(commandPool, queue);
 
         _switchSkin = false;
     }
 
     private unsafe void CreateTextureSampler()
     {
-        vk.GetPhysicalDeviceProperties(physicalDevice, out PhysicalDeviceProperties properties);
+        vk.GetPhysicalDeviceProperties(PhysicalDevice, out var properties);
 
         SamplerCreateInfo samplerInfo = new()
         {
@@ -269,7 +269,7 @@ public partial class SkinRenderVulkan
 
         fixed (Sampler* textureSamplerPtr = &textureSampler)
         {
-            if (vk.CreateSampler(device, ref samplerInfo, null, textureSamplerPtr) != Result.Success)
+            if (vk.CreateSampler(_device, ref samplerInfo, null, textureSamplerPtr) != Result.Success)
             {
                 throw new Exception("failed to create texture sampler!");
             }

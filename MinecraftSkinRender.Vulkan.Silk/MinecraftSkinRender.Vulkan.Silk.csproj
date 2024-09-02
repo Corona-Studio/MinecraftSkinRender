@@ -5,6 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MinecraftSkinRender.MojangApi\MinecraftSkinRender.MojangApi.csproj" />
+    <ProjectReference Include="..\MinecraftSkinRender.Vulkan.KHR\MinecraftSkinRender.Vulkan.KHR.csproj" />
     <ProjectReference Include="..\MinecraftSkinRender.Vulkan\MinecraftSkinRender.Vulkan.csproj" />
   </ItemGroup>
 

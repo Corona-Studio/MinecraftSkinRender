@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace MinecraftSkinRender.Vulkan;
+namespace MinecraftSkinRender.Vulkan.KHR;
 
 internal struct SwapChainSupportDetails
 {
