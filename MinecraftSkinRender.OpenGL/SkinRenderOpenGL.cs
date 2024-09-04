@@ -40,8 +40,8 @@ public partial class SkinRenderOpenGL(GL gl) : SkinRender
 
         CheckError(gl);
 
-        Info = $"Renderer: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Renderer))} " +
-            $"Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Version))}";
+        Info = $"Renderer: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Renderer))}\n" +
+            $"Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Version))} GLSL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.ShadingLanguageVersion))}";
 
         CreateShader();
 
