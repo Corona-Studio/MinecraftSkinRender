@@ -41,7 +41,8 @@ public partial class SkinRenderOpenGL(GL gl) : SkinRender
         CheckError(gl);
 
         Info = $"Renderer: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Renderer))}\n" +
-            $"Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Version))} GLSL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.ShadingLanguageVersion))}";
+            $"OpenGL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Version))}\n" +
+            $"GLSL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.ShadingLanguageVersion))}";
 
         CreateShader();
 
