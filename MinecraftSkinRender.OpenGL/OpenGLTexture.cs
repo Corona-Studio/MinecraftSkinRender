@@ -18,6 +18,14 @@ public partial class SkinRenderOpenGL
         var format = PixelFormat.Rgba;
         if (image.ColorType == SKColorType.Bgra8888)
         {
+            if (IsGLES)
+            {
+                using var image1 = image.Copy(SKColorType.Rgba8888);
+                gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)image.Width,
+               (uint)image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, (void*)image1.GetPixels());
+                gl.BindTexture(TextureTarget.Texture2D, 0);
+                return;
+            }
             format = PixelFormat.Bgra;
         }
 

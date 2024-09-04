@@ -45,6 +45,11 @@ internal class Program
         // Create a Silk.NET window as usual
         using var window = Window.Create(WindowOptions.Default with
         {
+            API = GraphicsAPI.Default with
+            {
+                API = ContextAPI.OpenGLES,
+                Version = new(3, 2)
+            },
             Size = new(400, 400),
             VSync = true
         });
@@ -58,6 +63,7 @@ internal class Program
         {
             gl = window.CreateOpenGL();
             skin = new SkinRenderOpenGL(gl);
+            skin.IsGLES = true;
             skin.SetSkin(SKBitmap.Decode("skin.png"));
             skin.SetSkinType(SkinType.NewSlim);
             skin.SetTopModel(true);

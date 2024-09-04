@@ -248,9 +248,9 @@ public partial class SkinRenderOpenGL(GL gl) : SkinRender
         }
 
         gl.Viewport(0, 0, _width, _height);
-
-        gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+     
         gl.ClearColor(BackColor.X, BackColor.Y, BackColor.Z, BackColor.W);
+        gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         CheckError(gl);
         gl.Enable(EnableCap.CullFace);
@@ -258,6 +258,16 @@ public partial class SkinRenderOpenGL(GL gl) : SkinRender
         gl.DepthMask(true);
         gl.ActiveTexture(TextureUnit.Texture0);
         gl.UseProgram(_shaderProgram);
+
+        //if (IsGLES)
+        //{
+        //    gl.ClearDepth(1);
+        //    gl.DepthMask(true);
+        //    gl.Disable(EnableCap.CullFace);
+        //    gl.Disable(EnableCap.ScissorTest);
+        //    gl.DepthFunc(DepthFunction.Less);
+        //}
+
         CheckError(gl);
 
         var viewLoc = gl.GetUniformLocation(_shaderProgram, "view");
@@ -276,21 +286,19 @@ public partial class SkinRenderOpenGL(GL gl) : SkinRender
         CheckError(gl);
 
         DrawSkin();
+        DrawCape();
 
         if (EnableTop)
         {
-            //gl.Disable(EnableCap.DepthTest);
             gl.Enable(EnableCap.Blend);
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             gl.DepthMask(false);
 
             DrawSkinTop();
 
-            //gl.Enable(EnableCap.DepthTest);
             gl.Disable(EnableCap.Blend);
             gl.DepthMask(true);
         }
-
-        DrawCape();
 
         if (EnableMSAA)
         {
