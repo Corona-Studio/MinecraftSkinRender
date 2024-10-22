@@ -1,37 +1,36 @@
-﻿using Silk.NET.OpenGL;
-using SkiaSharp;
+﻿using SkiaSharp;
 
 namespace MinecraftSkinRender.OpenGL;
 
 public partial class SkinRenderOpenGL
 {
-    private unsafe void LoadTex(SKBitmap image, uint tex)
+    private unsafe void LoadTex(SKBitmap image, int tex)
     {
-        gl.ActiveTexture(TextureUnit.Texture0);
-        gl.BindTexture(TextureTarget.Texture2D, tex);
+        gl.ActiveTexture(gl.GL_TEXTURE0);
+        gl.BindTexture(gl.GL_TEXTURE_2D, tex);
 
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.Nearest);
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToBorder);
-        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToBorder);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
 
-        var format = PixelFormat.Rgba;
+        var format = gl.GL_RGBA;
         if (image.ColorType == SKColorType.Bgra8888)
         {
             if (IsGLES)
             {
                 using var image1 = image.Copy(SKColorType.Rgba8888);
-                gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)image.Width,
-               (uint)image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, (void*)image1.GetPixels());
-                gl.BindTexture(TextureTarget.Texture2D, 0);
+                gl.TexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA8, image.Width,
+               image.Height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, image1.GetPixels());
+                gl.BindTexture(gl.GL_TEXTURE_2D, 0);
                 return;
             }
-            format = PixelFormat.Bgra;
+            format = gl.GL_BGRA;
         }
 
-        gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)image.Width,
-               (uint)image.Height, 0, format, PixelType.UnsignedByte, (void*)image.GetPixels());
-        gl.BindTexture(TextureTarget.Texture2D, 0);
+        gl.TexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA8, image.Width,
+              image.Height, 0, format, gl.GL_UNSIGNED_BYTE, image.GetPixels());
+        gl.BindTexture(gl.GL_TEXTURE_2D, 0);
     }
 
     private void LoadSkin()
@@ -55,7 +54,7 @@ public partial class SkinRenderOpenGL
             LoadTex(Cape, _textureCape);
         }
 
-        CheckError(gl);
+        CheckError();
 
         _switchSkin = false;
     }

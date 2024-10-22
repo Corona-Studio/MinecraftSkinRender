@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Silk.NET.OpenGL;
 
 namespace MinecraftSkinRender.OpenGL;
 
@@ -87,23 +86,23 @@ void main()
 
     private void CreateShader()
     {
-        int maj = gl.GetInteger(GetPName.MajorVersion);
-        int min = gl.GetInteger(GetPName.MinorVersion);
+        gl.GetIntegerv(gl.GL_MAJOR_VERSION, out int maj);
+        gl.GetIntegerv(gl.GL_MINOR_VERSION, out int min);
 
-        var vertexShader = gl.CreateShader(ShaderType.VertexShader);
+        var vertexShader = gl.CreateShader(gl.GL_VERTEX_SHADER);
         gl.ShaderSource(vertexShader, GetShader(new(maj, min), IsGLES, false));
         gl.CompileShader(vertexShader);
-        gl.GetShader(vertexShader, ShaderParameterName.CompileStatus, out var state);
+        gl.GetShaderiv(vertexShader, gl.GL_COMPILE_STATUS, out var state);
         if (state == 0)
         {
             gl.GetShaderInfoLog(vertexShader, out var info);
             throw new Exception($"GL_VERTEX_SHADER.\n{info}");
         }
 
-        var fragmentShader = gl.CreateShader(ShaderType.FragmentShader);
+        var fragmentShader = gl.CreateShader(gl.GL_FRAGMENT_SHADER);
         gl.ShaderSource(fragmentShader, GetShader(new(maj, min), IsGLES, true));
         gl.CompileShader(fragmentShader);
-        state = gl.GetShader(fragmentShader, ShaderParameterName.CompileStatus);
+        gl.GetShaderiv(fragmentShader, gl.GL_COMPILE_STATUS, out state);
         if (state == 0)
         {
             gl.GetShaderInfoLog(vertexShader, out var info);
@@ -114,7 +113,7 @@ void main()
         gl.AttachShader(_shaderProgram, vertexShader);
         gl.AttachShader(_shaderProgram, fragmentShader);
         gl.LinkProgram(_shaderProgram);
-        state = gl.GetProgram(_shaderProgram, ProgramPropertyARB.LinkStatus);
+        gl.GetProgramiv(_shaderProgram, gl.GL_LINK_STATUS, out state);
         if (state == 0)
         {
             gl.GetProgramInfoLog(vertexShader, out var info);

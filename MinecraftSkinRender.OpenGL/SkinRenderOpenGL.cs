@@ -6,17 +6,17 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 {
     private bool _init = false;
 
-    private uint _textureSkin;
-    private uint _textureCape;
-    private uint _steveModelDrawOrderCount;
+    private int _textureSkin;
+    private int _textureCape;
+    private int _steveModelDrawOrderCount;
 
-    private uint _shaderProgram;
+    private int _shaderProgram;
 
-    private uint _colorRenderBuffer;
-    private uint _depthRenderBuffer;
-    private uint _frameBuffer;
+    private int _colorRenderBuffer;
+    private int _depthRenderBuffer;
+    private int _frameBuffer;
 
-    private uint _width, _height;
+    private int _width, _height;
 
     private readonly ModelVAO _normalVAO = new();
     private readonly ModelVAO _topVAO = new();
@@ -30,17 +30,17 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         _init = true;
 
-        CheckError(gl);
+        CheckError();
 
         gl.ClearColor(0, 0, 0, 1);
-        gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-        gl.CullFace(TriangleFace.Back);
+        gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
+        gl.CullFace(gl.GL_BACK);
 
-        CheckError(gl);
+        CheckError();
 
-        Info = $"Renderer: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Renderer))}\n" +
-            $"OpenGL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.Version))}\n" +
-            $"GLSL Version: {SilkMarshal.PtrToString((nint)gl.GetString(StringName.ShadingLanguageVersion))}";
+        Info = $"Renderer: {gl.GetString(gl.GL_RENDERER)}\n" +
+            $"OpenGL Version: {gl.GetString(gl.GL_VERSION)}\n" +
+            $"GLSL Version: {gl.GetString(gl.GL_SHADING_LANGUAGE_VERSION)}";
 
         CreateShader();
 
@@ -50,36 +50,36 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         _textureSkin = gl.GenTexture();
         _textureCape = gl.GenTexture();
 
-        CheckError(gl);
+        CheckError();
     }
 
     private void InitFrameBuffer()
     {
         _colorRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _colorRenderBuffer);
-        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer,
-            8, InternalFormat.Rgba8, _width, _height);
+        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _colorRenderBuffer);
+        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
+            8, gl.GL_RGBA8, _width, _height);
 
         _depthRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthRenderBuffer);
-        gl.RenderbufferStorageMultisample(RenderbufferTarget.Renderbuffer,
-            8, InternalFormat.DepthComponent24, _width, _height);
+        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _depthRenderBuffer);
+        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
+            8, gl.GL_DEPTH_COMPONENT24, _width, _height);
 
         _frameBuffer = gl.GenFramebuffer();
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBuffer);
+        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
 
-        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer,
-            FramebufferAttachment.ColorAttachment0, RenderbufferTarget.Renderbuffer, _colorRenderBuffer);
+        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+            gl.GL_COLOR_ATTACHMENT0, gl.GL_RENDERBUFFER, _colorRenderBuffer);
 
-        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer,
-            FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, _depthRenderBuffer);
+        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+            gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, _depthRenderBuffer);
 
-        if (gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete)
+        if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
         {
             throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
         }
-        gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
+        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
     }
 
     private void DeleteFrameBuffer()
@@ -107,104 +107,104 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
     {
         if (HaveCape && EnableCape)
         {
-            gl.BindTexture(TextureTarget.Texture2D, _textureCape);
+            gl.BindTexture(gl.GL_TEXTURE_2D, _textureCape);
             var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
             var mat = GetMatrix4(MatrPartType.Cape);
-            gl.UniformMatrix4(modelLoc, 1, false, (float*)&mat);
+            gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&mat);
             gl.BindVertexArray(_normalVAO.Cape.VertexArrayObject);
-            gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-                DrawElementsType.UnsignedShort, null);
+            gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+                gl.GL_UNSIGNED_SHORT, 0);
 
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            gl.BindTexture(gl.GL_TEXTURE_2D, 0);
         }
     }
 
     private unsafe void DrawSkin()
     {
-        gl.BindTexture(TextureTarget.Texture2D, _textureSkin);
+        gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
         var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
         var modelMat = Matrix4x4.Identity;
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Body.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.Head);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Head.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.LeftArm);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftArm.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.RightArm);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightArm.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.LeftLeg);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftLeg.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.RightLeg);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightLeg.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
-        gl.BindTexture(TextureTarget.Texture2D, 0);
+        gl.BindTexture(gl.GL_TEXTURE_2D, 0);
     }
 
     private unsafe void DrawSkinTop()
     {
-        gl.BindTexture(TextureTarget.Texture2D, _textureSkin);
+        gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
         var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
         var modelMat = GetMatrix4(MatrPartType.Body);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Body.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.Head);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Head.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.LeftArm);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftArm.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.RightArm);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightArm.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.LeftLeg);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftLeg.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
         modelMat = GetMatrix4(MatrPartType.RightLeg);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&modelMat);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightLeg.VertexArrayObject);
-        gl.DrawElements(PrimitiveType.Triangles, _steveModelDrawOrderCount,
-           DrawElementsType.UnsignedShort, null);
+        gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
+           gl.GL_UNSIGNED_SHORT, 0);
 
-        gl.BindTexture(TextureTarget.Texture2D, 0);
+        gl.BindTexture(gl.GL_TEXTURE_2D, 0);
     }
 
     public unsafe void OpenGlRender(int fb)
@@ -230,8 +230,8 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         if (Width != _width || Height != _height)
         {
-            _width = (uint)Width;
-            _height = (uint)Height;
+            _width = Width;
+            _height = Height;
             DeleteFrameBuffer();
             InitFrameBuffer();
         }
@@ -243,78 +243,78 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         if (EnableMSAA)
         {
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _frameBuffer);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
         }
 
         gl.Viewport(0, 0, _width, _height);
      
         gl.ClearColor(BackColor.X, BackColor.Y, BackColor.Z, BackColor.W);
-        gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        gl.Clear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 
-        CheckError(gl);
-        gl.Enable(EnableCap.CullFace);
-        gl.Enable(EnableCap.DepthTest);
+        CheckError();
+        gl.Enable(gl.GL_CULL_FACE);
+        gl.Enable(gl.GL_DEPTH_TEST);
         gl.DepthMask(true);
-        gl.ActiveTexture(TextureUnit.Texture0);
+        gl.ActiveTexture(gl.GL_TEXTURE0);
         gl.UseProgram(_shaderProgram);
 
         //if (IsGLES)
         //{
         //    gl.ClearDepth(1);
         //    gl.DepthMask(true);
-        //    gl.Disable(EnableCap.CullFace);
+        //    gl.Disable(gl.GL_CULL_FACE);
         //    gl.Disable(EnableCap.ScissorTest);
         //    gl.DepthFunc(DepthFunction.Less);
         //}
 
-        CheckError(gl);
+        CheckError();
 
         var viewLoc = gl.GetUniformLocation(_shaderProgram, "view");
         var projectionLoc = gl.GetUniformLocation(_shaderProgram, "projection");
         var modelLoc = gl.GetUniformLocation(_shaderProgram, "model");
 
         var matr = GetMatrix4(MatrPartType.Proj);
-        gl.UniformMatrix4(projectionLoc, 1, false, (float*)&matr);
+        gl.UniformMatrix4fv(projectionLoc, 1, false, (float*)&matr);
 
         matr = GetMatrix4(MatrPartType.View);
-        gl.UniformMatrix4(viewLoc, 1, false, (float*)&matr);
+        gl.UniformMatrix4fv(viewLoc, 1, false, (float*)&matr);
 
         matr = GetMatrix4(MatrPartType.Model);
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&matr);
+        gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&matr);
         
-        CheckError(gl);
+        CheckError();
 
         DrawSkin();
         DrawCape();
 
         if (EnableTop)
         {
-            gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            gl.Enable(gl.GL_BLEND);
+            gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
             gl.DepthMask(false);
 
             DrawSkinTop();
 
-            gl.Disable(EnableCap.Blend);
+            gl.Disable(gl.GL_BLEND);
             gl.DepthMask(true);
         }
 
         if (EnableMSAA)
         {
-            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, (uint)fb);
-            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _frameBuffer);
-            gl.BlitFramebuffer(0, 0, (int)_width, (int)_height, 0, 0, (int)_width,
-                (int)_height, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Nearest);
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            gl.BindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, fb);
+            gl.BindFramebuffer(gl.GL_READ_FRAMEBUFFER, _frameBuffer);
+            gl.BlitFramebuffer(0, 0, _width, _height, 0, 0, _width,
+                _height, gl.GL_COLOR_BUFFER_BIT, gl.GL_NEAREST);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
         }
 
-        CheckError(gl);
+        CheckError();
     }
 
-    private static void CheckError(GL gl)
+    private void CheckError()
     {
-        GLEnum err;
-        while ((err = gl.GetError()) != GLEnum.NoError)
+        int err;
+        while ((err = gl.GetError()) != 0)
             Console.WriteLine(err);
     }
 
@@ -323,8 +323,8 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         _skina.Close();
 
         // Unbind everything
-        gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
-        gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+        gl.BindBuffer(gl.GL_ARRAY_BUFFER, 0);
+        gl.BindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0);
         gl.BindVertexArray(0);
         gl.UseProgram(0);
 

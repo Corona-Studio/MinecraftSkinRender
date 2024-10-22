@@ -5,9 +5,9 @@ namespace MinecraftSkinRender.OpenGL;
 
 internal record VAOItem
 {
-    public uint VertexBufferObject;
-    public uint IndexBufferObject;
-    public uint VertexArrayObject;
+    public int VertexBufferObject;
+    public int IndexBufferObject;
+    public int VertexArrayObject;
 }
 
 internal record ModelVAO

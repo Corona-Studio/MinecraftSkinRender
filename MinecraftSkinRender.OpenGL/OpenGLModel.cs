@@ -34,9 +34,9 @@ public partial class SkinRenderOpenGL
         gl.UseProgram(_shaderProgram);
         gl.BindVertexArray(vao.VertexArrayObject);
 
-        uint a_Position = (uint)gl.GetAttribLocation(_shaderProgram, "a_position");
-        uint a_texCoord = (uint)gl.GetAttribLocation(_shaderProgram, "a_texCoord");
-        uint a_normal = (uint)gl.GetAttribLocation(_shaderProgram, "a_normal");
+        int a_Position = gl.GetAttribLocation(_shaderProgram, "a_position");
+        int a_texCoord = gl.GetAttribLocation(_shaderProgram, "a_texCoord");
+        int a_normal = gl.GetAttribLocation(_shaderProgram, "a_normal");
 
         gl.DisableVertexAttribArray(a_Position);
         gl.DisableVertexAttribArray(a_texCoord);
@@ -58,24 +58,24 @@ public partial class SkinRenderOpenGL
             };
         }
 
-        gl.BindBuffer(BufferTargetARB.ArrayBuffer, vao.VertexBufferObject);
+        gl.BindBuffer(gl.GL_ARRAY_BUFFER, vao.VertexBufferObject);
         var vertexSize = Marshal.SizeOf<VertexOpenGL>();
         fixed (void* pdata = points)
         {
-            gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(points.Length * vertexSize),
-                    pdata, BufferUsageARB.StaticDraw);
+            gl.BufferData(gl.GL_ARRAY_BUFFER, points.Length * vertexSize,
+                    new IntPtr(pdata), gl.GL_STATIC_DRAW);
         }
 
-        gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, vao.IndexBufferObject);
+        gl.BindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, vao.IndexBufferObject);
         fixed (void* pdata = model.Point)
         {
-            gl.BufferData(BufferTargetARB.ElementArrayBuffer,
-                (nuint)(model.Point.Length * sizeof(ushort)), pdata, BufferUsageARB.StaticDraw);
+            gl.BufferData(gl.GL_ELEMENT_ARRAY_BUFFER,
+                model.Point.Length * sizeof(ushort), new IntPtr(pdata), gl.GL_STATIC_DRAW);
         }
 
-        gl.VertexAttribPointer(a_Position, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-        gl.VertexAttribPointer(a_texCoord, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
-        gl.VertexAttribPointer(a_normal, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
+        gl.VertexAttribPointer(a_Position, 3, gl.GL_FLOAT, false, 8 * sizeof(float), 0);
+        gl.VertexAttribPointer(a_texCoord, 2, gl.GL_FLOAT, false, 8 * sizeof(float), 3 * sizeof(float));
+        gl.VertexAttribPointer(a_normal, 3, gl.GL_FLOAT, false, 8 * sizeof(float), 5 * sizeof(float));
 
         gl.EnableVertexAttribArray(a_Position);
         gl.EnableVertexAttribArray(a_texCoord);
@@ -83,7 +83,7 @@ public partial class SkinRenderOpenGL
 
         gl.BindVertexArray(0);
 
-        CheckError(gl);
+        CheckError();
     }
 
     private unsafe void LoadModel()
@@ -93,7 +93,7 @@ public partial class SkinRenderOpenGL
         var tex = Steve3DTexture.GetSteveTexture(SkinType);
         var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
 
-        _steveModelDrawOrderCount = (uint)normal.Head.Point.Length;
+        _steveModelDrawOrderCount = normal.Head.Point.Length;
 
         PutVAO(_normalVAO.Head, normal.Head, tex.Head);
         PutVAO(_normalVAO.Body, normal.Body, tex.Body);
