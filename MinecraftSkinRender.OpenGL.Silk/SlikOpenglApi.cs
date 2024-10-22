@@ -43,7 +43,7 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
 
     public override void BindTexture(int bit, int index)
     {
-        gl.BindFramebuffer((GLEnum)bit, (uint)index);
+        gl.BindTexture((GLEnum)bit, (uint)index);
     }
 
     public override void BindVertexArray(int vertexArray)
@@ -268,7 +268,7 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
 
     public override void TexParameteri(int a, int b, int c)
     {
-        gl.TextureParameter((uint)a, (GLEnum)b, c);
+        gl.TexParameter((GLEnum)a, (GLEnum)b, c);
     }
 
     public override void Uniform1i(int index, int data)

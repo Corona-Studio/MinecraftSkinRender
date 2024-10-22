@@ -7,12 +7,15 @@ public partial class SkinRenderOpenGL
     private unsafe void LoadTex(SKBitmap image, int tex)
     {
         gl.ActiveTexture(gl.GL_TEXTURE0);
+
         gl.BindTexture(gl.GL_TEXTURE_2D, tex);
 
         gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
         gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
-        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
-        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER);
+        gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER);
+
+        CheckError();
 
         var format = gl.GL_RGBA;
         if (image.ColorType == SKColorType.Bgra8888)
@@ -23,6 +26,9 @@ public partial class SkinRenderOpenGL
                 gl.TexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA8, image.Width,
                image.Height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, image1.GetPixels());
                 gl.BindTexture(gl.GL_TEXTURE_2D, 0);
+
+                CheckError();
+
                 return;
             }
             format = gl.GL_BGRA;
@@ -35,6 +41,8 @@ public partial class SkinRenderOpenGL
 
     private void LoadSkin()
     {
+        CheckError();
+
         if (Skin == null)
         {
             OnErrorChange(ErrorType.SkinNotFind);
@@ -48,6 +56,8 @@ public partial class SkinRenderOpenGL
         }
 
         LoadTex(Skin, _textureSkin);
+
+        CheckError();
 
         if (Cape != null)
         {

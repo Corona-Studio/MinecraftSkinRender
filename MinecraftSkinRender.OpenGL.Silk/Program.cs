@@ -9,7 +9,6 @@ internal class Program
     static async Task Main(string[] args)
     {
         bool havecape = true;
-
         //Console.WriteLine("Download skin");
 
         //var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
