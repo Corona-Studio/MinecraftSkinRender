@@ -1,10 +1,8 @@
 ﻿using System.Numerics;
-using Silk.NET.Core.Native;
-using Silk.NET.OpenGL;
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class SkinRenderOpenGL(GL gl) : SkinRender
+public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 {
     private bool _init = false;
 

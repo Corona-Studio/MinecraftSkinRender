@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Silk.NET.OpenGL;
 
 namespace MinecraftSkinRender.OpenGL;
 

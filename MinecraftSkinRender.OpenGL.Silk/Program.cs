@@ -10,6 +10,8 @@ internal class Program
     {
         bool havecape = true;
 
+        GLEnum.NoError
+
         //Console.WriteLine("Download skin");
 
         //var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
@@ -67,7 +69,7 @@ internal class Program
             skin.SetSkin(SKBitmap.Decode("skin.png"));
             skin.SetSkinType(SkinType.NewSlim);
             skin.SetTopModel(true);
-            skin.SetMSAA(false);
+            skin.SetMSAA(true);
             skin.SetAnimation(true);
             if (havecape)
             {

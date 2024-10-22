@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.OpenGL" Version="2.21.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 
