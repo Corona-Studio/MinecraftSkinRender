@@ -6,10 +6,6 @@
 public enum SkinType
 {
     /// <summary>
-    /// 未知的类型
-    /// </summary>
-    Unkonw,
-    /// <summary>
     /// 1.7旧版
     /// </summary>
     Old,
@@ -20,7 +16,11 @@ public enum SkinType
     /// <summary>
     /// 1.8新版纤细
     /// </summary>
-    NewSlim
+    NewSlim,
+    /// <summary>
+    /// 未知的类型
+    /// </summary>
+    Unkonw
 }
 
 public enum KeyType
