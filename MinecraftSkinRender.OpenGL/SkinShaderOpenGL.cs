@@ -36,6 +36,8 @@ varying vec3 fragPosIn;
 varying vec3 normalIn;
 varying vec2 texIn;
 
+//DECLAREGLFRAG
+
 void main()
 {
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -116,7 +118,7 @@ void main()
         gl.GetProgramiv(_shaderProgram, gl.GL_LINK_STATUS, out state);
         if (state == 0)
         {
-            gl.GetProgramInfoLog(vertexShader, out var info);
+            gl.GetProgramInfoLog(fragmentShader, out var info);
             throw new Exception($"GL_LINK_PROGRAM.\n{info}");
         }
 

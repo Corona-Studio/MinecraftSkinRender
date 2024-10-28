@@ -58,12 +58,12 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         _colorRenderBuffer = gl.GenRenderbuffer();
         gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _colorRenderBuffer);
         gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            8, gl.GL_RGBA8, _width, _height);
+            4, gl.GL_RGBA8, _width, _height);
 
         _depthRenderBuffer = gl.GenRenderbuffer();
         gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _depthRenderBuffer);
         gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            8, gl.GL_DEPTH_COMPONENT24, _width, _height);
+            4, gl.GL_DEPTH_COMPONENT24, _width, _height);
 
         _frameBuffer = gl.GenFramebuffer();
         gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
