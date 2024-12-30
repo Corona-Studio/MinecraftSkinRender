@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.8" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MinecraftSkinRender\MinecraftSkinRender.csproj" />
   </ItemGroup>
 
