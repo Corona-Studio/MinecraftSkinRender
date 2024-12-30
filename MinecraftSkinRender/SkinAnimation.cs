@@ -17,6 +17,7 @@ public class SkinAnimation
     public Vector3 Arm;
     public Vector3 Leg;
     public Vector3 Head;
+    public float Cape;
 
     public SkinAnimation()
     {
@@ -55,6 +56,8 @@ public class SkinAnimation
                 //0 180
                 //90 -90
                 Leg.Y = 90 - _frame * 3;
+                //0 6
+                Cape = (float)_frame / 10;
                 //-30 30
                 if (SkinType == SkinType.NewSlim)
                 {
@@ -69,6 +72,9 @@ public class SkinAnimation
             }
             else
             {
+                //61 120
+                //6 0
+                Cape = 6 - ((float)_frame - 60) / 10;
                 //360 720
                 //180 -180
                 Arm.Y = 540 - _frame * 6;

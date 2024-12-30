@@ -68,8 +68,9 @@ internal class Program
             skin.SetSkin(SKBitmap.Decode("skin.png"));
             skin.SetSkinType(SkinType.NewSlim);
             skin.SetTopModel(true);
-            skin.SetMSAA(true);
+            skin.SetMSAA(false);
             skin.SetAnimation(true);
+            skin.SetCape(true);
             if (havecape)
             {
                 skin.SetCape(SKBitmap.Decode("cape.png"));
@@ -102,7 +103,7 @@ internal class Program
             {
                 return;
             }
-            skin.Rot(0, 0.1f);
+            skin.Rot(0, 1f);
             skin.Tick(delta);
             skin.OpenGlRender(0);
             //gl.Clear(ClearBufferMask.ColorBufferBit);

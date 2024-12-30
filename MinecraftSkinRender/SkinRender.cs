@@ -215,7 +215,6 @@ public abstract class SkinRender
             throw new Exception("This is not skin image");
         }
 
-        //Skin = MakeImage(skin);
         Skin = skin;
 
         SetSkinType(SkinTypeChecker.GetTextType(skin));
@@ -320,7 +319,7 @@ public abstract class SkinRender
             * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
             * Matrix4x4.CreateScale(_dis),
             MatrPartType.Cape => Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
-               Matrix4x4.CreateRotationX((float)((enable ? 11.8 : 6.3) * Math.PI / 180)) *
+               Matrix4x4.CreateRotationX((float)((enable ? 11.8 + _skina.Cape : 6.3) * Math.PI / 180)) *
                Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f),
             _ => Matrix4x4.Identity
         };
