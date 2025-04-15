@@ -7,11 +7,18 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
-	</ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
 
-	<ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MinecraftSkinRender.Vulkan\MinecraftSkinRender.Vulkan.csproj" />
   </ItemGroup>
 

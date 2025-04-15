@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender", "Mine
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.Vulkan.Silk", "MinecraftSkinRender.Vulkan.Silk\MinecraftSkinRender.Vulkan.Silk.csproj", "{D2BFBC20-59C5-465A-9C31-E85A4461956D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.Vulkan.Avalonia", "MinecraftSkinRender.Vulkan.Avalonia\MinecraftSkinRender.Vulkan.Avalonia.csproj", "{D7E3AA61-E86C-4410-8718-688DB72AF381}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.Vulkan.KHR", "MinecraftSkinRender.Vulkan.KHR\MinecraftSkinRender.Vulkan.KHR.csproj", "{981D7CF8-4A72-4067-9F22-06056AAFB6E1}"
 EndProject
 Global
