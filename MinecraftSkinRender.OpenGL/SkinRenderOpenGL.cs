@@ -2,7 +2,7 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
+public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
 {
     private bool _init = false;
 
@@ -11,10 +11,15 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
     private int _steveModelDrawOrderCount;
 
     private int _shaderProgram;
+    private int _shaderFXAAProgram;
 
-    private int _colorRenderBuffer;
-    private int _depthRenderBuffer;
-    private int _frameBuffer;
+    private int _msaaRenderBuffer;
+    private int _msaaRenderTexture;
+    private int _msaaFrameBuffer;
+
+    private int _fxaaRenderBuffer;
+    private int _fxaaTexture;
+    private int _fxaaFrameBuffer;
 
     private int _width, _height;
 
@@ -47,6 +52,8 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         InitVAO(_normalVAO);
         InitVAO(_topVAO);
 
+        InitFXAA();
+
         _textureSkin = gl.GenTexture();
         _textureCape = gl.GenTexture();
 
@@ -55,51 +62,96 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
     private void InitFrameBuffer()
     {
-        _colorRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _colorRenderBuffer);
-        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            4, gl.GL_RGBA8, _width, _height);
-
-        _depthRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _depthRenderBuffer);
-        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            4, gl.GL_DEPTH_COMPONENT24, _width, _height);
-
-        _frameBuffer = gl.GenFramebuffer();
-        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
-
-        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-            gl.GL_COLOR_ATTACHMENT0, gl.GL_RENDERBUFFER, _colorRenderBuffer);
-
-        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-            gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, _depthRenderBuffer);
-
-        if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
         {
-            throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
+            _msaaFrameBuffer = gl.GenFramebuffer();
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _msaaFrameBuffer);
+
+            _msaaRenderTexture = gl.GenTexture();
+            gl.BindTexture(gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture);
+            gl.TexImage2DMultisample(gl.GL_TEXTURE_2D_MULTISAMPLE, 4,
+                gl.GL_RGBA8, _width, _height, true);
+            gl.FramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
+                gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture, 0);
+
+            _msaaRenderBuffer = gl.GenRenderbuffer();
+            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _msaaRenderBuffer);
+            gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER, 4,
+                gl.GL_DEPTH24_STENCIL8, _width, _height);
+            gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT,
+                gl.GL_RENDERBUFFER, _msaaRenderBuffer);
+
+            if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
+            {
+                throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
+            }
+            gl.BindTexture(gl.GL_TEXTURE_2D_MULTISAMPLE, 0);
+            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
         }
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
-        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+
+        {
+            _fxaaFrameBuffer = gl.GenFramebuffer();
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _fxaaFrameBuffer);
+
+            _fxaaTexture = gl.GenTexture();
+            gl.BindTexture(gl.GL_TEXTURE_2D, _fxaaTexture);
+            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR);
+            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
+            gl.TexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, _width, _height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, 0);
+            gl.FramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, _fxaaTexture, 0);
+
+            _fxaaRenderBuffer = gl.GenRenderbuffer();
+            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _fxaaRenderBuffer);
+            gl.RenderbufferStorage(gl.GL_RENDERBUFFER,
+                gl.GL_DEPTH24_STENCIL8, _width, _height);
+            gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT,
+                gl.GL_RENDERBUFFER, _fxaaRenderBuffer);
+
+            if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
+            {
+                throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
+            }
+
+            gl.BindTexture(gl.GL_TEXTURE_2D, 0);
+            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+        }
     }
 
     private void DeleteFrameBuffer()
     {
-        if (_frameBuffer != 0)
+        if (_msaaFrameBuffer != 0)
         {
-            gl.DeleteFramebuffer(_frameBuffer);
-            _frameBuffer = 0;
+            gl.DeleteFramebuffer(_msaaFrameBuffer);
+            _msaaFrameBuffer = 0;
+        }
+        if (_msaaRenderBuffer != 0)
+        {
+            gl.DeleteRenderbuffer(_msaaRenderBuffer);
+            _msaaRenderBuffer = 0;
+        }
+        if (_msaaRenderTexture != 0)
+        {
+            gl.DeleteTexture(_msaaRenderTexture);
+            _msaaRenderTexture = 0;
         }
 
-        if (_colorRenderBuffer != 0)
+        if (_fxaaFrameBuffer != 0)
         {
-            gl.DeleteRenderbuffer(_colorRenderBuffer);
-            _colorRenderBuffer = 0;
+            gl.DeleteFramebuffer(_fxaaFrameBuffer);
+            _fxaaFrameBuffer = 0;
         }
-
-        if (_depthRenderBuffer != 0)
+        if (_fxaaRenderBuffer != 0)
         {
-            gl.DeleteRenderbuffer(_depthRenderBuffer);
-            _depthRenderBuffer = 0;
+            gl.DeleteRenderbuffer(_fxaaRenderBuffer);
+            _fxaaRenderBuffer = 0;
+        }
+        if (_fxaaTexture != 0)
+        {
+            gl.DeleteTexture(_fxaaTexture);
+            _fxaaTexture = 0;
         }
     }
 
@@ -241,20 +293,25 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
             return;
         }
 
-        if (EnableMSAA)
+        if (RenderType == SkinRenderType.MSAA)
         {
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _msaaFrameBuffer);
+        }
+        else if (RenderType == SkinRenderType.FXAA)
+        {
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _fxaaFrameBuffer);
         }
 
         gl.Viewport(0, 0, _width, _height);
      
         gl.ClearColor(BackColor.X, BackColor.Y, BackColor.Z, BackColor.W);
+        gl.ClearDepth(1.0f);
         gl.Clear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 
         CheckError();
+
         gl.Enable(gl.GL_CULL_FACE);
         gl.Enable(gl.GL_DEPTH_TEST);
-        gl.DepthMask(true);
         gl.ActiveTexture(gl.GL_TEXTURE0);
         gl.UseProgram(_shaderProgram);
 
@@ -284,27 +341,65 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         
         CheckError();
 
+        gl.DepthMask(true);
+        gl.Disable(gl.GL_BLEND);
+
         DrawSkin();
         DrawCape();
 
         if (EnableTop)
         {
-            gl.Enable(gl.GL_BLEND);
-            gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
             gl.DepthMask(false);
+            gl.Enable(gl.GL_BLEND);
+            gl.Enable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE);
+            gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 
             DrawSkinTop();
 
-            gl.Disable(gl.GL_BLEND);
             gl.DepthMask(true);
+            gl.Disable(gl.GL_BLEND);
         }
 
-        if (EnableMSAA)
+        if (RenderType == SkinRenderType.MSAA)
         {
             gl.BindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, fb);
-            gl.BindFramebuffer(gl.GL_READ_FRAMEBUFFER, _frameBuffer);
+            gl.BindFramebuffer(gl.GL_READ_FRAMEBUFFER, _msaaFrameBuffer);
             gl.BlitFramebuffer(0, 0, _width, _height, 0, 0, _width,
                 _height, gl.GL_COLOR_BUFFER_BIT, gl.GL_NEAREST);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+        }
+        else if (RenderType == SkinRenderType.FXAA)
+        {
+            gl.Disable(gl.GL_DEPTH_TEST);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, fb);
+            gl.Viewport(0, 0, _width, _height);
+            gl.Clear(gl.GL_COLOR_BUFFER_BIT);
+            gl.UseProgram(_shaderFXAAProgram);
+
+            var g_texelStepLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_texelStep");
+            var g_showEdgesLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_showEdges");
+            var g_fxaaOnLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_fxaaOn");
+
+            var g_lumaThresholdLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_lumaThreshold");
+            var g_mulReduceLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_mulReduce");
+            var g_minReduceLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_minReduce");
+            var g_maxSpanLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_maxSpan");
+
+            gl.Uniform1i(g_showEdgesLocation, 0);
+            gl.Uniform1i(g_fxaaOnLocation, 1);
+
+            gl.Uniform1f(g_lumaThresholdLocation, 0.5f);
+            gl.Uniform1f(g_mulReduceLocation, 1.0f / 8.0f);
+            gl.Uniform1f(g_minReduceLocation, 1.0f / 128.0f);
+            gl.Uniform1f(g_maxSpanLocation, 8.0f);
+            gl.Uniform2f(g_texelStepLocation, 1.0f / _width, 1.0f / _height);
+            gl.ActiveTexture(gl.GL_TEXTURE0);
+            gl.BindTexture(gl.GL_TEXTURE_2D, _fxaaTexture);
+            gl.BindVertexArray(_fxaaVAO);
+            gl.DrawArrays(gl.GL_TRIANGLE_STRIP, 0, 4);
+            gl.BindVertexArray(0);
+            gl.Enable(gl.GL_DEPTH_TEST);
+            gl.BindTexture(gl.GL_TEXTURE_2D, 0);
             gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
         }
 
@@ -332,10 +427,11 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         DeleteVAO(_normalVAO);
         DeleteVAO(_topVAO);
 
+        DeleteFrameBuffer();
+
         DeleteTexture();
 
         gl.DeleteProgram(_shaderProgram);
-
-        DeleteFrameBuffer();
+        gl.DeleteProgram(_shaderFXAAProgram);
     }
 }

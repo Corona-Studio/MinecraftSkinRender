@@ -81,6 +81,11 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.ClearColor(r, g, b, a);
     }
 
+    public override void ClearDepth(float v)
+    {
+        gl.ClearDepth(v);
+    }
+
     public override void CompileShader(int index)
     {
         gl.CompileShader((uint)index);
@@ -176,6 +181,11 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.FramebufferRenderbuffer((GLEnum)target, (GLEnum)attachment, (GLEnum)renderbuffertarget, (uint)renderbuffer);
     }
 
+    public override void FramebufferTexture2D(int target, int attachment, int textarget, int texture, int level)
+    {
+        gl.FramebufferTexture2D((GLEnum)target, (GLEnum)attachment, (GLEnum)textarget, (uint)texture, level);
+    }
+
     public override int GenBuffer()
     {
         return (int)gl.GenBuffer();
@@ -251,6 +261,11 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.LinkProgram((uint)index);
     }
 
+    public override void RenderbufferStorage(int target, int internalformat, int width, int height)
+    {
+        gl.RenderbufferStorage((GLEnum)target, (GLEnum)internalformat, (uint)width, (uint)height);
+    }
+
     public override void RenderbufferStorageMultisample(int target, int samples, int internalformat, int width, int height)
     {
         gl.RenderbufferStorageMultisample((GLEnum)target, (uint)samples, (GLEnum)internalformat, (uint)width, (uint)height);
@@ -266,6 +281,11 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.TexImage2D((GLEnum)type, a, type1, (uint)w, (uint)h, size, (GLEnum)type2, (GLEnum)type3, (void*)data);
     }
 
+    public override void TexImage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations)
+    {
+        gl.TexImage2DMultisample((GLEnum)target, (uint)samples, (GLEnum)internalformat, (uint)width, (uint)height, fixedsamplelocations);
+    }
+
     public override void TexParameteri(int a, int b, int c)
     {
         gl.TexParameter((GLEnum)a, (GLEnum)b, c);
@@ -274,6 +294,11 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
     public override void Uniform1i(int index, int data)
     {
         gl.Uniform1(index, data);
+    }
+
+    public override void Uniform2f(int v, float width, float height)
+    {
+        gl.Uniform2(v, width, height);
     }
 
     public override unsafe void UniformMatrix4fv(int index, int length, bool b, float* data)
@@ -294,5 +319,15 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
     public override void Viewport(int x, int y, int w, int h)
     {
         gl.Viewport(x, y, (uint)w, (uint)h);
+    }
+
+    public override void DrawArrays(int type, int v1, int v2)
+    {
+        gl.DrawArrays((GLEnum)type, v1, (uint)v2);
+    }
+
+    public override void Uniform1f(int loc, float v)
+    {
+        gl.Uniform1(loc, v);
     }
 }

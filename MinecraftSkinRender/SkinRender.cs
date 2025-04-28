@@ -38,9 +38,9 @@ public abstract class SkinRender
     public bool HaveCape { get; protected set; }
     public bool HaveSkin { get; protected set; }
     public Vector4 BackColor { get; protected set; }
+    public SkinRenderType RenderType { get; protected set; }
 
     public bool EnableCape { get; private set; }
-    public bool EnableMSAA { get; private set; }
     public bool EnableTop { get; private set; }
 
     public Vector3 ArmRotate { get; set; }
@@ -62,9 +62,9 @@ public abstract class SkinRender
         _switchBack = true;
     }
 
-    public void SetMSAA(bool enable)
+    public void SetRenderType(SkinRenderType type)
     {
-        EnableMSAA = enable;
+        RenderType = type;
         _switchType = true;
     }
 

@@ -45,3 +45,8 @@ public enum MatrPartType
     Head, Body, LeftArm, RightArm, LeftLeg, RightLeg, Cape,
     Proj, View, Model
 }
+
+public enum SkinRenderType
+{ 
+    Normal, MSAA, FXAA
+}

@@ -2,7 +2,7 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class SkinRenderOpenGL
+public partial class OpenGLFXAA
 {
     private unsafe void LoadTex(SKBitmap image, int tex)
     {

@@ -55,7 +55,7 @@ internal class Program
 
         // Declare some variables
         GL gl = null;
-        SkinRenderOpenGL? skin = null;
+        OpenGLFXAA? skin = null;
 
         // Our loading function
         window.Load += () =>
@@ -65,10 +65,11 @@ internal class Program
             {
                 IsGLES = true
             };
-            skin.SetSkin(SKBitmap.Decode("skin.png"));
+            var img = SKBitmap.Decode("skin.png");
+            skin.SetSkin(img);
             skin.SetSkinType(SkinType.NewSlim);
             skin.SetTopModel(true);
-            skin.SetMSAA(false);
+            skin.SetRenderType(SkinRenderType.FXAA);
             skin.SetAnimation(true);
             skin.SetCape(true);
             if (havecape)
@@ -79,7 +80,7 @@ internal class Program
             {
                 Console.WriteLine("Fps: " + b);
             };
-            skin.SetBackColor(new(0, 1, 0, 1));
+            skin.SetBackColor(new(1, 1, 1, 1));
             skin.Width = window.FramebufferSize.X;
             skin.Height = window.FramebufferSize.Y;
             skin.OpenGlInit();
