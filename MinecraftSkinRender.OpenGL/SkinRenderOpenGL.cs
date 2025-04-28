@@ -2,157 +2,48 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
+public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 {
     private bool _init = false;
 
-    private int _textureSkin;
-    private int _textureCape;
-    private int _steveModelDrawOrderCount;
-
-    private int _shaderProgram;
-    private int _shaderFXAAProgram;
-
-    private int _msaaRenderBuffer;
-    private int _msaaRenderTexture;
-    private int _msaaFrameBuffer;
-
-    private int _fxaaRenderBuffer;
-    private int _fxaaTexture;
-    private int _fxaaFrameBuffer;
-
     private int _width, _height;
 
-    private readonly ModelVAO _normalVAO = new();
-    private readonly ModelVAO _topVAO = new();
-
-    public bool IsGLES { get; set; }
+    public bool IsGLES { get; init; }
 
     public unsafe void OpenGlInit()
     {
         if (_init)
+        {
             return;
+        }
 
         _init = true;
 
-        CheckError();
+        Info = $"Renderer: {gl.GetString(gl.GL_RENDERER)}\n" +
+        $"OpenGL Version: {gl.GetString(gl.GL_VERSION)}\n" +
+        $"GLSL Version: {gl.GetString(gl.GL_SHADING_LANGUAGE_VERSION)}";
 
         gl.ClearColor(0, 0, 0, 1);
-        gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
         gl.CullFace(gl.GL_BACK);
 
-        CheckError();
-
-        Info = $"Renderer: {gl.GetString(gl.GL_RENDERER)}\n" +
-            $"OpenGL Version: {gl.GetString(gl.GL_VERSION)}\n" +
-            $"GLSL Version: {gl.GetString(gl.GL_SHADING_LANGUAGE_VERSION)}";
-
-        CreateShader();
-
-        InitVAO(_normalVAO);
-        InitVAO(_topVAO);
-
+        InitShader();
+        InitModel();
         InitFXAA();
-
-        _textureSkin = gl.GenTexture();
-        _textureCape = gl.GenTexture();
+        InitTexture();
 
         CheckError();
     }
 
     private void InitFrameBuffer()
     {
-        {
-            _msaaFrameBuffer = gl.GenFramebuffer();
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _msaaFrameBuffer);
-
-            _msaaRenderTexture = gl.GenTexture();
-            gl.BindTexture(gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture);
-            gl.TexImage2DMultisample(gl.GL_TEXTURE_2D_MULTISAMPLE, 4,
-                gl.GL_RGBA8, _width, _height, true);
-            gl.FramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
-                gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture, 0);
-
-            _msaaRenderBuffer = gl.GenRenderbuffer();
-            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _msaaRenderBuffer);
-            gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER, 4,
-                gl.GL_DEPTH24_STENCIL8, _width, _height);
-            gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT,
-                gl.GL_RENDERBUFFER, _msaaRenderBuffer);
-
-            if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
-            {
-                throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
-            }
-            gl.BindTexture(gl.GL_TEXTURE_2D_MULTISAMPLE, 0);
-            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
-        }
-
-        {
-            _fxaaFrameBuffer = gl.GenFramebuffer();
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _fxaaFrameBuffer);
-
-            _fxaaTexture = gl.GenTexture();
-            gl.BindTexture(gl.GL_TEXTURE_2D, _fxaaTexture);
-            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
-            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
-            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR);
-            gl.TexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
-            gl.TexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, _width, _height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, 0);
-            gl.FramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, _fxaaTexture, 0);
-
-            _fxaaRenderBuffer = gl.GenRenderbuffer();
-            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _fxaaRenderBuffer);
-            gl.RenderbufferStorage(gl.GL_RENDERBUFFER,
-                gl.GL_DEPTH24_STENCIL8, _width, _height);
-            gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT,
-                gl.GL_RENDERBUFFER, _fxaaRenderBuffer);
-
-            if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
-            {
-                throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
-            }
-
-            gl.BindTexture(gl.GL_TEXTURE_2D, 0);
-            gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
-        }
+        InitMSAAFrameBuffer();
+        InitFXAAFrameBuffer();
     }
 
     private void DeleteFrameBuffer()
     {
-        if (_msaaFrameBuffer != 0)
-        {
-            gl.DeleteFramebuffer(_msaaFrameBuffer);
-            _msaaFrameBuffer = 0;
-        }
-        if (_msaaRenderBuffer != 0)
-        {
-            gl.DeleteRenderbuffer(_msaaRenderBuffer);
-            _msaaRenderBuffer = 0;
-        }
-        if (_msaaRenderTexture != 0)
-        {
-            gl.DeleteTexture(_msaaRenderTexture);
-            _msaaRenderTexture = 0;
-        }
-
-        if (_fxaaFrameBuffer != 0)
-        {
-            gl.DeleteFramebuffer(_fxaaFrameBuffer);
-            _fxaaFrameBuffer = 0;
-        }
-        if (_fxaaRenderBuffer != 0)
-        {
-            gl.DeleteRenderbuffer(_fxaaRenderBuffer);
-            _fxaaRenderBuffer = 0;
-        }
-        if (_fxaaTexture != 0)
-        {
-            gl.DeleteTexture(_fxaaTexture);
-            _fxaaTexture = 0;
-        }
+        DeleteMSAAFrameBuffer();
+        DeleteFXAAFrameBuffer();
     }
 
     private unsafe void DrawCape()
@@ -160,7 +51,7 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
         if (HaveCape && EnableCape)
         {
             gl.BindTexture(gl.GL_TEXTURE_2D, _textureCape);
-            var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
+            var modelLoc = gl.GetUniformLocation(_pgModel, "self");
             var mat = GetMatrix4(MatrPartType.Cape);
             gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&mat);
             gl.BindVertexArray(_normalVAO.Cape.VertexArrayObject);
@@ -175,7 +66,7 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
     {
         gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
+        var modelLoc = gl.GetUniformLocation(_pgModel, "self");
         var modelMat = Matrix4x4.Identity;
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Body.VertexArrayObject);
@@ -219,7 +110,7 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
     {
         gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
+        var modelLoc = gl.GetUniformLocation(_pgModel, "self");
         var modelMat = GetMatrix4(MatrPartType.Body);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Body.VertexArrayObject);
@@ -313,7 +204,7 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
         gl.Enable(gl.GL_CULL_FACE);
         gl.Enable(gl.GL_DEPTH_TEST);
         gl.ActiveTexture(gl.GL_TEXTURE0);
-        gl.UseProgram(_shaderProgram);
+        gl.UseProgram(_pgModel);
 
         //if (IsGLES)
         //{
@@ -326,9 +217,9 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
 
         CheckError();
 
-        var viewLoc = gl.GetUniformLocation(_shaderProgram, "view");
-        var projectionLoc = gl.GetUniformLocation(_shaderProgram, "projection");
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "model");
+        var viewLoc = gl.GetUniformLocation(_pgModel, "view");
+        var projectionLoc = gl.GetUniformLocation(_pgModel, "projection");
+        var modelLoc = gl.GetUniformLocation(_pgModel, "model");
 
         var matr = GetMatrix4(MatrPartType.Proj);
         gl.UniformMatrix4fv(projectionLoc, 1, false, (float*)&matr);
@@ -374,25 +265,8 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
             gl.BindFramebuffer(gl.GL_FRAMEBUFFER, fb);
             gl.Viewport(0, 0, _width, _height);
             gl.Clear(gl.GL_COLOR_BUFFER_BIT);
-            gl.UseProgram(_shaderFXAAProgram);
-
-            var g_texelStepLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_texelStep");
-            var g_showEdgesLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_showEdges");
-            var g_fxaaOnLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_fxaaOn");
-
-            var g_lumaThresholdLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_lumaThreshold");
-            var g_mulReduceLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_mulReduce");
-            var g_minReduceLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_minReduce");
-            var g_maxSpanLocation = gl.GetUniformLocation(_shaderFXAAProgram, "u_maxSpan");
-
-            gl.Uniform1i(g_showEdgesLocation, 0);
-            gl.Uniform1i(g_fxaaOnLocation, 1);
-
-            gl.Uniform1f(g_lumaThresholdLocation, 0.5f);
-            gl.Uniform1f(g_mulReduceLocation, 1.0f / 8.0f);
-            gl.Uniform1f(g_minReduceLocation, 1.0f / 128.0f);
-            gl.Uniform1f(g_maxSpanLocation, 8.0f);
-            gl.Uniform2f(g_texelStepLocation, 1.0f / _width, 1.0f / _height);
+            gl.UseProgram(_pgFXAA);
+            gl.Uniform2f(_fxaaStep, 1.0f / _width, 1.0f / _height);
             gl.ActiveTexture(gl.GL_TEXTURE0);
             gl.BindTexture(gl.GL_TEXTURE_2D, _fxaaTexture);
             gl.BindVertexArray(_fxaaVAO);
@@ -424,14 +298,12 @@ public partial class OpenGLFXAA(OpenGLApi gl) : SkinRender
         gl.UseProgram(0);
 
         // Delete all resources.
-        DeleteVAO(_normalVAO);
-        DeleteVAO(_topVAO);
-
+        DeleteModel();
         DeleteFrameBuffer();
-
         DeleteTexture();
+        DeleteFXAA();
 
-        gl.DeleteProgram(_shaderProgram);
-        gl.DeleteProgram(_shaderFXAAProgram);
+        gl.DeleteProgram(_pgModel);
+        gl.DeleteProgram(_pgFXAA);
     }
 }

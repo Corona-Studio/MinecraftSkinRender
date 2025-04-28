@@ -55,7 +55,7 @@ internal class Program
 
         // Declare some variables
         GL gl = null;
-        OpenGLFXAA? skin = null;
+        SkinRenderOpenGL? skin = null;
 
         // Our loading function
         window.Load += () =>

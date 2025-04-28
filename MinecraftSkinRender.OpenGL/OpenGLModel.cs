@@ -2,8 +2,25 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class OpenGLFXAA
+public partial class SkinRenderOpenGL
 {
+    private readonly ModelVAO _normalVAO = new();
+    private readonly ModelVAO _topVAO = new();
+
+    private int _steveModelDrawOrderCount;
+
+    private void InitModel()
+    {
+        InitVAO(_normalVAO);
+        InitVAO(_topVAO);
+    }
+
+    private void DeleteModel()
+    {
+        DeleteVAO(_normalVAO);
+        DeleteVAO(_topVAO);
+    }
+
     private void InitVAOItem(VAOItem item)
     {
         item.VertexBufferObject = gl.GenBuffer();
@@ -31,12 +48,12 @@ public partial class OpenGLFXAA
 
     private unsafe void PutVAO(VAOItem vao, CubeModelItemObj model, float[] uv)
     {
-        gl.UseProgram(_shaderProgram);
+        gl.UseProgram(_pgModel);
         gl.BindVertexArray(vao.VertexArrayObject);
 
-        int a_Position = gl.GetAttribLocation(_shaderProgram, "a_position");
-        int a_texCoord = gl.GetAttribLocation(_shaderProgram, "a_texCoord");
-        int a_normal = gl.GetAttribLocation(_shaderProgram, "a_normal");
+        int a_Position = gl.GetAttribLocation(_pgModel, "a_position");
+        int a_texCoord = gl.GetAttribLocation(_pgModel, "a_texCoord");
+        int a_normal = gl.GetAttribLocation(_pgModel, "a_normal");
 
         gl.DisableVertexAttribArray(a_Position);
         gl.DisableVertexAttribArray(a_texCoord);
@@ -82,8 +99,6 @@ public partial class OpenGLFXAA
         gl.EnableVertexAttribArray(a_normal);
 
         gl.BindVertexArray(0);
-
-        CheckError();
     }
 
     private unsafe void LoadModel()

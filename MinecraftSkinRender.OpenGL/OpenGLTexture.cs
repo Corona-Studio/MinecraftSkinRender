@@ -2,8 +2,17 @@
 
 namespace MinecraftSkinRender.OpenGL;
 
-public partial class OpenGLFXAA
+public partial class SkinRenderOpenGL
 {
+    private int _textureSkin;
+    private int _textureCape;
+
+    private void InitTexture()
+    {
+        _textureSkin = gl.GenTexture();
+        _textureCape = gl.GenTexture();
+    }
+
     private unsafe void LoadTex(SKBitmap image, int tex)
     {
         gl.ActiveTexture(gl.GL_TEXTURE0);
