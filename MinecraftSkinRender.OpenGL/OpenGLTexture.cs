@@ -52,25 +52,25 @@ public partial class SkinRenderOpenGL
     {
         CheckError();
 
-        if (Skin == null)
+        if (_skinTex == null)
         {
-            OnErrorChange(ErrorType.SkinNotFind);
+            OnErrorChange(ErrorType.SkinNotFound);
             return;
         }
 
-        if (SkinType == SkinType.Unkonw)
+        if (_skinType == SkinType.Unkonw)
         {
             OnErrorChange(ErrorType.UnknowSkinType);
             return;
         }
 
-        LoadTex(Skin, _textureSkin);
+        LoadTex(_skinTex, _textureSkin);
 
         CheckError();
 
-        if (Cape != null)
+        if (_cape != null)
         {
-            LoadTex(Cape, _textureCape);
+            LoadTex(_cape, _textureCape);
         }
 
         CheckError();

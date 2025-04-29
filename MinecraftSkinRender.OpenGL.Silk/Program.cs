@@ -66,21 +66,21 @@ internal class Program
                 IsGLES = true
             };
             var img = SKBitmap.Decode("skin.png");
-            skin.SetSkin(img);
-            skin.SetSkinType(SkinType.NewSlim);
-            skin.SetTopModel(true);
-            skin.SetRenderType(SkinRenderType.FXAA);
-            skin.SetAnimation(true);
-            skin.SetCape(true);
+            skin.SetSkinTex(img);
+            skin.SkinType = SkinType.NewSlim;
+            skin.EnableTop = true;
+            skin.RenderType = SkinRenderType.FXAA;
+            skin.Animation = true;
+            skin.EnableCape = true;
             if (havecape)
             {
-                skin.SetCape(SKBitmap.Decode("cape.png"));
+                skin.SetCapeTex(SKBitmap.Decode("cape.png"));
             }
             skin.FpsUpdate += (a, b) =>
             {
                 Console.WriteLine("Fps: " + b);
             };
-            skin.SetBackColor(new(1, 1, 1, 1));
+            skin.BackColor = new(1, 1, 1, 1);
             skin.Width = window.FramebufferSize.X;
             skin.Height = window.FramebufferSize.Y;
             skin.OpenGlInit();

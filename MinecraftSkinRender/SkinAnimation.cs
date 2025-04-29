@@ -24,6 +24,9 @@ public class SkinAnimation
         Arm.X = 40;
     }
 
+    /// <summary>
+    /// 关闭动画
+    /// </summary>
     public void Close()
     {
         Run = false;

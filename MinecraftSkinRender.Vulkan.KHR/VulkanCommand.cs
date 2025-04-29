@@ -68,7 +68,7 @@ public partial class SkinRenderVulkanKHR
             {
                 new()
                 {
-                    Color = new (){ Float32_0 = BackColor.X, Float32_1 = BackColor.Y, Float32_2 = BackColor.Z, Float32_3 = BackColor.W },
+                    Color = new (){ Float32_0 = _backColor.X, Float32_1 = _backColor.Y, Float32_2 = _backColor.Z, Float32_3 = _backColor.W },
                 },
                 new()
                 {

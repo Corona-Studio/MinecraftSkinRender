@@ -300,7 +300,7 @@ public partial class SkinRenderVulkan
         Push(draw.LeftLeg, SkinPartIndex.LeftLeg);
         Push(draw.RightLeg, SkinPartIndex.RightLeg);
 
-        if (EnableTop)
+        if (_enableTop)
         {
             vk.CmdBindPipeline(buffer, PipelineBindPoint.Graphics, graphicsPipelineTop);
 
@@ -312,7 +312,7 @@ public partial class SkinRenderVulkan
             Push(draw.TopRightLeg, SkinPartIndex.TopRightLeg);
         }
 
-        if (EnableCape && HaveCape)
+        if (EnableCape && _enableCape)
         {
             vk.CmdBindPipeline(buffer, PipelineBindPoint.Graphics, graphicsPipeline);
 

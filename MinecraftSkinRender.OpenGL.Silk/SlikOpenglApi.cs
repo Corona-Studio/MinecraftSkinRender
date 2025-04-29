@@ -5,12 +5,6 @@ namespace MinecraftSkinRender.OpenGL.Silk;
 
 public class SlikOpenglApi(GL gl) : OpenGLApi
 {
-    public override bool AlwaysClear => true;
-
-    public override bool IsES2 => false;
-
-    public override bool IsPhoneES2 => false;
-
     public override void ActiveTexture(int bit)
     {
         gl.ActiveTexture((GLEnum)bit);

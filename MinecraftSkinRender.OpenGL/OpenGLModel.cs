@@ -103,10 +103,10 @@ public partial class SkinRenderOpenGL
 
     private unsafe void LoadModel()
     {
-        var normal = Steve3DModel.GetSteve(SkinType);
-        var top = Steve3DModel.GetSteveTop(SkinType);
-        var tex = Steve3DTexture.GetSteveTexture(SkinType);
-        var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
+        var normal = Steve3DModel.GetSteve(_skinType);
+        var top = Steve3DModel.GetSteveTop(_skinType);
+        var tex = Steve3DTexture.GetSteveTexture(_skinType);
+        var textop = Steve3DTexture.GetSteveTextureTop(_skinType);
 
         _steveModelDrawOrderCount = normal.Head.Point.Length;
 
@@ -119,7 +119,7 @@ public partial class SkinRenderOpenGL
         PutVAO(_normalVAO.Cape, normal.Cape, tex.Cape);
 
         PutVAO(_topVAO.Head, top.Head, textop.Head);
-        if (SkinType != SkinType.Old)
+        if (_skinType != SkinType.Old)
         {
             PutVAO(_topVAO.Head, top.Head, textop.Head);
             PutVAO(_topVAO.Body, top.Body, textop.Body);

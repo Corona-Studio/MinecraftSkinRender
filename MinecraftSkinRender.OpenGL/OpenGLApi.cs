@@ -5,10 +5,6 @@
 /// </summary>
 public abstract class OpenGLApi
 {
-    public abstract bool AlwaysClear { get; }
-    public abstract bool IsES2 { get; }
-    public abstract bool IsPhoneES2 { get; }
-
     public readonly int GL_FALSE = 0;
     public readonly int GL_ZERO = 0;
     public readonly int GL_ONE = 1;

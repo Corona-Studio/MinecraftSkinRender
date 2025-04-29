@@ -5,9 +5,15 @@
 /// </summary>
 public partial class SkinRenderOpenGL
 {
+    /// <summary>
+    /// FXAA
+    /// </summary>
     private int _fxaaVAO;
     private int _fxaaVBO;
 
+    /// <summary>
+    /// FXAA stop loc
+    /// </summary>
     private int _fxaaStep;
 
     private int _fxaaRenderBuffer;
