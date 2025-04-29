@@ -152,7 +152,7 @@ public partial class SkinRenderVulkan
 
     private unsafe void CreateCapeTexture(CommandPool commandPool, Queue queue)
     {
-        _haveCape = false;
+        HaveCape = false;
 
         if (_cape == null)
         {
@@ -191,12 +191,12 @@ public partial class SkinRenderVulkan
 
         textureCapeImageView = CreateImageView(textureCapeImage, fmt, ImageAspectFlags.ColorBit);
 
-        _haveCape = true;
+        HaveCape = true;
     }
 
     private unsafe void CreateSkinTexture(CommandPool commandPool, Queue queue)
     {
-        _haveSkin = false;
+        HaveSkin = false;
 
         if (_skinTex == null)
         {
@@ -235,7 +235,7 @@ public partial class SkinRenderVulkan
 
         textureSkinImageView = CreateImageView(textureSkinImage, fmt, ImageAspectFlags.ColorBit);
 
-        _haveSkin = true;
+        HaveSkin = true;
     }
 
     private void CreateTexture(CommandPool commandPool, Queue queue)

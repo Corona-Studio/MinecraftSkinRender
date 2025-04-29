@@ -18,15 +18,6 @@ public abstract class SkinRender
     protected SkinType _skinType = SkinType.Unkonw;
 
     /// <summary>
-    /// 是否存在披风
-    /// </summary>
-    protected bool _haveCape;
-    /// <summary>
-    /// 是否存在皮肤
-    /// </summary>
-    protected bool _haveSkin;
-
-    /// <summary>
     /// 皮肤贴图
     /// </summary>
     protected SKBitmap? _skinTex;
@@ -60,6 +51,15 @@ public abstract class SkinRender
     /// 渲染状态改变
     /// </summary>
     public event Action<object?, StateType>? State;
+
+    /// <summary>
+    /// 是否存在披风
+    /// </summary>
+    public bool HaveCape { get; protected set; }
+    /// <summary>
+    /// 是否存在皮肤
+    /// </summary>
+    public bool HaveSkin { get; protected set; }
 
     /// <summary>
     /// 画布宽度
@@ -164,8 +164,17 @@ public abstract class SkinRender
         }
     }
 
+    /// <summary>
+    /// 手臂旋转
+    /// </summary>
     public Vector3 ArmRotate { get; set; }
+    /// <summary>
+    /// 腿旋转
+    /// </summary>
     public Vector3 LegRotate { get; set; }
+    /// <summary>
+    /// 头旋转
+    /// </summary>
     public Vector3 HeadRotate { get; set; }
 
     /// <summary>
@@ -292,7 +301,7 @@ public abstract class SkinRender
         _skinTex?.Dispose();
         if (skin == null)
         {
-            _haveSkin = false;
+            HaveSkin = false;
             return;
         }
         if (skin.Width != 64)
@@ -304,7 +313,7 @@ public abstract class SkinRender
 
         _skinType = SkinTypeChecker.GetTextType(skin);
         _switchSkin = true;
-        _haveSkin = true;
+        HaveSkin = true;
     }
 
     /// <summary>
@@ -316,11 +325,11 @@ public abstract class SkinRender
         _cape = cape;
         if (cape == null)
         {
-            _haveCape = false;
+            HaveCape = false;
             return;
         }
         _switchSkin = true;
-        _haveCape = true;
+        HaveCape = true;
     }
 
     /// <summary>

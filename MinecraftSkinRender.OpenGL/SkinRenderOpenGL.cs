@@ -54,7 +54,7 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
     private unsafe void DrawCape()
     {
-        if (_haveCape && _enableCape)
+        if (HaveCape && _enableCape)
         {
             gl.BindTexture(gl.GL_TEXTURE_2D, _textureCape);
             var modelLoc = gl.GetUniformLocation(_pgModel, "self");
@@ -171,7 +171,7 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
             LoadModel();
         }
 
-        if (!_haveSkin)
+        if (!HaveSkin)
         {
             return;
         }

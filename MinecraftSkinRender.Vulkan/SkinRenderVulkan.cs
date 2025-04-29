@@ -61,7 +61,7 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
 
     public unsafe void SkinRender(uint imageIndex, int length, CommandPool commandPool, Queue queue)
     {
-        if (!_haveSkin)
+        if (!HaveSkin)
         {
             return;
         }
