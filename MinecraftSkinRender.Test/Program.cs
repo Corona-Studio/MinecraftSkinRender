@@ -1,8 +1,5 @@
-﻿using System.Text;
-using MinecraftSkinRender;
+﻿using MinecraftSkinRender;
 using MinecraftSkinRender.Image;
-using MinecraftSkinRender.MojangApi;
-using Newtonsoft.Json;
 using SkiaSharp;
 
 //Console.WriteLine("Download skin");

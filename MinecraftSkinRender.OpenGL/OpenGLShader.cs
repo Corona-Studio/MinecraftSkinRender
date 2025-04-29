@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MinecraftSkinRender.OpenGL;
+﻿namespace MinecraftSkinRender.OpenGL;
 
 public partial class SkinRenderOpenGL
 {

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace MinecraftSkinRender.OpenGL;
 
-namespace MinecraftSkinRender.OpenGL;
-
+/// <summary>
+/// OpenGL的FXAA抗锯齿
+/// </summary>
 public partial class SkinRenderOpenGL
 {
     private int _fxaaVAO;
@@ -19,7 +16,7 @@ public partial class SkinRenderOpenGL
 
     private int _pgFXAA;
 
-    private readonly float[] _quadVertices = 
+    private readonly float[] _quadVertices =
     [
         -1.0f,  1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f,   0.0f, 0.0f,
@@ -199,8 +196,8 @@ void main(void)
         gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
     }
 
-	private void ShaderFXAA()
-	{
+    private void ShaderFXAA()
+    {
         var vertexShader = gl.CreateShader(gl.GL_VERTEX_SHADER);
         gl.ShaderSource(vertexShader, VertexShaderFXAASource);
         gl.CompileShader(vertexShader);

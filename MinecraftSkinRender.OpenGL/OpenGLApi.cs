@@ -1,5 +1,8 @@
 ﻿namespace MinecraftSkinRender.OpenGL;
 
+/// <summary>
+/// OpenGL调用
+/// </summary>
 public abstract class OpenGLApi
 {
     public abstract bool AlwaysClear { get; }

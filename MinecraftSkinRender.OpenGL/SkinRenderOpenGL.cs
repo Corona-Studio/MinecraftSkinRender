@@ -194,7 +194,7 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         }
 
         gl.Viewport(0, 0, _width, _height);
-     
+
         gl.ClearColor(BackColor.X, BackColor.Y, BackColor.Z, BackColor.W);
         gl.ClearDepth(1.0f);
         gl.Clear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
@@ -229,7 +229,7 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         matr = GetMatrix4(MatrPartType.Model);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&matr);
-        
+
         CheckError();
 
         gl.DepthMask(true);

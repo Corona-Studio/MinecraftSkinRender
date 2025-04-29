@@ -144,7 +144,7 @@ public partial class SkinRenderVulkan
         {
             vk.FreeMemory(_device, textureCapeImageMemory, null);
         }
-        if (textureCapeImageView.Handle != 0) 
+        if (textureCapeImageView.Handle != 0)
         {
             vk.DestroyImageView(_device, textureCapeImageView, null);
         }

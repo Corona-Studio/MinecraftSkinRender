@@ -95,7 +95,6 @@ internal class Program : IVulkanApi
         skin.SetCape(SKBitmap.Decode("cape.png"));
         skin.SetTopModel(true);
         skin.SetCape(true);
-        skin.SetMSAA(false);
         skin.SetAnimation(true);
         skin.FpsUpdate += (a, b) =>
         {

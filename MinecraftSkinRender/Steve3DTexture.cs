@@ -104,7 +104,8 @@ public static class Steve3DTexture
             tex.RightArm = GetTex(type == SkinType.NewSlim ? _slimArmTex : _legArmTex, type, 40f, 32f);
             tex.LeftLeg = GetTex(_legArmTex, type, 0f, 48f);
             tex.RightLeg = GetTex(_legArmTex, type, 0f, 32f);
-        };
+        }
+        ;
 
         return tex;
     }
