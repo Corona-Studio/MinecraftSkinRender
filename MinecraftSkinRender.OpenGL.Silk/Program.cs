@@ -65,21 +65,22 @@ internal class Program
             {
                 IsGLES = true
             };
-            skin.SetSkin(SKBitmap.Decode("skin.png"));
-            skin.SetSkinType(SkinType.NewSlim);
-            skin.SetTopModel(true);
-            skin.SetMSAA(false);
-            skin.SetAnimation(true);
-            skin.SetCape(true);
+            var img = SKBitmap.Decode("skin.png");
+            skin.SetSkinTex(img);
+            skin.SkinType = SkinType.NewSlim;
+            skin.EnableTop = true;
+            skin.RenderType = SkinRenderType.FXAA;
+            skin.Animation = true;
+            skin.EnableCape = true;
             if (havecape)
             {
-                skin.SetCape(SKBitmap.Decode("cape.png"));
+                skin.SetCapeTex(SKBitmap.Decode("cape.png"));
             }
             skin.FpsUpdate += (a, b) =>
             {
                 Console.WriteLine("Fps: " + b);
             };
-            skin.SetBackColor(new(0, 1, 0, 1));
+            skin.BackColor = new(1, 1, 1, 1);
             skin.Width = window.FramebufferSize.X;
             skin.Height = window.FramebufferSize.Y;
             skin.OpenGlInit();

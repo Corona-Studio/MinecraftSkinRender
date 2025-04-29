@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -116,7 +111,7 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         khrSurface!.DestroySurface(_instance, surface, null);
         vk.DestroyInstance(_instance, null);
     }
-    
+
     private unsafe void CreateSurface()
     {
         if (!vk.TryGetInstanceExtension<KhrSurface>(_instance, out khrSurface))
@@ -172,7 +167,7 @@ public partial class SkinRenderVulkanKHR(Vk vk, IVulkanApi ivk) : SkinRenderVulk
         createInfo.PfnUserCallback = (DebugUtilsMessengerCallbackFunctionEXT)DebugCallback;
     }
 
-    private unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity, 
+    private unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
         DebugUtilsMessageTypeFlagsEXT messageTypes, DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
     {
         Console.WriteLine($"validation layer:" + Marshal.PtrToStringAnsi((nint)pCallbackData->PMessage));

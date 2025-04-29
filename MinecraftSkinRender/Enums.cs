@@ -23,25 +23,61 @@ public enum SkinType
     Unkonw
 }
 
+/// <summary>
+/// 鼠标按钮
+/// </summary>
 public enum KeyType
 {
+    /// <summary>
+    /// 没有按下
+    /// </summary>
     None,
+    /// <summary>
+    /// 左键
+    /// </summary>
     Left,
+    /// <summary>
+    /// 右键
+    /// </summary>
     Right
 }
 
+/// <summary>
+/// 错误
+/// </summary>
 public enum ErrorType
 {
-    UnknowSkinType, SkinNotFind
+    /// <summary>
+    /// 未知皮肤类型
+    /// </summary>
+    UnknowSkinType,
+    /// <summary>
+    /// 没有皮肤
+    /// </summary>
+    SkinNotFound
 }
 
+/// <summary>
+/// 当前状态
+/// </summary>
 public enum StateType
 {
     SkinReload
 }
 
-public enum MatrPartType
-{ 
+/// <summary>
+/// 模型部分
+/// </summary>
+public enum ModelPartType
+{
     Head, Body, LeftArm, RightArm, LeftLeg, RightLeg, Cape,
     Proj, View, Model
+}
+
+/// <summary>
+/// 渲染模式
+/// </summary>
+public enum SkinRenderType
+{
+    Normal, MSAA, FXAA
 }

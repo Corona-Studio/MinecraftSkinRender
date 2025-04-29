@@ -5,14 +5,32 @@ namespace MinecraftSkinRender;
 
 public abstract class SkinRender
 {
-    protected bool _switchModel = false;
-    protected bool _switchSkin = false;
-    protected bool _switchType = false;
-    protected bool _switchBack = false;
-    protected bool _enableAnimation;
+    protected bool _enableCape;
+    protected bool _enableTop;
+    protected bool _switchModel;
+    protected bool _switchSkin;
+    protected bool _switchType;
+    protected bool _switchBack;
+    protected bool _animation;
+
+    protected SkinRenderType _renderType;
+    protected Vector4 _backColor;
+    protected SkinType _skinType = SkinType.Unkonw;
+
+    /// <summary>
+    /// 皮肤贴图
+    /// </summary>
+    protected SKBitmap? _skinTex;
+    /// <summary>
+    /// 披风贴图
+    /// </summary>
+    protected SKBitmap? _cape;
+
     protected double _time;
 
     protected float _dis = 1;
+
+    protected int _fps;
 
     protected Vector2 _rotXY;
     protected Vector2 _diffXY;
@@ -25,29 +43,143 @@ public abstract class SkinRender
 
     protected readonly SkinAnimation _skina;
 
+    /// <summary>
+    /// 渲染出错
+    /// </summary>
     public event Action<object?, ErrorType>? Error;
+    /// <summary>
+    /// 渲染状态改变
+    /// </summary>
     public event Action<object?, StateType>? State;
 
+    /// <summary>
+    /// 是否存在披风
+    /// </summary>
+    public bool HaveCape { get; protected set; }
+    /// <summary>
+    /// 是否存在皮肤
+    /// </summary>
+    public bool HaveSkin { get; protected set; }
+
+    /// <summary>
+    /// 画布宽度
+    /// </summary>
     public int Width { get; set; }
+    /// <summary>
+    /// 画布高度
+    /// </summary>
     public int Height { get; set; }
 
+    /// <summary>
+    /// 渲染器信息
+    /// </summary>
     public string Info { get; protected set; }
-    public SKBitmap? Skin { get; private set; }
-    public SKBitmap? Cape { get; private set; }
-    public SkinType SkinType { get; protected set; } = SkinType.Unkonw;
-    public bool HaveCape { get; protected set; }
-    public bool HaveSkin { get; protected set; }
-    public Vector4 BackColor { get; protected set; }
 
-    public bool EnableCape { get; private set; }
-    public bool EnableMSAA { get; private set; }
-    public bool EnableTop { get; private set; }
+    /// <summary>
+    /// 模型动画
+    /// </summary>
+    public bool Animation
+    {
+        get { return _animation; }
+        set
+        {
+            if (value)
+            {
+                _skina.Run = true;
+            }
+            else
+            {
+                _skina.Run = false;
+            }
 
+            _animation = value;
+        }
+    }
+
+    /// <summary>
+    /// 皮肤类型
+    /// </summary>
+    public SkinType SkinType
+    {
+        get { return _skinType; }
+        set
+        {
+            if (_skinType == value)
+            {
+                return;
+            }
+            _skinType = value;
+            _skina.SkinType = value;
+            _switchModel = true;
+        }
+    }
+    /// <summary>
+    /// 背景色
+    /// </summary>
+    public Vector4 BackColor
+    {
+        get { return _backColor; }
+        set
+        {
+            _backColor = value;
+            _switchBack = true;
+        }
+    }
+
+    /// <summary>
+    /// 渲染类型
+    /// </summary>
+    public SkinRenderType RenderType
+    {
+        get { return _renderType; }
+        set
+        {
+            _renderType = value;
+            _switchType = true;
+        }
+    }
+
+    /// <summary>
+    /// 是否启用披风渲染
+    /// </summary>
+    public bool EnableCape
+    {
+        get { return _enableCape; }
+        set
+        {
+            _enableCape = value;
+            _switchType = true;
+        }
+    }
+    /// <summary>
+    /// 是否启用第二层渲染
+    /// </summary>
+    public bool EnableTop
+    {
+        get { return _enableTop; }
+        set
+        {
+            _enableTop = value;
+            _switchType = true;
+        }
+    }
+
+    /// <summary>
+    /// 手臂旋转
+    /// </summary>
     public Vector3 ArmRotate { get; set; }
+    /// <summary>
+    /// 腿旋转
+    /// </summary>
     public Vector3 LegRotate { get; set; }
+    /// <summary>
+    /// 头旋转
+    /// </summary>
     public Vector3 HeadRotate { get; set; }
 
-    public int Fps { get; private set; }
+    /// <summary>
+    /// FPS刷新
+    /// </summary>
     public event Action<object?, int>? FpsUpdate;
 
     public SkinRender()
@@ -56,44 +188,11 @@ public abstract class SkinRender
         _last = Matrix4x4.Identity;
     }
 
-    public void SetBackColor(Vector4 color)
-    {
-        BackColor = color;
-        _switchBack = true;
-    }
-
-    public void SetMSAA(bool enable)
-    {
-        EnableMSAA = enable;
-        _switchType = true;
-    }
-
-    public void SetCape(bool enable)
-    {
-        EnableCape = enable;
-        _switchType = true;
-    }
-
-    public void SetTopModel(bool top)
-    {
-        EnableTop = top;
-        _switchType = true;
-    }
-
-    public void SetAnimation(bool enable)
-    {
-        if (enable)
-        {
-            _skina.Run = true;
-        }
-        else
-        {
-            _skina.Run = false;
-        }
-
-        _enableAnimation = enable;
-    }
-
+    /// <summary>
+    /// 鼠标按下
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="point"></param>
     public void PointerPressed(KeyType type, Vector2 point)
     {
         if (type == KeyType.Left)
@@ -108,6 +207,11 @@ public abstract class SkinRender
         }
     }
 
+    /// <summary>
+    /// 鼠标松开
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="point"></param>
     public void PointerReleased(KeyType type, Vector2 point)
     {
         if (type == KeyType.Right)
@@ -117,6 +221,11 @@ public abstract class SkinRender
         }
     }
 
+    /// <summary>
+    /// 鼠标移动
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="point"></param>
     public void PointerMoved(KeyType type, Vector2 point)
     {
         if (type == KeyType.Left)
@@ -135,6 +244,10 @@ public abstract class SkinRender
         }
     }
 
+    /// <summary>
+    /// 滚轮
+    /// </summary>
+    /// <param name="ispost"></param>
     public void PointerWheelChanged(bool ispost)
     {
         if (ispost)
@@ -147,64 +260,45 @@ public abstract class SkinRender
         }
     }
 
+    /// <summary>
+    /// 旋转
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
     public void Rot(float x, float y)
     {
         _rotXY.X += x;
         _rotXY.Y += y;
     }
 
+    /// <summary>
+    /// 移动
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
     public void Pos(float x, float y)
     {
         _xy.X += x;
         _xy.Y += y;
     }
 
+    /// <summary>
+    /// 缩放
+    /// </summary>
+    /// <param name="x"></param>
     public void AddDis(float x)
     {
         _dis += x;
     }
 
-    public void SetSkinType(SkinType type)
+    /// <summary>
+    /// 设置皮肤贴图
+    /// </summary>
+    /// <param name="skin"></param>
+    /// <exception cref="Exception"></exception>
+    public void SetSkinTex(SKBitmap? skin)
     {
-        if (type == SkinType)
-        {
-            return;
-        }
-        SkinType = type;
-        _skina.SkinType = type;
-        _switchModel = true;
-    }
-
-    public static SKBitmap MakeImage(SKBitmap image)
-    {
-        var image2 = new SKBitmap(256, 256);
-
-        int sec = 256 / image.Width;
-
-        for (int i = 0; i < image.Width; i++)
-        {
-            int ax = sec * i;
-            for (int j = 0; j < image.Height; j++)
-            {
-                int bx = sec * j;
-                var color = image.GetPixel(i, j);
-
-                for (int a = 0; a < sec; a++)
-                {
-                    for (int b = 0; b < sec; b++)
-                    {
-                        image2.SetPixel(a + ax, b + bx, color);
-                    }
-                }
-            }
-        }
-
-        return image2;
-    }
-
-    public void SetSkin(SKBitmap? skin)
-    {
-        Skin?.Dispose();
+        _skinTex?.Dispose();
         if (skin == null)
         {
             HaveSkin = false;
@@ -215,16 +309,20 @@ public abstract class SkinRender
             throw new Exception("This is not skin image");
         }
 
-        Skin = skin;
+        _skinTex = skin;
 
-        SetSkinType(SkinTypeChecker.GetTextType(skin));
+        _skinType = SkinTypeChecker.GetTextType(skin);
         _switchSkin = true;
         HaveSkin = true;
     }
 
-    public void SetCape(SKBitmap? cape)
+    /// <summary>
+    /// 设置披风贴图
+    /// </summary>
+    /// <param name="cape"></param>
+    public void SetCapeTex(SKBitmap? cape)
     {
-        Cape = cape;
+        _cape = cape;
         if (cape == null)
         {
             HaveCape = false;
@@ -234,6 +332,9 @@ public abstract class SkinRender
         HaveCape = true;
     }
 
+    /// <summary>
+    /// 重置模型
+    /// </summary>
     public void ResetPos()
     {
         _dis = 1;
@@ -248,9 +349,13 @@ public abstract class SkinRender
         _last = Matrix4x4.Identity;
     }
 
+    /// <summary>
+    /// 模型逻辑
+    /// </summary>
+    /// <param name="time"></param>
     public void Tick(double time)
     {
-        if (_enableAnimation)
+        if (_animation)
         {
             _skina.Tick(time);
         }
@@ -263,13 +368,13 @@ public abstract class SkinRender
             _rotXY.Y = 0;
         }
 
-        Fps++;
+        _fps++;
         _time += time;
         if (_time > 1)
         {
             _time -= 1;
-            FpsUpdate?.Invoke(this, Fps);
-            Fps = 0;
+            FpsUpdate?.Invoke(this, _fps);
+            _fps = 0;
         }
     }
 
@@ -283,42 +388,42 @@ public abstract class SkinRender
         State?.Invoke(this, data);
     }
 
-    protected Matrix4x4 GetMatrix4(MatrPartType type)
+    protected Matrix4x4 GetMatrix4(ModelPartType type)
     {
-        var value = SkinType == SkinType.NewSlim ? 1.375f : 1.5f;
-        bool enable = _enableAnimation;
+        var value = _skinType == SkinType.NewSlim ? 1.375f : 1.5f;
+        bool enable = _animation;
 
         return type switch
         {
-            MatrPartType.Head => Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
+            ModelPartType.Head => Matrix4x4.CreateTranslation(0, CubeModel.Value, 0) *
               Matrix4x4.CreateRotationZ((enable ? _skina.Head.X : HeadRotate.X) / 360) *
               Matrix4x4.CreateRotationX((enable ? _skina.Head.Y : HeadRotate.Y) / 360) *
               Matrix4x4.CreateRotationY((enable ? _skina.Head.Z : HeadRotate.Z) / 360) *
               Matrix4x4.CreateTranslation(0, CubeModel.Value * 1.5f, 0),
-            MatrPartType.LeftArm => Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+            ModelPartType.LeftArm => Matrix4x4.CreateTranslation(CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Arm.X : ArmRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Arm.Y : ArmRotate.Y) / 360) *
                Matrix4x4.CreateTranslation(value * CubeModel.Value - CubeModel.Value / 2, value * CubeModel.Value, 0),
-            MatrPartType.RightArm => Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
+            ModelPartType.RightArm => Matrix4x4.CreateTranslation(-CubeModel.Value / 2, -(value * CubeModel.Value), 0) *
                   Matrix4x4.CreateRotationZ((enable ? -_skina.Arm.X : -ArmRotate.X) / 360) *
                   Matrix4x4.CreateRotationX((enable ? -_skina.Arm.Y : -ArmRotate.Y) / 360) *
                   Matrix4x4.CreateTranslation(
                       -value * CubeModel.Value + CubeModel.Value / 2, value * CubeModel.Value, 0),
-            MatrPartType.LeftLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+            ModelPartType.LeftLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
                Matrix4x4.CreateRotationZ((enable ? _skina.Leg.X : LegRotate.X) / 360) *
                Matrix4x4.CreateRotationX((enable ? _skina.Leg.Y : LegRotate.Y) / 360) *
                Matrix4x4.CreateTranslation(CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0),
-            MatrPartType.RightLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
+            ModelPartType.RightLeg => Matrix4x4.CreateTranslation(0, -1.5f * CubeModel.Value, 0) *
             Matrix4x4.CreateRotationZ((enable ? -_skina.Leg.X : -LegRotate.X) / 360) *
             Matrix4x4.CreateRotationX((enable ? -_skina.Leg.Y : -LegRotate.Y) / 360) *
             Matrix4x4.CreateTranslation(-CubeModel.Value * 0.5f, -CubeModel.Value * 1.5f, 0),
-            MatrPartType.Proj => Matrix4x4.CreatePerspectiveFieldOfView(
+            ModelPartType.Proj => Matrix4x4.CreatePerspectiveFieldOfView(
               (float)(Math.PI / 4), (float)Width / Height, 0.1f, 10.0f),
-            MatrPartType.View => Matrix4x4.CreateLookAt(new(0, 0, 7), new(), new(0, 1, 0)),
-            MatrPartType.Model => _last
+            ModelPartType.View => Matrix4x4.CreateLookAt(new(0, 0, 7), new(), new(0, 1, 0)),
+            ModelPartType.Model => _last
             * Matrix4x4.CreateTranslation(new(_xy.X, _xy.Y, 0))
             * Matrix4x4.CreateScale(_dis),
-            MatrPartType.Cape => Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
+            ModelPartType.Cape => Matrix4x4.CreateTranslation(0, -2f * CubeModel.Value, -CubeModel.Value * 0.1f) *
                Matrix4x4.CreateRotationX((float)((enable ? 11.8 + _skina.Cape : 6.3) * Math.PI / 180)) *
                Matrix4x4.CreateTranslation(0, 1.6f * CubeModel.Value, -CubeModel.Value * 0.5f),
             _ => Matrix4x4.Identity

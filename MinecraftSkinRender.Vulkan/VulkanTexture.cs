@@ -144,7 +144,7 @@ public partial class SkinRenderVulkan
         {
             vk.FreeMemory(_device, textureCapeImageMemory, null);
         }
-        if (textureCapeImageView.Handle != 0) 
+        if (textureCapeImageView.Handle != 0)
         {
             vk.DestroyImageView(_device, textureCapeImageView, null);
         }
@@ -154,11 +154,11 @@ public partial class SkinRenderVulkan
     {
         HaveCape = false;
 
-        if (Cape == null)
+        if (_cape == null)
         {
             return;
         }
-        ulong imageSize = (ulong)(Cape.Width * Cape.Height * Cape.BytesPerPixel);
+        ulong imageSize = (ulong)(_cape.Width * _cape.Height * _cape.BytesPerPixel);
 
         Buffer stagingBuffer = default;
         DeviceMemory stagingBufferMemory = default;
@@ -167,22 +167,22 @@ public partial class SkinRenderVulkan
 
         void* data;
         vk.MapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
-        System.Buffer.MemoryCopy((void*)Cape.GetPixels(), data, imageSize, imageSize);
+        System.Buffer.MemoryCopy((void*)_cape.GetPixels(), data, imageSize, imageSize);
         vk.UnmapMemory(_device, stagingBufferMemory);
 
         var fmt = Format.R8G8B8A8Srgb;
-        if (Cape.ColorType == SkiaSharp.SKColorType.Bgra8888)
+        if (_cape.ColorType == SkiaSharp.SKColorType.Bgra8888)
         {
             fmt = Format.B8G8R8A8Srgb;
         }
 
-        CreateImage((uint)Cape.Width, (uint)Cape.Height, fmt, ImageTiling.Optimal,
+        CreateImage((uint)_cape.Width, (uint)_cape.Height, fmt, ImageTiling.Optimal,
             ImageUsageFlags.TransferDstBit | ImageUsageFlags.SampledBit,
             MemoryPropertyFlags.DeviceLocalBit, ref textureCapeImage, ref textureCapeImageMemory);
 
         TransitionImageLayout(textureCapeImage, Format.R8G8B8A8Srgb, ImageLayout.Undefined,
             ImageLayout.TransferDstOptimal, commandPool, queue);
-        CopyBufferToImage(stagingBuffer, textureCapeImage, (uint)Cape.Width, (uint)Cape.Height, commandPool, queue);
+        CopyBufferToImage(stagingBuffer, textureCapeImage, (uint)_cape.Width, (uint)_cape.Height, commandPool, queue);
         TransitionImageLayout(textureCapeImage, Format.R8G8B8A8Srgb, ImageLayout.TransferDstOptimal,
             ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 
@@ -198,11 +198,11 @@ public partial class SkinRenderVulkan
     {
         HaveSkin = false;
 
-        if (Skin == null)
+        if (_skinTex == null)
         {
             return;
         }
-        ulong imageSize = (ulong)(Skin.Width * Skin.Height * Skin.BytesPerPixel);
+        ulong imageSize = (ulong)(_skinTex.Width * _skinTex.Height * _skinTex.BytesPerPixel);
 
         Buffer stagingBuffer = default;
         DeviceMemory stagingBufferMemory = default;
@@ -211,22 +211,22 @@ public partial class SkinRenderVulkan
 
         void* data;
         vk.MapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
-        System.Buffer.MemoryCopy((void*)Skin.GetPixels(), data, imageSize, imageSize);
+        System.Buffer.MemoryCopy((void*)_skinTex.GetPixels(), data, imageSize, imageSize);
         vk.UnmapMemory(_device, stagingBufferMemory);
 
         var fmt = Format.R8G8B8A8Srgb;
-        if (Skin.ColorType == SkiaSharp.SKColorType.Bgra8888)
+        if (_skinTex.ColorType == SkiaSharp.SKColorType.Bgra8888)
         {
             fmt = Format.B8G8R8A8Srgb;
         }
 
-        CreateImage((uint)Skin.Width, (uint)Skin.Height, fmt, ImageTiling.Optimal,
+        CreateImage((uint)_skinTex.Width, (uint)_skinTex.Height, fmt, ImageTiling.Optimal,
             ImageUsageFlags.TransferDstBit | ImageUsageFlags.SampledBit,
             MemoryPropertyFlags.DeviceLocalBit, ref textureSkinImage, ref textureSkinImageMemory);
 
         TransitionImageLayout(textureSkinImage, Format.R8G8B8A8Srgb, ImageLayout.Undefined,
             ImageLayout.TransferDstOptimal, commandPool, queue);
-        CopyBufferToImage(stagingBuffer, textureSkinImage, (uint)Skin.Width, (uint)Skin.Height, commandPool, queue);
+        CopyBufferToImage(stagingBuffer, textureSkinImage, (uint)_skinTex.Width, (uint)_skinTex.Height, commandPool, queue);
         TransitionImageLayout(textureSkinImage, Format.R8G8B8A8Srgb, ImageLayout.TransferDstOptimal,
             ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 

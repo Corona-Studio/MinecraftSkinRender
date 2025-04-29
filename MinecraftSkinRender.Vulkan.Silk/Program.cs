@@ -88,15 +88,14 @@ internal class Program : IVulkanApi
 
         skin.Width = _window.FramebufferSize.X;
         skin.Height = _window.FramebufferSize.Y;
-        skin.SetBackColor(new(0, 1, 0, 1));
+        skin.BackColor = new(0, 1, 0, 1);
         var img = SKBitmap.Decode("skin.png");
-        skin.SetSkin(img);
-        skin.SetSkinType(SkinType.NewSlim);
-        skin.SetCape(SKBitmap.Decode("cape.png"));
-        skin.SetTopModel(true);
-        skin.SetCape(true);
-        skin.SetMSAA(false);
-        skin.SetAnimation(true);
+        skin.SetSkinTex(img);
+        skin.SkinType = SkinType.NewSlim;
+        skin.SetCapeTex(SKBitmap.Decode("cape.png"));
+        skin.EnableTop = true;
+        skin.EnableCape = true;
+        skin.Animation = true;
         skin.FpsUpdate += (a, b) =>
         {
             Console.WriteLine("Fps: " + b);

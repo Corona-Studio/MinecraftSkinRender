@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>MinecraftSkinRender</Title>
+    <Company>Coloryr</Company>
+    <Description>Minecraft皮肤渲染3D部分</Description>
+    <Copyright>MIT</Copyright>
+    <PackageProjectUrl>https://github.com/Coloryr/MinecraftSkinRender</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Coloryr/MinecraftSkinRender</RepositoryUrl>
+    <PackageTags>minecraft</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

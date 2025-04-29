@@ -109,21 +109,21 @@ public partial class SkinRenderVulkan(Vk vk) : SkinRender
 
         UpdateUboState();
 
-        SetUniformBuffer(SkinPartIndex.Head, imageIndex, GetMatrix4(MatrPartType.Head));
-        SetUniformBuffer(SkinPartIndex.Body, imageIndex, GetMatrix4(MatrPartType.Body));
-        SetUniformBuffer(SkinPartIndex.LeftArm, imageIndex, GetMatrix4(MatrPartType.LeftArm));
-        SetUniformBuffer(SkinPartIndex.RightArm, imageIndex, GetMatrix4(MatrPartType.RightArm));
-        SetUniformBuffer(SkinPartIndex.LeftLeg, imageIndex, GetMatrix4(MatrPartType.LeftLeg));
-        SetUniformBuffer(SkinPartIndex.RightLeg, imageIndex, GetMatrix4(MatrPartType.RightLeg));
+        SetUniformBuffer(SkinPartIndex.Head, imageIndex, GetMatrix4(ModelPartType.Head));
+        SetUniformBuffer(SkinPartIndex.Body, imageIndex, GetMatrix4(ModelPartType.Body));
+        SetUniformBuffer(SkinPartIndex.LeftArm, imageIndex, GetMatrix4(ModelPartType.LeftArm));
+        SetUniformBuffer(SkinPartIndex.RightArm, imageIndex, GetMatrix4(ModelPartType.RightArm));
+        SetUniformBuffer(SkinPartIndex.LeftLeg, imageIndex, GetMatrix4(ModelPartType.LeftLeg));
+        SetUniformBuffer(SkinPartIndex.RightLeg, imageIndex, GetMatrix4(ModelPartType.RightLeg));
 
-        SetUniformBuffer(SkinPartIndex.TopHead, imageIndex, GetMatrix4(MatrPartType.Head));
-        SetUniformBuffer(SkinPartIndex.TopBody, imageIndex, GetMatrix4(MatrPartType.Body));
-        SetUniformBuffer(SkinPartIndex.TopLeftArm, imageIndex, GetMatrix4(MatrPartType.LeftArm));
-        SetUniformBuffer(SkinPartIndex.TopRightArm, imageIndex, GetMatrix4(MatrPartType.RightArm));
-        SetUniformBuffer(SkinPartIndex.TopLeftLeg, imageIndex, GetMatrix4(MatrPartType.LeftLeg));
-        SetUniformBuffer(SkinPartIndex.TopRightLeg, imageIndex, GetMatrix4(MatrPartType.RightLeg));
+        SetUniformBuffer(SkinPartIndex.TopHead, imageIndex, GetMatrix4(ModelPartType.Head));
+        SetUniformBuffer(SkinPartIndex.TopBody, imageIndex, GetMatrix4(ModelPartType.Body));
+        SetUniformBuffer(SkinPartIndex.TopLeftArm, imageIndex, GetMatrix4(ModelPartType.LeftArm));
+        SetUniformBuffer(SkinPartIndex.TopRightArm, imageIndex, GetMatrix4(ModelPartType.RightArm));
+        SetUniformBuffer(SkinPartIndex.TopLeftLeg, imageIndex, GetMatrix4(ModelPartType.LeftLeg));
+        SetUniformBuffer(SkinPartIndex.TopRightLeg, imageIndex, GetMatrix4(ModelPartType.RightLeg));
 
-        SetUniformBuffer(SkinPartIndex.Cape, imageIndex, GetMatrix4(MatrPartType.Cape));
+        SetUniformBuffer(SkinPartIndex.Cape, imageIndex, GetMatrix4(ModelPartType.Cape));
     }
 
     public unsafe void SkinDeinit()

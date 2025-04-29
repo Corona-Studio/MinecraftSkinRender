@@ -4,6 +4,23 @@ namespace MinecraftSkinRender.OpenGL;
 
 public partial class SkinRenderOpenGL
 {
+    private readonly ModelVAO _normalVAO = new();
+    private readonly ModelVAO _topVAO = new();
+
+    private int _steveModelDrawOrderCount;
+
+    private void InitModel()
+    {
+        InitVAO(_normalVAO);
+        InitVAO(_topVAO);
+    }
+
+    private void DeleteModel()
+    {
+        DeleteVAO(_normalVAO);
+        DeleteVAO(_topVAO);
+    }
+
     private void InitVAOItem(VAOItem item)
     {
         item.VertexBufferObject = gl.GenBuffer();
@@ -31,12 +48,12 @@ public partial class SkinRenderOpenGL
 
     private unsafe void PutVAO(VAOItem vao, CubeModelItemObj model, float[] uv)
     {
-        gl.UseProgram(_shaderProgram);
+        gl.UseProgram(_pgModel);
         gl.BindVertexArray(vao.VertexArrayObject);
 
-        int a_Position = gl.GetAttribLocation(_shaderProgram, "a_position");
-        int a_texCoord = gl.GetAttribLocation(_shaderProgram, "a_texCoord");
-        int a_normal = gl.GetAttribLocation(_shaderProgram, "a_normal");
+        int a_Position = gl.GetAttribLocation(_pgModel, "a_position");
+        int a_texCoord = gl.GetAttribLocation(_pgModel, "a_texCoord");
+        int a_normal = gl.GetAttribLocation(_pgModel, "a_normal");
 
         gl.DisableVertexAttribArray(a_Position);
         gl.DisableVertexAttribArray(a_texCoord);
@@ -82,16 +99,14 @@ public partial class SkinRenderOpenGL
         gl.EnableVertexAttribArray(a_normal);
 
         gl.BindVertexArray(0);
-
-        CheckError();
     }
 
     private unsafe void LoadModel()
     {
-        var normal = Steve3DModel.GetSteve(SkinType);
-        var top = Steve3DModel.GetSteveTop(SkinType);
-        var tex = Steve3DTexture.GetSteveTexture(SkinType);
-        var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
+        var normal = Steve3DModel.GetSteve(_skinType);
+        var top = Steve3DModel.GetSteveTop(_skinType);
+        var tex = Steve3DTexture.GetSteveTexture(_skinType);
+        var textop = Steve3DTexture.GetSteveTextureTop(_skinType);
 
         _steveModelDrawOrderCount = normal.Head.Point.Length;
 
@@ -104,7 +119,7 @@ public partial class SkinRenderOpenGL
         PutVAO(_normalVAO.Cape, normal.Cape, tex.Cape);
 
         PutVAO(_topVAO.Head, top.Head, textop.Head);
-        if (SkinType != SkinType.Old)
+        if (_skinType != SkinType.Old)
         {
             PutVAO(_topVAO.Head, top.Head, textop.Head);
             PutVAO(_topVAO.Body, top.Body, textop.Body);

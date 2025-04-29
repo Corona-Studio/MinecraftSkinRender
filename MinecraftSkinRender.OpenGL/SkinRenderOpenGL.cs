@@ -6,110 +6,59 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 {
     private bool _init = false;
 
-    private int _textureSkin;
-    private int _textureCape;
-    private int _steveModelDrawOrderCount;
-
-    private int _shaderProgram;
-
-    private int _colorRenderBuffer;
-    private int _depthRenderBuffer;
-    private int _frameBuffer;
-
     private int _width, _height;
 
-    private readonly ModelVAO _normalVAO = new();
-    private readonly ModelVAO _topVAO = new();
+    /// <summary>
+    /// 是否为opengles
+    /// </summary>
+    public bool IsGLES { get; init; }
 
-    public bool IsGLES { get; set; }
-
+    /// <summary>
+    /// opengl初始化
+    /// </summary>
     public unsafe void OpenGlInit()
     {
         if (_init)
+        {
             return;
+        }
 
         _init = true;
 
-        CheckError();
+        Info = $"Renderer: {gl.GetString(gl.GL_RENDERER)}\n" +
+        $"OpenGL Version: {gl.GetString(gl.GL_VERSION)}\n" +
+        $"GLSL Version: {gl.GetString(gl.GL_SHADING_LANGUAGE_VERSION)}";
 
         gl.ClearColor(0, 0, 0, 1);
-        gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
         gl.CullFace(gl.GL_BACK);
 
-        CheckError();
-
-        Info = $"Renderer: {gl.GetString(gl.GL_RENDERER)}\n" +
-            $"OpenGL Version: {gl.GetString(gl.GL_VERSION)}\n" +
-            $"GLSL Version: {gl.GetString(gl.GL_SHADING_LANGUAGE_VERSION)}";
-
-        CreateShader();
-
-        InitVAO(_normalVAO);
-        InitVAO(_topVAO);
-
-        _textureSkin = gl.GenTexture();
-        _textureCape = gl.GenTexture();
+        InitShader();
+        InitModel();
+        InitFXAA();
+        InitTexture();
 
         CheckError();
     }
 
     private void InitFrameBuffer()
     {
-        _colorRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _colorRenderBuffer);
-        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            4, gl.GL_RGBA8, _width, _height);
-
-        _depthRenderBuffer = gl.GenRenderbuffer();
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, _depthRenderBuffer);
-        gl.RenderbufferStorageMultisample(gl.GL_RENDERBUFFER,
-            4, gl.GL_DEPTH_COMPONENT24, _width, _height);
-
-        _frameBuffer = gl.GenFramebuffer();
-        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
-
-        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-            gl.GL_COLOR_ATTACHMENT0, gl.GL_RENDERBUFFER, _colorRenderBuffer);
-
-        gl.FramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-            gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, _depthRenderBuffer);
-
-        if (gl.CheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
-        {
-            throw new Exception("glCheckFramebufferStatus status != GL_FRAMEBUFFER_COMPLETE");
-        }
-        gl.BindRenderbuffer(gl.GL_RENDERBUFFER, 0);
-        gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+        InitMSAAFrameBuffer();
+        InitFXAAFrameBuffer();
     }
 
     private void DeleteFrameBuffer()
     {
-        if (_frameBuffer != 0)
-        {
-            gl.DeleteFramebuffer(_frameBuffer);
-            _frameBuffer = 0;
-        }
-
-        if (_colorRenderBuffer != 0)
-        {
-            gl.DeleteRenderbuffer(_colorRenderBuffer);
-            _colorRenderBuffer = 0;
-        }
-
-        if (_depthRenderBuffer != 0)
-        {
-            gl.DeleteRenderbuffer(_depthRenderBuffer);
-            _depthRenderBuffer = 0;
-        }
+        DeleteMSAAFrameBuffer();
+        DeleteFXAAFrameBuffer();
     }
 
     private unsafe void DrawCape()
     {
-        if (HaveCape && EnableCape)
+        if (HaveCape && _enableCape)
         {
             gl.BindTexture(gl.GL_TEXTURE_2D, _textureCape);
-            var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
-            var mat = GetMatrix4(MatrPartType.Cape);
+            var modelLoc = gl.GetUniformLocation(_pgModel, "self");
+            var mat = GetMatrix4(ModelPartType.Cape);
             gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&mat);
             gl.BindVertexArray(_normalVAO.Cape.VertexArrayObject);
             gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
@@ -123,38 +72,38 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
     {
         gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
+        var modelLoc = gl.GetUniformLocation(_pgModel, "self");
         var modelMat = Matrix4x4.Identity;
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Body.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.Head);
+        modelMat = GetMatrix4(ModelPartType.Head);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.Head.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.LeftArm);
+        modelMat = GetMatrix4(ModelPartType.LeftArm);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftArm.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.RightArm);
+        modelMat = GetMatrix4(ModelPartType.RightArm);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightArm.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.LeftLeg);
+        modelMat = GetMatrix4(ModelPartType.LeftLeg);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.LeftLeg.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.RightLeg);
+        modelMat = GetMatrix4(ModelPartType.RightLeg);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_normalVAO.RightLeg.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
@@ -167,38 +116,38 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
     {
         gl.BindTexture(gl.GL_TEXTURE_2D, _textureSkin);
 
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "self");
-        var modelMat = GetMatrix4(MatrPartType.Body);
+        var modelLoc = gl.GetUniformLocation(_pgModel, "self");
+        var modelMat = GetMatrix4(ModelPartType.Body);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Body.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.Head);
+        modelMat = GetMatrix4(ModelPartType.Head);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.Head.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.LeftArm);
+        modelMat = GetMatrix4(ModelPartType.LeftArm);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftArm.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.RightArm);
+        modelMat = GetMatrix4(ModelPartType.RightArm);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightArm.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.LeftLeg);
+        modelMat = GetMatrix4(ModelPartType.LeftLeg);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.LeftLeg.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
            gl.GL_UNSIGNED_SHORT, 0);
 
-        modelMat = GetMatrix4(MatrPartType.RightLeg);
+        modelMat = GetMatrix4(ModelPartType.RightLeg);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&modelMat);
         gl.BindVertexArray(_topVAO.RightLeg.VertexArrayObject);
         gl.DrawElements(gl.GL_TRIANGLES, _steveModelDrawOrderCount,
@@ -207,6 +156,10 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         gl.BindTexture(gl.GL_TEXTURE_2D, 0);
     }
 
+    /// <summary>
+    /// 开始渲染
+    /// </summary>
+    /// <param name="fb">目标fb</param>
     public unsafe void OpenGlRender(int fb)
     {
         if (_switchSkin)
@@ -241,22 +194,31 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
             return;
         }
 
-        if (EnableMSAA)
+        if (_renderType == SkinRenderType.MSAA)
         {
-            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _frameBuffer);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _msaaFrameBuffer);
+        }
+        else if (_renderType == SkinRenderType.FXAA)
+        {
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, _fxaaFrameBuffer);
+        }
+        else
+        {
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, fb);
         }
 
         gl.Viewport(0, 0, _width, _height);
-     
-        gl.ClearColor(BackColor.X, BackColor.Y, BackColor.Z, BackColor.W);
+
+        gl.ClearColor(_backColor.X, _backColor.Y, _backColor.Z, _backColor.W);
+        gl.ClearDepth(1.0f);
         gl.Clear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 
         CheckError();
+
         gl.Enable(gl.GL_CULL_FACE);
         gl.Enable(gl.GL_DEPTH_TEST);
-        gl.DepthMask(true);
         gl.ActiveTexture(gl.GL_TEXTURE0);
-        gl.UseProgram(_shaderProgram);
+        gl.UseProgram(_pgModel);
 
         //if (IsGLES)
         //{
@@ -269,42 +231,63 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         CheckError();
 
-        var viewLoc = gl.GetUniformLocation(_shaderProgram, "view");
-        var projectionLoc = gl.GetUniformLocation(_shaderProgram, "projection");
-        var modelLoc = gl.GetUniformLocation(_shaderProgram, "model");
+        var viewLoc = gl.GetUniformLocation(_pgModel, "view");
+        var projectionLoc = gl.GetUniformLocation(_pgModel, "projection");
+        var modelLoc = gl.GetUniformLocation(_pgModel, "model");
 
-        var matr = GetMatrix4(MatrPartType.Proj);
+        var matr = GetMatrix4(ModelPartType.Proj);
         gl.UniformMatrix4fv(projectionLoc, 1, false, (float*)&matr);
 
-        matr = GetMatrix4(MatrPartType.View);
+        matr = GetMatrix4(ModelPartType.View);
         gl.UniformMatrix4fv(viewLoc, 1, false, (float*)&matr);
 
-        matr = GetMatrix4(MatrPartType.Model);
+        matr = GetMatrix4(ModelPartType.Model);
         gl.UniformMatrix4fv(modelLoc, 1, false, (float*)&matr);
-        
+
         CheckError();
+
+        gl.DepthMask(true);
+        gl.Disable(gl.GL_BLEND);
 
         DrawSkin();
         DrawCape();
 
-        if (EnableTop)
+        if (_enableTop)
         {
-            gl.Enable(gl.GL_BLEND);
-            gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
             gl.DepthMask(false);
+            gl.Enable(gl.GL_BLEND);
+            gl.Enable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE);
+            gl.BlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 
             DrawSkinTop();
 
-            gl.Disable(gl.GL_BLEND);
             gl.DepthMask(true);
+            gl.Disable(gl.GL_BLEND);
         }
 
-        if (EnableMSAA)
+        if (_renderType == SkinRenderType.MSAA)
         {
             gl.BindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, fb);
-            gl.BindFramebuffer(gl.GL_READ_FRAMEBUFFER, _frameBuffer);
+            gl.BindFramebuffer(gl.GL_READ_FRAMEBUFFER, _msaaFrameBuffer);
             gl.BlitFramebuffer(0, 0, _width, _height, 0, 0, _width,
                 _height, gl.GL_COLOR_BUFFER_BIT, gl.GL_NEAREST);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+        }
+        else if (_renderType == SkinRenderType.FXAA)
+        {
+            gl.Disable(gl.GL_DEPTH_TEST);
+            gl.BindFramebuffer(gl.GL_FRAMEBUFFER, fb);
+            gl.Viewport(0, 0, _width, _height);
+            gl.Clear(gl.GL_COLOR_BUFFER_BIT);
+            gl.UseProgram(_pgFXAA);
+            gl.Uniform2f(_fxaaStep, 1.0f / _width, 1.0f / _height);
+            gl.ActiveTexture(gl.GL_TEXTURE0);
+            gl.BindTexture(gl.GL_TEXTURE_2D, _fxaaTexture);
+            gl.BindVertexArray(_fxaaVAO);
+            gl.DrawArrays(gl.GL_TRIANGLE_STRIP, 0, 4);
+            gl.BindVertexArray(0);
+            gl.Enable(gl.GL_DEPTH_TEST);
+            gl.BindTexture(gl.GL_TEXTURE_2D, 0);
             gl.BindFramebuffer(gl.GL_FRAMEBUFFER, 0);
         }
 
@@ -318,6 +301,9 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
             Console.WriteLine(err);
     }
 
+    /// <summary>
+    /// opengl清理
+    /// </summary>
     public unsafe void OpenGlDeinit()
     {
         _skina.Close();
@@ -329,13 +315,12 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         gl.UseProgram(0);
 
         // Delete all resources.
-        DeleteVAO(_normalVAO);
-        DeleteVAO(_topVAO);
-
-        DeleteTexture();
-
-        gl.DeleteProgram(_shaderProgram);
-
+        DeleteModel();
         DeleteFrameBuffer();
+        DeleteTexture();
+        DeleteFXAA();
+
+        gl.DeleteProgram(_pgModel);
+        gl.DeleteProgram(_pgFXAA);
     }
 }

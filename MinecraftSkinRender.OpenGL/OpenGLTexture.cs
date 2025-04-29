@@ -4,6 +4,15 @@ namespace MinecraftSkinRender.OpenGL;
 
 public partial class SkinRenderOpenGL
 {
+    private int _textureSkin;
+    private int _textureCape;
+
+    private void InitTexture()
+    {
+        _textureSkin = gl.GenTexture();
+        _textureCape = gl.GenTexture();
+    }
+
     private unsafe void LoadTex(SKBitmap image, int tex)
     {
         gl.ActiveTexture(gl.GL_TEXTURE0);
@@ -43,25 +52,25 @@ public partial class SkinRenderOpenGL
     {
         CheckError();
 
-        if (Skin == null)
+        if (_skinTex == null)
         {
-            OnErrorChange(ErrorType.SkinNotFind);
+            OnErrorChange(ErrorType.SkinNotFound);
             return;
         }
 
-        if (SkinType == SkinType.Unkonw)
+        if (_skinType == SkinType.Unkonw)
         {
             OnErrorChange(ErrorType.UnknowSkinType);
             return;
         }
 
-        LoadTex(Skin, _textureSkin);
+        LoadTex(_skinTex, _textureSkin);
 
         CheckError();
 
-        if (Cape != null)
+        if (_cape != null)
         {
-            LoadTex(Cape, _textureCape);
+            LoadTex(_cape, _textureCape);
         }
 
         CheckError();

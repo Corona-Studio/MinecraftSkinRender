@@ -1,15 +1,15 @@
 ﻿namespace MinecraftSkinRender.OpenGL;
 
+/// <summary>
+/// OpenGL调用
+/// </summary>
 public abstract class OpenGLApi
 {
-    public abstract bool AlwaysClear { get; }
-    public abstract bool IsES2 { get; }
-    public abstract bool IsPhoneES2 { get; }
-
     public readonly int GL_FALSE = 0;
     public readonly int GL_ZERO = 0;
     public readonly int GL_ONE = 1;
     public readonly int GL_TRIANGLES = 0x0004;
+    public readonly int GL_TRIANGLE_STRIP = 0x0005;
     public readonly int GL_DEPTH_BUFFER_BIT = 0x0100;
     public readonly int GL_ONE_MINUS_SRC_COLOR = 0x0301;
     public readonly int GL_SRC_ALPHA = 0x0302;
@@ -17,6 +17,9 @@ public abstract class OpenGLApi
     public readonly int GL_DST_COLOR = 0x0306;
     public readonly int GL_BACK = 0x0405;
     public readonly int GL_CCW = 0x0901;
+    public readonly int GL_POINT_SMOOTH = 0x0B10;
+    public readonly int GL_LINE_SMOOTH = 0x0B20;
+    public readonly int GL_POLYGON_SMOOTH = 0x0B41;
     public readonly int GL_CULL_FACE = 0x0B44;
     public readonly int GL_FRONT_FACE = 0x0B46;
     public readonly int GL_DEPTH_TEST = 0x0B71;
@@ -29,6 +32,7 @@ public abstract class OpenGLApi
     public readonly int GL_UNSIGNED_BYTE = 0x1401;
     public readonly int GL_UNSIGNED_SHORT = 0x1403;
     public readonly int GL_FLOAT = 0x1406;
+    public readonly int GL_RGB = 0x1907;
     public readonly int GL_RGBA = 0x1908;
     public readonly int GL_RENDERER = 0x1F01;
     public readonly int GL_VERSION = 0x1F02;
@@ -42,14 +46,17 @@ public abstract class OpenGLApi
     public readonly int GL_COLOR_BUFFER_BIT = 0x4000;
     public readonly int GL_RGBA8 = 0x8058;
     public readonly int GL_TEXTURE_BINDING_2D = 0x8069;
+    public readonly int GL_SAMPLE_ALPHA_TO_COVERAGE = 0x809E;
     public readonly int GL_BLEND_DST_RGB = 0x80C8;
     public readonly int GL_BLEND_SRC_RGB = 0x80C9;
     public readonly int GL_BLEND_DST_ALPHA = 0x80CA;
     public readonly int GL_BLEND_SRC_ALPHA = 0x80CB;
     public readonly int GL_BGRA = 0x80E1;
+    public readonly int GL_DEPTH24_STENCIL8 = 0x88F0;
     public readonly int GL_CLAMP_TO_BORDER = 0x812D;
     public readonly int GL_CLAMP_TO_EDGE = 0x812F;
     public readonly int GL_DEPTH_COMPONENT24 = 0x81A6;
+    public readonly int GL_DEPTH_STENCIL_ATTACHMENT = 0x821A;
     public readonly int GL_MAJOR_VERSION = 0x821B;
     public readonly int GL_MINOR_VERSION = 0x821C;
     public readonly int GL_TEXTURE0 = 0x84C0;
@@ -78,6 +85,7 @@ public abstract class OpenGLApi
     public readonly int GL_DEPTH_ATTACHMENT = 0x8D00;
     public readonly int GL_FRAMEBUFFER = 0x8D40;
     public readonly int GL_RENDERBUFFER = 0x8D41;
+    public readonly int GL_TEXTURE_2D_MULTISAMPLE = 0x9100;
 
     public abstract void Viewport(int x, int y, int w, int h);
     public abstract void ClearColor(float r, float g, float b, float a);
@@ -135,4 +143,11 @@ public abstract class OpenGLApi
     public abstract void BlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
     public abstract void DeleteBuffer(int buffers);
     public abstract void DeleteVertexArray(int arrays);
+    public abstract void TexImage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations);
+    public abstract void FramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
+    public abstract void ClearDepth(float v);
+    public abstract void RenderbufferStorage(int target, int internalformat, int width, int height);
+    public abstract void Uniform2f(int v, float width, float height);
+    public abstract void DrawArrays(int type, int v1, int v2);
+    public abstract void Uniform1f(int loc, float v);
 }

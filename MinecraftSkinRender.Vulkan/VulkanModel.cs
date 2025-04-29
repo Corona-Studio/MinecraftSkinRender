@@ -29,10 +29,10 @@ public partial class SkinRenderVulkan
 
     private void CreateModel(CommandPool commandPool, Queue queue)
     {
-        var cube = Steve3DModel.GetSteve(SkinType);
-        var cubetop = Steve3DModel.GetSteveTop(SkinType);
-        var tex = Steve3DTexture.GetSteveTexture(SkinType);
-        var textop = Steve3DTexture.GetSteveTextureTop(SkinType);
+        var cube = Steve3DModel.GetSteve(_skinType);
+        var cubetop = Steve3DModel.GetSteveTop(_skinType);
+        var tex = Steve3DTexture.GetSteveTexture(_skinType);
+        var textop = Steve3DTexture.GetSteveTextureTop(_skinType);
 
         CreateModelPart(model.Head, cube.Head, tex.Head);
         CreateModelPart(model.Body, cube.Body, tex.Body);
@@ -311,9 +311,9 @@ public partial class SkinRenderVulkan
 
     private unsafe void UpdateUboState()
     {
-        var model = GetMatrix4(MatrPartType.Model);
-        var view = GetMatrix4(MatrPartType.View);
-        var proj = GetMatrix4(MatrPartType.Proj);
+        var model = GetMatrix4(ModelPartType.Model);
+        var view = GetMatrix4(ModelPartType.View);
+        var proj = GetMatrix4(ModelPartType.Proj);
 
         for (int a = 0; a < PartCount; a++)
         {
