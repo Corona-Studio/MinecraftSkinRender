@@ -144,6 +144,7 @@ public abstract class OpenGLApi
     public abstract void DeleteBuffer(int buffers);
     public abstract void DeleteVertexArray(int arrays);
     public abstract void TexImage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations);
+    public abstract void TexStorage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations);
     public abstract void FramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
     public abstract void ClearDepth(float v);
     public abstract void RenderbufferStorage(int target, int internalformat, int width, int height);

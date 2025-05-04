@@ -13,7 +13,7 @@ public partial class SkinRenderOpenGL
 
         _msaaRenderTexture = gl.GenTexture();
         gl.BindTexture(gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture);
-        gl.TexImage2DMultisample(gl.GL_TEXTURE_2D_MULTISAMPLE, 4,
+        gl.TexStorage2DMultisample(gl.GL_TEXTURE_2D_MULTISAMPLE, 4,
             gl.GL_RGBA8, _width, _height, true);
         gl.FramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
             gl.GL_TEXTURE_2D_MULTISAMPLE, _msaaRenderTexture, 0);
