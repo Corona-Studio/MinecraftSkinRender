@@ -53,7 +53,7 @@ void main() {
 ";
 
     private const string FragmentShaderFXAASource =
-@"#version 330 core
+@"#version 300 es
 
 #if defined(GL_ES)
 precision mediump float;

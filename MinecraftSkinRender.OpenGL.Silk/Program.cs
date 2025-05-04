@@ -47,7 +47,7 @@ internal class Program
             API = GraphicsAPI.Default with
             {
                 API = ContextAPI.OpenGLES,
-                Version = new(3, 2)
+                Version = new(3, 0)
             },
             Size = new(400, 400),
             VSync = true
@@ -69,7 +69,7 @@ internal class Program
             skin.SetSkinTex(img);
             skin.SkinType = SkinType.NewSlim;
             skin.EnableTop = true;
-            skin.RenderType = SkinRenderType.MSAA;
+            skin.RenderType = SkinRenderType.FXAA;
             skin.Animation = true;
             skin.EnableCape = true;
             if (havecape)
