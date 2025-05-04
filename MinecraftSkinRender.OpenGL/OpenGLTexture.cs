@@ -76,6 +76,7 @@ public partial class SkinRenderOpenGL
         CheckError();
 
         _switchSkin = false;
+        _switchModel = true;
     }
 
     private void DeleteTexture()
