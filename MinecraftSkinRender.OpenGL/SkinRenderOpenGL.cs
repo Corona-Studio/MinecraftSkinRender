@@ -209,7 +209,14 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
 
         gl.Viewport(0, 0, _width, _height);
 
-        gl.ClearColor(_backColor.X, _backColor.Y, _backColor.Z, _backColor.W);
+        if (_renderType == SkinRenderType.FXAA)
+        {
+            gl.ClearColor(1, 1, 1, 1);
+        }
+        else
+        {
+            gl.ClearColor(_backColor.X, _backColor.Y, _backColor.Z, _backColor.W);
+        }
         gl.ClearDepth(1.0f);
         gl.Clear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 
@@ -275,6 +282,7 @@ public partial class SkinRenderOpenGL(OpenGLApi gl) : SkinRender
         }
         else if (_renderType == SkinRenderType.FXAA)
         {
+            gl.Enable(gl.GL_BLEND);
             gl.Disable(gl.GL_DEPTH_TEST);
             gl.BindFramebuffer(gl.GL_FRAMEBUFFER, fb);
             gl.Viewport(0, 0, _width, _height);
