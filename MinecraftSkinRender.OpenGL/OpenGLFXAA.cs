@@ -32,7 +32,9 @@ public partial class SkinRenderOpenGL
 
 
     private const string VertexShaderFXAASource =
-@"#if __VERSION__ >= 130
+@"#version 300 es
+
+#if __VERSION__ >= 130
 #define COMPAT_VARYING out
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
