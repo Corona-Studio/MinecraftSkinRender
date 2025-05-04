@@ -32,7 +32,9 @@ public partial class SkinRenderOpenGL
 
 
     private const string VertexShaderFXAASource =
-@"#if __VERSION__ >= 130
+@"#version 300 es
+
+#if __VERSION__ >= 130
 #define COMPAT_VARYING out
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
@@ -53,7 +55,7 @@ void main() {
 ";
 
     private const string FragmentShaderFXAASource =
-@"#version 330 core
+@"#version 300 es
 
 #if defined(GL_ES)
 precision mediump float;
@@ -83,6 +85,7 @@ out vec4 fragColor;
 void main(void)
 {
     vec3 rgbM = texture(u_colorTexture, v_texCoord).rgb;
+    float rgbA = texture(u_colorTexture, v_texCoord).a;
 
 	// Possibility to toggle FXAA on and off.
 	if (u_fxaaOn == 0)
@@ -116,7 +119,7 @@ void main(void)
 	if (u_disablePass == 0 && lumaMax - lumaMin <= lumaMax * u_lumaThreshold)
 	{
 		// ... do no AA and return.
-		fragColor = vec4(rgbM, 1.0);
+		fragColor = vec4(rgbM, rgbA);
 		
 		return;
 	}  
@@ -155,12 +158,12 @@ void main(void)
 	if (lumaFourTab < lumaMin || lumaFourTab > lumaMax)
 	{
 		// ... yes, so use only two samples.
-		fragColor = vec4(rgbTwoTab, 1.0); 
+		fragColor = vec4(rgbTwoTab, rgbA); 
 	}
 	else
 	{
 		// ... no, so use four samples. 
-		fragColor = vec4(rgbFourTab, 1.0);
+		fragColor = vec4(rgbFourTab, rgbA);
 	}
 
 	// Show edges for debug purposes.	

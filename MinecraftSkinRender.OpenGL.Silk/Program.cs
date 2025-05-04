@@ -47,7 +47,7 @@ internal class Program
             API = GraphicsAPI.Default with
             {
                 API = ContextAPI.OpenGLES,
-                Version = new(3, 2)
+                Version = new(3, 0)
             },
             Size = new(400, 400),
             VSync = true
