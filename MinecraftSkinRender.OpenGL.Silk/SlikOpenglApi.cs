@@ -270,11 +270,6 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.TexImage2D((GLEnum)type, a, type1, (uint)w, (uint)h, size, (GLEnum)type2, (GLEnum)type3, (void*)data);
     }
 
-    public override void TexImage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations)
-    {
-        gl.TexImage2DMultisample((GLEnum)target, (uint)samples, (GLEnum)internalformat, (uint)width, (uint)height, fixedsamplelocations);
-    }
-
     public override void TexParameteri(int a, int b, int c)
     {
         gl.TexParameter((GLEnum)a, (GLEnum)b, c);
