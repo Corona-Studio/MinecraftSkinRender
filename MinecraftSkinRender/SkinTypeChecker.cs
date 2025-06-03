@@ -40,23 +40,10 @@ public static class SkinTypeChecker
     private static bool IsSlimSkin(SKBitmap image)
     {
         var scale = image.Width / 64;
-        return image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale,
-            SKColors.Transparent) ||
-                image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale,
-                SKColors.Transparent) ||
-                image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale,
-                SKColors.Transparent) ||
-                image.Check(46 * scale, 52 * scale, 2 * scale, 12 * scale,
-                SKColors.Transparent) ||
-                image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale,
-                SKColors.White) &&
-                        image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale, SKColors.White) &&
-                        image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale, SKColors.White) &&
-                        image.Check(46 * scale, 52 * scale, 2 * scale, 12 * scale, SKColors.White) ||
-                image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale, SKColors.Black) &&
-                        image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale, SKColors.Black) &&
-                        image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale, SKColors.Black) &&
-                        image.Check(46 * scale, 52 * scale, 2 * scale, 12 * scale, SKColors.Black);
+        return image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty) 
+            || image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale, SKColors.Transparent, SKColors.Empty) 
+            || image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty) 
+            || image.Check(46 * scale, 52 * scale, 2 * scale, 12 * scale, SKColors.Transparent, SKColors.Empty);
     }
 
     /// <summary>
@@ -69,19 +56,19 @@ public static class SkinTypeChecker
     /// <param name="h"></param>
     /// <param name="color"></param>
     /// <returns></returns>
-    private static bool Check(this SKBitmap image, int x, int y, int w, int h, SKColor color)
+    private static bool Check(this SKBitmap image, int x, int y, int w, int h, params SKColor[] color)
     {
         for (int wi = 0; wi < w; wi++)
         {
             for (int hi = 0; hi < h; hi++)
             {
-                if (image.GetPixel(x + wi, y + hi) != color)
+                if (color.Contains(image.GetPixel(x + wi, y + hi)))
                 {
-                    return false;
+                    return true;
                 }
             }
         }
 
-        return true;
+        return false;
     }
 }
