@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MinecraftSkinRender;
 
-public static class Version
+public static class SkinRenderVersion
 {
-    public const string MinecraftSkinRenderVersion = "1.0.0";
+    public const string MinecraftSkinRenderVersion = "1.0.1";
 }
