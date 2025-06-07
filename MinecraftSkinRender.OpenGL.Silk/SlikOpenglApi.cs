@@ -315,8 +315,8 @@ public class SlikOpenglApi(GL gl) : OpenGLApi
         gl.Uniform1(loc, v);
     }
 
-    public override void TexStorage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations)
-    {
-        gl.TexStorage2DMultisample((GLEnum)target, (uint)samples, (GLEnum)internalformat, (uint)width, (uint)height, fixedsamplelocations);
-    }
+    // public override void TexStorage2DMultisample(int target, int samples, int internalformat, int width, int height, bool fixedsamplelocations)
+    // {
+    //     gl.TexStorage2DMultisample((GLEnum)target, (uint)samples, (GLEnum)internalformat, (uint)width, (uint)height, fixedsamplelocations);
+    // }
 }

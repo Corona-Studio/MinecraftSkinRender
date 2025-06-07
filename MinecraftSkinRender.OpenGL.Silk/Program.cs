@@ -72,7 +72,7 @@ internal class Program
             skin.SetSkinTex(img);
             skin.SkinType = SkinType.NewSlim;
             skin.EnableTop = true;
-            skin.RenderType = SkinRenderType.FXAA;
+            skin.RenderType = SkinRenderType.Normal;
             skin.Animation = true;
             skin.EnableCape = true;
             if (havecape)
