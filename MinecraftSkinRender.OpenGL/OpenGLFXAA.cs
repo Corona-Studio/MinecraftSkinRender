@@ -1,4 +1,6 @@
-﻿namespace MinecraftSkinRender.OpenGL;
+﻿using System.Runtime.InteropServices;
+
+namespace MinecraftSkinRender.OpenGL;
 
 /// <summary>
 /// OpenGL的FXAA抗锯齿
@@ -30,10 +32,11 @@ public partial class SkinRenderOpenGL
          1.0f, -1.0f,   1.0f, 0.0f
     ];
 
-
+    private const string GlesHeader = "#version 300 es\n";
+    private const string GlHeader = "#version 150\n";
+    
     private const string VertexShaderFXAASource =
-@"#version 300 es
-
+@"
 #if __VERSION__ >= 130
 #define COMPAT_VARYING out
 #define COMPAT_ATTRIBUTE in
@@ -55,9 +58,7 @@ void main() {
 ";
 
     private const string FragmentShaderFXAASource =
-@"#version 300 es
-
-#if defined(GL_ES)
+@"#if defined(GL_ES)
 precision mediump float;
 #endif
 
@@ -205,8 +206,18 @@ void main(void)
 
     private void ShaderFXAA()
     {
+        string str;
         var vertexShader = gl.CreateShader(gl.GL_VERTEX_SHADER);
-        gl.ShaderSource(vertexShader, VertexShaderFXAASource);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            str = GlHeader + VertexShaderFXAASource;
+        }
+        else
+        {
+            str = GlesHeader + VertexShaderFXAASource;
+        }
+        
+        gl.ShaderSource(vertexShader, str);
         gl.CompileShader(vertexShader);
         gl.GetShaderiv(vertexShader, gl.GL_COMPILE_STATUS, out var state);
         if (state == 0)
@@ -215,8 +226,17 @@ void main(void)
             throw new Exception($"GL_VERTEX_SHADER.\n{info}");
         }
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            str = GlHeader + FragmentShaderFXAASource;
+        }
+        else
+        {
+            str = GlesHeader + FragmentShaderFXAASource;
+        }
+        
         var fragmentShader = gl.CreateShader(gl.GL_FRAGMENT_SHADER);
-        gl.ShaderSource(fragmentShader, FragmentShaderFXAASource);
+        gl.ShaderSource(fragmentShader, str);
         gl.CompileShader(fragmentShader);
         gl.GetShaderiv(fragmentShader, gl.GL_COMPILE_STATUS, out state);
         if (state == 0)

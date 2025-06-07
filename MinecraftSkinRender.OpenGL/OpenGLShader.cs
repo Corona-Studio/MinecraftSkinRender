@@ -1,9 +1,16 @@
-﻿namespace MinecraftSkinRender.OpenGL;
+﻿using System.Runtime.InteropServices;
+
+namespace MinecraftSkinRender.OpenGL;
 
 public partial class SkinRenderOpenGL
 {
     private int _pgModel;
 
+    private const string MacosHeader = 
+@"#version 150
+#define Macos
+";
+    
     private const string VertexShaderSource =
 @"#if __VERSION__ >= 130
 #define COMPAT_VARYING out
@@ -44,6 +51,13 @@ void main()
 @"#if defined(GL_ES)
 precision mediump float;
 #endif
+
+#ifdef Macos
+#define COMPAT_VARYING in
+#define COMPAT_ATTRIBUTE in
+#define COMPAT_TEXTURE texture
+out vec4 FragColor;
+#else
 #if __VERSION__ >= 130
 #define COMPAT_VARYING in
 #define COMPAT_ATTRIBUTE in
@@ -54,6 +68,7 @@ out vec4 FragColor;
 #define COMPAT_ATTRIBUTE attribute
 #define COMPAT_TEXTURE texture2D
 #define FragColor gl_FragColor
+#endif
 #endif
 
 uniform sampler2D texture0;
@@ -74,14 +89,24 @@ void main() {
     vec3 diffuse = diff * lightColor;
     
     vec3 result = (ambient + diffuse);
-    gl_FragColor = texture2D(texture0, texIn) * vec4(result, 1.0);
+    FragColor = COMPAT_TEXTURE(texture0, texIn) * vec4(result, 1.0);
 }
 ";
 
     private void InitShader()
     {
+        string str;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            str = MacosHeader + VertexShaderSource;
+        }
+        else
+        {
+            str = VertexShaderSource;
+        }
+
         var vertexShader = gl.CreateShader(gl.GL_VERTEX_SHADER);
-        gl.ShaderSource(vertexShader, VertexShaderSource);
+        gl.ShaderSource(vertexShader, str);
         gl.CompileShader(vertexShader);
         gl.GetShaderiv(vertexShader, gl.GL_COMPILE_STATUS, out var state);
         if (state == 0)
@@ -90,8 +115,17 @@ void main() {
             throw new Exception($"GL_VERTEX_SHADER.\n{info}");
         }
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            str = MacosHeader + FragmentShaderSource;
+        }
+        else
+        {
+            str = FragmentShaderSource;
+        }
+        
         var fragmentShader = gl.CreateShader(gl.GL_FRAGMENT_SHADER);
-        gl.ShaderSource(fragmentShader, FragmentShaderSource);
+        gl.ShaderSource(fragmentShader, str);
         gl.CompileShader(fragmentShader);
         gl.GetShaderiv(fragmentShader, gl.GL_COMPILE_STATUS, out state);
         if (state == 0)

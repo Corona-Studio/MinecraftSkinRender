@@ -1,4 +1,7 @@
-﻿using Silk.NET.OpenGL;
+﻿using System.Text;
+using MinecraftSkinRender.MojangApi;
+using Newtonsoft.Json;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using SkiaSharp;
 
@@ -9,13 +12,13 @@ internal class Program
     static async Task Main(string[] args)
     {
         bool havecape = true;
-        //Console.WriteLine("Download skin");
+        // Console.WriteLine("Download skin");
 
-        //var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
-        //var res1 = await MinecraftAPI.GetUserProfile(res!.UUID);
-        //TexturesObj? obj = null;
-        //foreach (var item in res1!.properties)
-        //{
+        // var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
+        // var res1 = await MinecraftAPI.GetUserProfile(res!.UUID);
+        // TexturesObj? obj = null;
+        // foreach (var item in res1!.properties)
+        // {
         //    if (item.name == "textures")
         //    {
         //        var temp = Convert.FromBase64String(item.value);
@@ -23,31 +26,31 @@ internal class Program
         //        obj = JsonConvert.DeserializeObject<TexturesObj>(data);
         //        break;
         //    }
-        //}
-        //if (obj == null)
-        //{
+        // }
+        // if (obj == null)
+        // {
         //    Console.WriteLine("No have skin");
         //    return;
-        //}
-        //if (obj!.textures.SKIN.url != null)
-        //{
+        // }
+        // if (obj!.textures.SKIN.url != null)
+        // {
         //    var data = await MinecraftAPI.Client.GetByteArrayAsync(obj!.textures.SKIN.url);
         //    File.WriteAllBytes("skin.png", data);
-        //}
-        //if (obj.textures.CAPE.url != null)
-        //{
+        // }
+        // if (obj.textures.CAPE.url != null)
+        // {
         //    var data = await MinecraftAPI.Client.GetByteArrayAsync(obj!.textures.CAPE.url);
         //    File.WriteAllBytes("cape.png", data);
         //    havecape = true;
-        //}
+        // }
 
         // Create a Silk.NET window as usual
         using var window = Window.Create(WindowOptions.Default with
         {
             API = GraphicsAPI.Default with
             {
-                API = ContextAPI.OpenGLES,
-                Version = new(3, 0)
+                // API = ContextAPI.OpenGL,
+                // Version = new(3, 0)
             },
             Size = new(400, 400),
             VSync = true
