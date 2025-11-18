@@ -1,29 +1,44 @@
-﻿namespace MinecraftSkinRender.MojangApi;
+﻿using System.Text.Json.Serialization;
 
+namespace MinecraftSkinRender.MojangApi;
+
+/// <summary>
+/// 材质
+/// </summary>
 public record TexturesObj
 {
-    public record Textures
+    public record TexturesObj1
     {
-        public record Skin
+        public record SkinObj
         {
-            public record Metadata
+            public record MetadataObj
             {
-                public string model { get; set; }
+                [JsonPropertyName("model")]
+                public string Model { get; set; }
             }
-            public string url { get; set; }
-            public Metadata metadata { get; set; }
+            [JsonPropertyName("url")]
+            public string Url { get; set; }
+            [JsonPropertyName("metadata")]
+            public MetadataObj Metadata { get; set; }
         }
-        public record Cape
+        public record CapeObj
         {
-            public string url { get; set; }
+            [JsonPropertyName("url")]
+            public string Url { get; set; }
         }
-        public Skin SKIN { get; set; }
-        public Cape CAPE { get; set; }
+        [JsonPropertyName("SKIN")]
+        public SkinObj Skin { get; set; }
+        [JsonPropertyName("CAPE")]
+        public CapeObj Cape { get; set; }
     }
-    public string timestamp { get; set; }
-    public string profileId { get; set; }
-    public string profileName { get; set; }
-    public bool signatureRequired { get; set; }
-    public Textures textures { get; set; }
+    [JsonPropertyName("timestamp")]
+    public string Timestamp { get; set; }
+    [JsonPropertyName("profileId")]
+    public string ProfileId { get; set; }
+    [JsonPropertyName("profileName")]
+    public string ProfileName { get; set; }
+    [JsonPropertyName("signatureRequired")]
+    public bool SignatureRequired { get; set; }
+    [JsonPropertyName("textures")]
+    public TexturesObj1 Textures { get; set; }
 }
-

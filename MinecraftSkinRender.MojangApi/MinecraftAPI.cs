@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text;
+using System.Text.Json;
 
 namespace MinecraftSkinRender.MojangApi;
 
@@ -20,7 +21,7 @@ public static class MinecraftAPI
         string url = $"{ProfileName}/{name}";
         var data = await Client.GetStringAsync(url);
 
-        return JsonConvert.DeserializeObject<ProfileNameObj>(data);
+        return JsonSerializer.Deserialize(data, JsonType.ProfileNameObj);
     }
 
     /// <summary>
@@ -30,12 +31,11 @@ public static class MinecraftAPI
     /// <returns>账户信息</returns>
     public static async Task<MinecraftProfileObj?> GetMinecraftProfileAsync(string accessToken)
     {
-        HttpRequestMessage message = new(HttpMethod.Get, Profile);
+        using var message = new HttpRequestMessage(HttpMethod.Get, Profile);
         message.Headers.Add("Authorization", $"Bearer {accessToken}");
         var data = await Client.SendAsync(message);
         var data1 = await data.Content.ReadAsStringAsync();
-
-        return JsonConvert.DeserializeObject<MinecraftProfileObj>(data1); ;
+        return JsonSerializer.Deserialize(data1, JsonType.MinecraftProfileObj);
     }
 
     /// <summary>
@@ -49,6 +49,19 @@ public static class MinecraftAPI
         var url = $"{UserProfile}/{uuid}";
         var data = await Client.GetStringAsync(url);
 
-        return JsonConvert.DeserializeObject<UserProfileObj>(data);
+        return JsonSerializer.Deserialize(data, JsonType.UserProfileObj);
+    }
+
+    /// <summary>
+    /// 将base64字符串转为材质信息<br/>
+    /// 从<see cref="UserProfileObj.PropertiesObj.Value"/>获取base64字符串
+    /// </summary>
+    /// <param name="base64">输入base64</param>
+    /// <returns></returns>
+    public static TexturesObj? Base64ToTexture(string base64)
+    {
+        var data = Convert.FromBase64String(base64);
+        var data1 = Encoding.UTF8.GetString(data);
+        return JsonSerializer.Deserialize(data1, JsonType.TexturesObj);
     }
 }

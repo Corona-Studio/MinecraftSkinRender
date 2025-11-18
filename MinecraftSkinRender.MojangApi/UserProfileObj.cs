@@ -1,4 +1,6 @@
-﻿namespace MinecraftSkinRender.MojangApi;
+﻿using System.Text.Json.Serialization;
+
+namespace MinecraftSkinRender.MojangApi;
 
 /// <summary>
 /// 皮肤信息
@@ -6,13 +8,20 @@
 /// <value></value>
 public record UserProfileObj
 {
-    public record Properties
+    public record PropertiesObj
     {
-        public string name { get; set; }
-        public string value { get; set; }
-        public string signature { get; set; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+        [JsonPropertyName("signature")]
+        public string Signature { get; set; }
     }
-    public string id { get; set; }
-    public string name { get; set; }
-    public List<Properties> properties { get; set; }
+
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+    [JsonPropertyName("properties")]
+    public List<PropertiesObj> Properties { get; set; }
 }
