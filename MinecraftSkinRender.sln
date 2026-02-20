@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftSkinRender.Vulkan.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.Image", "MinecraftSkinRender.Image\MinecraftSkinRender.Image.csproj", "{4C0DAF5A-0DB6-75AA-9862-F23032178B04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftSkinRender.SkinDownload", "MinecraftSkinRender.SkinDownload\MinecraftSkinRender.SkinDownload.csproj", "{C35CDD4D-DA8D-4756-A280-44AD83843EC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{4C0DAF5A-0DB6-75AA-9862-F23032178B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C0DAF5A-0DB6-75AA-9862-F23032178B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C0DAF5A-0DB6-75AA-9862-F23032178B04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35CDD4D-DA8D-4756-A280-44AD83843EC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35CDD4D-DA8D-4756-A280-44AD83843EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35CDD4D-DA8D-4756-A280-44AD83843EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35CDD4D-DA8D-4756-A280-44AD83843EC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

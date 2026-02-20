@@ -10,3 +10,5 @@ publish
 
 .pubxml.user
 /nuget
+.DS_Store
+MinecraftSkinRender.sln.DotSettings.user

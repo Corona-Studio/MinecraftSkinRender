@@ -1,7 +1,4 @@
-﻿//using System.Text;
-//using MinecraftSkinRender.MojangApi;
-//using Newtonsoft.Json;
-using MinecraftSkinRender.Vulkan.KHR;
+﻿using MinecraftSkinRender.Vulkan.KHR;
 using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
@@ -10,51 +7,22 @@ using SkiaSharp;
 
 namespace MinecraftSkinRender.Vulkan.Silk;
 
-internal class Program : IVulkanApi
+internal class Program
 {
-    static void Main(string[] args)
-    {
-        new Program().Start();
-    }
+    private static IWindow _window;
 
-    private IWindow _window;
-
-    public async void Start()
+    static async Task Main(string[] args)
     {
         bool havecape = true;
 
-        Console.WriteLine("Download skin");
+        if (OperatingSystem.IsMacOS())
+        {
+            Environment.SetEnvironmentVariable("DYLD_LIBRARY_PATH", "~/VulkanSDK/1.4.341.0/macOS/lib:" + Environment.GetEnvironmentVariable("DYLD_LIBRARY_PATH"));
+            Environment.SetEnvironmentVariable("VK_ICD_FILENAMES", "~/VulkanSDK/1.4.341.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json");
+        }
 
-        //var res = await MinecraftAPI.GetMinecraftProfileNameAsync("Color_yr");
-        //var res1 = await MinecraftAPI.GetUserProfile(res!.UUID);
-        //TexturesObj? obj = null;
-        //foreach (var item in res1!.properties)
-        //{
-        //    if (item.name == "textures")
-        //    {
-        //        var temp = Convert.FromBase64String(item.value);
-        //        var data = Encoding.UTF8.GetString(temp);
-        //        obj = JsonConvert.DeserializeObject<TexturesObj>(data);
-        //        break;
-        //    }
-        //}
-        //if (obj == null)
-        //{
-        //    Console.WriteLine("No have skin");
-        //    return;
-        //}
-        //if (obj!.textures.SKIN.url != null)
-        //{
-        //    var data = await MinecraftAPI.Client.GetByteArrayAsync(obj!.textures.SKIN.url);
-        //    File.WriteAllBytes("skin.png", data);
-        //}
-        //if (obj.textures.CAPE.url != null)
-        //{
-        //    var data = await MinecraftAPI.Client.GetByteArrayAsync(obj!.textures.CAPE.url);
-        //    File.WriteAllBytes("cape.png", data);
-        //    havecape = true;
-        //}
-
+        await SkinDownloader.Download();
+        
         //Create a window.
         var options = WindowOptions.DefaultVulkan with
         {
@@ -71,7 +39,7 @@ internal class Program : IVulkanApi
             throw new Exception("Windowing platform doesn't support Vulkan.");
         }
 
-        var skin = new SkinRenderVulkanKHR(Vk.GetApi(), this);
+        var skin = new SkinRenderVulkanKHR(Vk.GetApi(), new VKHandel());
 
         _window.Resize += (size) =>
         {
@@ -94,7 +62,7 @@ internal class Program : IVulkanApi
         skin.SkinType = SkinType.NewSlim;
         skin.SetCapeTex(SKBitmap.Decode("cape.png"));
         skin.EnableTop = true;
-        skin.EnableCape = true;
+        skin.EnableCape = havecape;
         skin.Animation = true;
         skin.FpsUpdate += (a, b) =>
         {
@@ -114,16 +82,24 @@ internal class Program : IVulkanApi
         _window.Run();
     }
 
-    public unsafe IReadOnlyList<string> GetRequiredExtensions()
+    class VKHandel: IVulkanApi
     {
-        var glfwExtensions = _window.VkSurface!.GetRequiredExtensions(out var glfwExtensionCount);
-        var extensions = SilkMarshal.PtrToStringArray((nint)glfwExtensions, (int)glfwExtensionCount);
+        public unsafe IReadOnlyList<string> GetRequiredExtensions()
+        {
+            var glfwExtensions = _window.VkSurface!.GetRequiredExtensions(out var glfwExtensionCount);
+            var extensions = SilkMarshal.PtrToStringArray((nint)glfwExtensions, (int)glfwExtensionCount);
 
-        return extensions;
-    }
+            foreach (var item in extensions)
+            {
+                Console.WriteLine(item);
+            }
+            
+            return extensions;
+        }
 
-    public unsafe SurfaceKHR CreateSurface(Instance instance)
-    {
-        return _window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
+        public unsafe SurfaceKHR CreateSurface(Instance instance)
+        {
+            return _window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
+        }
     }
 }

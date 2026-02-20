@@ -32,7 +32,7 @@ public record TexturesObj
         public CapeObj Cape { get; set; }
     }
     [JsonPropertyName("timestamp")]
-    public string Timestamp { get; set; }
+    public long Timestamp { get; set; }
     [JsonPropertyName("profileId")]
     public string ProfileId { get; set; }
     [JsonPropertyName("profileName")]
