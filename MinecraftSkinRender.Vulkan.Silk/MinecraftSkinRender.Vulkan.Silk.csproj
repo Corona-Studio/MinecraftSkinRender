@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -16,12 +16,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.9" />
+    <PackageReference Include="Silk.NET.Windowing" Version="2.23.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MinecraftSkinRender.MojangApi\MinecraftSkinRender.MojangApi.csproj" />
+    <ProjectReference Include="..\MinecraftSkinRender.SkinDownload\MinecraftSkinRender.SkinDownload.csproj" />
     <ProjectReference Include="..\MinecraftSkinRender.Vulkan.KHR\MinecraftSkinRender.Vulkan.KHR.csproj" />
     <ProjectReference Include="..\MinecraftSkinRender.Vulkan\MinecraftSkinRender.Vulkan.csproj" />
   </ItemGroup>

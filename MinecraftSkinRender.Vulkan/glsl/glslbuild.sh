@@ -2,7 +2,7 @@
 
 # 设置输入和输出目录
 inputDirectory="."  # 输入目录
-outputDirectory="./spv"  # 输出目录
+outputDirectory="../spv"  # 输出目录
 
 # 确保输出目录存在
 if [ ! -d "$outputDirectory" ]; then
@@ -18,11 +18,6 @@ compiledShadersFramework=()
 # 遍历每个着色器文件
 for shader in $shaderFiles; do
     fileName=$(basename "$shader")
-
-    # 跳过common.glsl文件
-    if [ "$fileName" == "common.glsl" ]; then
-        continue
-    fi
 
     outputFileName="${fileName%.*}.spv"  # 获取不带扩展名的文件名并添加.spv扩展名
     outputFile="$outputDirectory/$outputFileName"

@@ -1,9 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>MinecraftSkinRender.MojangApi</Title>
+    <Version>1.0.0</Version>
+    <Authors>Coloryr</Authors>
+    <Company>Coloryr</Company>
+    <Product>MinecraftSkinRender.MojangApi</Product>
+    <Description>Minecraft皮肤渲染，获取在线皮肤</Description>
+    <Copyright>MIT</Copyright>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Coloryr/MinecraftSkinRender</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Coloryr/MinecraftSkinRender</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>minecraft;opengl;vulkan;skin</PackageTags>
+    <PackageReleaseNotes>皮肤渲染</PackageReleaseNotes>
+    <PackageOutputPath>..\nuget\</PackageOutputPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -12,9 +28,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

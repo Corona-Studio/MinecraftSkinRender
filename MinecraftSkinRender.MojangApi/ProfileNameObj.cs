@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace MinecraftSkinRender.MojangApi;
 
 public record ProfileNameObj
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string UUID { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 }

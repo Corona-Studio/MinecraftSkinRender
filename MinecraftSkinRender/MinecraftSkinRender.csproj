@@ -1,10 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>MinecraftSkinRender</Title>
+    <Authors>Coloryr</Authors>
+    <Version>1.0.0</Version>
+    <Company>Coloryr</Company>
+    <Product>MinecraftSkinRender</Product>
+    <Description>Minecraft皮肤渲染</Description>
+    <Copyright>MIT</Copyright>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Coloryr/MinecraftSkinRender</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Coloryr/MinecraftSkinRender</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>minecraft;opengl;vulkan;skin</PackageTags>
+    <PackageReleaseNotes>皮肤渲染</PackageReleaseNotes>
+    <IncludeSymbols>False</IncludeSymbols>
+    <PackageOutputPath>..\nuget\</PackageOutputPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,6 +30,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
