@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>MinecraftSkinRender</Title>
     <Authors>Coloryr</Authors>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Company>Coloryr</Company>
     <Product>MinecraftSkinRender</Product>
     <Description>Minecraft皮肤渲染</Description>
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+    <PackageReference Include="SkiaSharp" Version="3.119.2" />
   </ItemGroup>
 
 </Project>

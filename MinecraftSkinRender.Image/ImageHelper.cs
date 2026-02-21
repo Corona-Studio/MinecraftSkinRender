@@ -1,9 +1,27 @@
-﻿using SkiaSharp;
+﻿using System.Numerics;
+using SkiaSharp;
 
 namespace MinecraftSkinRender.Image;
 
 public static class ImageHelper
 {
+    public static float[] MapScalars(SKMatrix44 matrix44, ReadOnlySpan<float> srcVector4)
+    {
+        var vector = new Vector4(srcVector4[0], srcVector4[1], srcVector4[2], srcVector4[3]);
+        var t = Vector4.Transform(vector, matrix44);
+        return [t.X, t.Y, t.Z, t.W];
+    }
+
+    public static void MapScalars(SKMatrix44 matrix44, ReadOnlySpan<float> srcVector4, Span<float> dstVector4)
+    {
+        var vector = new Vector4(srcVector4[0], srcVector4[1], srcVector4[2], srcVector4[3]);
+        var t = Vector4.Transform(vector, matrix44);
+        dstVector4[0] = t.X;
+        dstVector4[1] = t.Y;
+        dstVector4[2] = t.Z;
+        dstVector4[3] = t.W;
+    }
+
     /// <summary>
     /// 复制像素到指定区域，同时每个像素都以填充方式填充
     /// </summary>
