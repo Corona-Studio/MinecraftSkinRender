@@ -1,264 +1,265 @@
-﻿using System.Numerics;
-using SkiaSharp;
+﻿using SkiaSharp;
 
 namespace MinecraftSkinRender.Image;
 
+/// <summary>
+/// 3D头像生成，生成一个可以旋转的
+/// </summary>
 public static class Skin3DHeadTypeB
 {
     private const int s_size = 220;
     private const int s_cubeSize = 60;
     private const int s_cubeSizeOut = s_cubeSize + (int)(s_cubeSize * 0.125);
-
+    // Define cube vertices
     private static readonly SKPoint3[] s_cubeVertices =
     [
-        // Inner cube
-        new SKPoint3(-s_cubeSize, -s_cubeSize, -s_cubeSize), // 0
-        new SKPoint3(s_cubeSize, -s_cubeSize, -s_cubeSize), // 1
-        new SKPoint3(s_cubeSize, s_cubeSize, -s_cubeSize), // 2
-        new SKPoint3(-s_cubeSize, s_cubeSize, -s_cubeSize), // 3
-        new SKPoint3(-s_cubeSize, -s_cubeSize, s_cubeSize), // 4
-        new SKPoint3(s_cubeSize, -s_cubeSize, s_cubeSize), // 5
-        new SKPoint3(s_cubeSize, s_cubeSize, s_cubeSize), // 6
-        new SKPoint3(-s_cubeSize, s_cubeSize, s_cubeSize), // 7
-        // Outer cube (hat layer)
-        new SKPoint3(-s_cubeSizeOut, -s_cubeSizeOut, -s_cubeSizeOut), // 8
-        new SKPoint3(s_cubeSizeOut, -s_cubeSizeOut, -s_cubeSizeOut), // 9
-        new SKPoint3(s_cubeSizeOut, s_cubeSizeOut, -s_cubeSizeOut), // 10
-        new SKPoint3(-s_cubeSizeOut, s_cubeSizeOut, -s_cubeSizeOut), // 11
-        new SKPoint3(-s_cubeSizeOut, -s_cubeSizeOut, s_cubeSizeOut), // 12
-        new SKPoint3(s_cubeSizeOut, -s_cubeSizeOut, s_cubeSizeOut), // 13
-        new SKPoint3(s_cubeSizeOut, s_cubeSizeOut, s_cubeSizeOut), // 14
-        new SKPoint3(-s_cubeSizeOut, s_cubeSizeOut, s_cubeSizeOut), // 15
+        //In
+        new SKPoint3(-s_cubeSize, -s_cubeSize, -s_cubeSize),
+        new SKPoint3(s_cubeSize, -s_cubeSize, -s_cubeSize),
+        new SKPoint3(s_cubeSize, s_cubeSize, -s_cubeSize),
+        new SKPoint3(-s_cubeSize, s_cubeSize, -s_cubeSize),
+        new SKPoint3(-s_cubeSize, -s_cubeSize, s_cubeSize),
+        new SKPoint3(s_cubeSize, -s_cubeSize, s_cubeSize),
+        new SKPoint3(s_cubeSize, s_cubeSize, s_cubeSize),
+        new SKPoint3(-s_cubeSize, s_cubeSize, s_cubeSize),
+        //Out
+        new SKPoint3(-s_cubeSizeOut, -s_cubeSizeOut, -s_cubeSizeOut),
+        new SKPoint3(s_cubeSizeOut, -s_cubeSizeOut, -s_cubeSizeOut),
+        new SKPoint3(s_cubeSizeOut, s_cubeSizeOut, -s_cubeSizeOut),
+        new SKPoint3(-s_cubeSizeOut, s_cubeSizeOut, -s_cubeSizeOut),
+        new SKPoint3(-s_cubeSizeOut, -s_cubeSizeOut, s_cubeSizeOut),
+        new SKPoint3(s_cubeSizeOut, -s_cubeSizeOut, s_cubeSizeOut),
+        new SKPoint3(s_cubeSizeOut, s_cubeSizeOut, s_cubeSizeOut),
+        new SKPoint3(-s_cubeSizeOut, s_cubeSizeOut, s_cubeSizeOut),
     ];
 
+    // Define the faces of the cube (each face is a list of vertex indices)
     private static readonly int[][] s_faces =
     [
-        [8, 11, 15, 12], // Back face (Top)
-        [10, 11, 15, 6], // Bottom face (Top)  -- note: mixed inner/outer, kept as-is
+        [8, 11, 15, 12],  // Back face (Top)
+        [10, 11, 15, 6],  // Bottom face (Top)
         [12, 13, 14, 15], // Right face (Top)
-        [0, 3, 7, 4], // Back face
-        [2, 3, 7, 6], // Bottom face
-        [4, 5, 6, 7], // Right face
-        [0, 1, 5, 4], // Top face
-        [0, 1, 2, 3], // Left face
-        [1, 2, 6, 5], // Front face
-        [8, 9, 13, 12], // Top face (Top)
-        [8, 9, 10, 11], // Left face (Top)
-        [9, 10, 14, 13], // Front face (Top)
+        [0, 3, 7, 4],     // Back face
+        [2, 3, 7, 6],     // Bottom face
+        [4, 5, 6, 7],     // Right face
+        [0, 1, 5, 4],     // Top face
+        [0, 1, 2, 3],     // Left face
+        [1, 2, 6, 5],     // Front face
+        [8, 9, 13, 12],   // Top face (Top)
+        [8, 9, 10, 11],   // Left face (Top)
+        [9, 10, 14, 13],  // Front face (Top)
     ];
 
+    // Define the colors for each face
     private static readonly SKRectI[] s_facePos =
     [
         new SKRectI(56, 8, 64, 16), // Back face (Top)
-        new SKRectI(48, 0, 56, 8), // Bottom face (Top)
+        new SKRectI(48, 0, 56, 8),  // Bottom face (Top)
         new SKRectI(48, 8, 56, 16), // Right face (Top)
         new SKRectI(24, 8, 32, 16), // Back face
-        new SKRectI(16, 0, 24, 8), // Bottom face
+        new SKRectI(16, 0, 24, 8),  // Bottom face
         new SKRectI(16, 8, 24, 16), // Right face
-        new SKRectI(8, 0, 16, 8), // Top face
-        new SKRectI(0, 8, 8, 16), // Left face
-        new SKRectI(8, 8, 16, 16), // Front face
-        new SKRectI(40, 0, 48, 8), // Top face (Top)
+        new SKRectI(8, 0, 16, 8),   // Top face
+        new SKRectI(0, 8, 8, 16),   // Left face
+        new SKRectI(8, 8, 16, 16),  // Front face
+        new SKRectI(40, 0, 48, 8),  // Top face (Top)
         new SKRectI(32, 8, 40, 16), // Left face (Top)
         new SKRectI(40, 8, 48, 16), // Front face (Top)
     ];
 
+    // 定义原始图像的四个顶点
     private static readonly SKPoint[][] s_sourceVertices =
     [
-        [new(8, 0), new(8, 8), new(0, 8), new(0, 0)], // Back (Top)
-        [new(0, 8), new(0, 0), new(8, 0), new(8, 8)], // Bottom (Top)
-        [new(8, 0), new(0, 0), new(0, 8), new(8, 8)], // Right (Top)
-        [new(8, 0), new(8, 8), new(0, 8), new(0, 0)], // Back
-        [new(0, 8), new(0, 0), new(8, 0), new(8, 8)], // Bottom
-        [new(8, 0), new(0, 0), new(0, 8), new(8, 8)], // Right
-        [new(0, 0), new(0, 8), new(8, 8), new(8, 0)], // Top
-        [new(0, 0), new(8, 0), new(8, 8), new(0, 8)], // Left
-        [new(0, 0), new(0, 8), new(8, 8), new(8, 0)], // Front
-        [new(0, 0), new(0, 8), new(8, 8), new(8, 0)], // Top (Top)
-        [new(0, 0), new(8, 0), new(8, 8), new(0, 8)], // Left (Top)
-        [new(0, 0), new(0, 8), new(8, 8), new(8, 0)], // Front (Top)
+        [
+            // Back face
+            new SKPoint(8, 0),
+            new SKPoint(8, 8),
+            new SKPoint(0, 8),
+            new SKPoint(0, 0)
+        ],
+        [
+            // Bottom face
+            new SKPoint(0, 8),
+            new SKPoint(0, 0),
+            new SKPoint(8, 0),
+            new SKPoint(8, 8)
+        ],
+        [
+            // Right face
+            new SKPoint(8, 0),
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8)
+        ],
+        [
+            // Back face
+            new SKPoint(8, 0),
+            new SKPoint(8, 8),
+            new SKPoint(0, 8),
+            new SKPoint(0, 0)
+        ],
+        [
+            // Bottom face
+            new SKPoint(0, 8),
+            new SKPoint(0, 0),
+            new SKPoint(8, 0),
+            new SKPoint(8, 8)
+        ],
+        [
+            // Right face
+            new SKPoint(8, 0),
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8)
+        ],
+        [
+            // Top face
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8),
+            new SKPoint(8, 0)
+        ],
+        [
+            // Left face
+            new SKPoint(0, 0),
+            new SKPoint(8, 0),
+            new SKPoint(8, 8),
+            new SKPoint(0, 8)
+        ],
+        [
+            // Front face
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8),
+            new SKPoint(8, 0)
+        ],
+        [
+            // Top face
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8),
+            new SKPoint(8, 0)
+        ],
+        [
+            // Left face
+            new SKPoint(0, 0),
+            new SKPoint(8, 0),
+            new SKPoint(8, 8),
+            new SKPoint(0, 8)
+        ],
+        [
+            // Front face
+            new SKPoint(0, 0),
+            new SKPoint(0, 8),
+            new SKPoint(8, 8),
+            new SKPoint(8, 0)
+        ]
     ];
 
+    /// <summary>
+    /// 生成一张皮肤头像
+    /// </summary>
+    /// <param name="skin">皮肤</param>
+    /// <param name="x">x轴旋转</param>
+    /// <param name="y">y轴旋转</param>
+    /// <returns></returns>
     public static SKImage MakeHeadImage(SKBitmap skin, int x, int y)
     {
+        // 创建画布
         var info = new SKImageInfo(s_size, s_size);
         using var surface = SKSurface.Create(info);
         var canvas = surface.Canvas;
         canvas.Clear(SKColors.Transparent);
-        DrawHead3D(canvas, skin, x, y);
+
+        // 绘制头部
+        DrawHead3D(canvas, skin, y, x);
+
+        // 保存结果到文件
         return surface.Snapshot();
     }
 
-    private static SKPoint TranslateToCenter(SKPoint3 p)
-        => new SKPoint(p.X + s_size / 2f, p.Y + s_size / 2f);
+    // Translate to center
+    private static SKPoint TranslateToCenter(SKPoint3 point3)
+    {
+        return new SKPoint(point3.X + s_size / 2, point3.Y + s_size / 2);
+    }
 
     private static void DrawHead3D(SKCanvas canvas, SKBitmap skin, int x, int y)
     {
-        // Build rotation using System.Numerics — consistent with TypeA fixes
-        var rotX = Matrix4x4.CreateRotationX(x * MathF.PI / 180f);
-        var rotY = Matrix4x4.CreateRotationY(y * MathF.PI / 180f);
-        var pos = Matrix4x4.CreateTranslation(0, -6f, 5f);
-        var combined = rotX * rotY * pos;
+        // Define transformation matrices
+        var rotationX = SKMatrix44.CreateRotationDegrees(1, 0, 0, x);
+        var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y); 
+        var pos = SKMatrix44.CreateTranslation(0, -6f, 5f);
+        var rotation = SKMatrix44.CreateIdentity();
+        rotation = rotation.PreConcat(rotationX);
+        rotation = rotation.PreConcat(rotationY);
+        rotation = rotation.PostConcat(pos);
 
-        // Transform all vertices
-        var transformed = new SKPoint3[s_cubeVertices.Length];
+        var sKPoints = new SKPoint3[s_cubeVertices.Length];
+
+        // Apply transformations
         for (int i = 0; i < s_cubeVertices.Length; i++)
         {
-            var v = s_cubeVertices[i];
-            var r = Vector4.Transform(new Vector4(v.X, v.Y, v.Z, 1f), combined);
-            transformed[i] = new SKPoint3(r.X, r.Y, r.Z);
+            float[] vector = [s_cubeVertices[i].X, s_cubeVertices[i].Y, s_cubeVertices[i].Z, 1];
+            var res = ImageHelper.MapScalars(rotation, vector);
+            sKPoints[i] = new SKPoint3(res[0], res[1], res[2]);
         }
 
-        // Perspective projection
-        float perspZ = 0.001f;
-        var projected = new SKPoint3[transformed.Length];
-        for (int i = 0; i < transformed.Length; i++)
+        // Apply perspective manually
+        float perspectiveZ = 0.001f;
+        for (int i = 0; i < sKPoints.Length; i++)
         {
-            float z = transformed[i].Z * perspZ + 1f;
-            projected[i] = new SKPoint3(
-                transformed[i].X / z,
-                transformed[i].Y / z,
-                transformed[i].Z);
+            float z = sKPoints[i].Z * perspectiveZ + 1;
+            sKPoints[i].X /= z;
+            sKPoints[i].Y /= z;
         }
 
-        // Compute face depths (average Z of face vertices) for painter's algorithm
-        var faceOrder = Enumerable.Range(0, s_faces.Length)
-            .OrderBy(i => s_faces[i].Average(vi => projected[vi].Z))
-            .ToArray();
+        {
+            // Define the shadow offset and blur radius
+            float offsetX = 0;
+            float offsetY = 0;
+            float blurRadius = 20;
 
-        // Draw shadow using bottom face projected center
-        DrawShadow(canvas, s_faces[1], projected);
+            // Define the ellipse
+            var ellipseRect = new SKRect(20, 140, 200, 180);
 
-        // Draw faces back-to-front
-        foreach (int index in faceOrder)
+            // Create the paint for the shadow
+            using var shadowPaint = new SKPaint();
+            shadowPaint.IsAntialias = true;
+            shadowPaint.Color = new SKColor(0, 0, 0, 128); // Semi-transparent black for shadow
+            shadowPaint.ImageFilter = SKImageFilter.CreateBlur(blurRadius, blurRadius);
+
+            // Create a shadow ellipse rect
+            SKRect shadowRect = ellipseRect;
+            shadowRect.Offset(offsetX, offsetY);
+
+            // Draw the shadow (an ellipse)
+            canvas.DrawOval(shadowRect, shadowPaint);
+        }
+
+        for (int index = 0; index < s_faces.Length; index++)
         {
             var face = s_faces[index];
 
-            var dst = new SKPoint[]
+            // 将3D顶点投影到2D平面上
+            var projectedVertices = new SKPoint[]
             {
-                TranslateToCenter(projected[face[0]]),
-                TranslateToCenter(projected[face[1]]),
-                TranslateToCenter(projected[face[2]]),
-                TranslateToCenter(projected[face[3]])
+                TranslateToCenter(sKPoints[face[0]]),
+                TranslateToCenter(sKPoints[face[1]]),
+                TranslateToCenter(sKPoints[face[2]]),
+                TranslateToCenter(sKPoints[face[3]])
             };
 
-            // Back-face culling: skip faces pointing away from viewer
-            if (!IsFrontFacing(dst))
-                continue;
+            using var sourceBitmap = new SKBitmap(8, 8);
+            skin.ExtractSubset(sourceBitmap, s_facePos[index]);
+            
+            var skVertices = SKVertices.CreateCopy(SKVertexMode.TriangleFan, projectedVertices, s_sourceVertices[index], null);
 
-            // Properly copy face pixels (ExtractSubset only aliases — doesn't copy)
-            var faceRect = s_facePos[index];
-            var sourceBitmap = new SKBitmap(8, 8, SKColorType.Rgba8888, SKAlphaType.Premul);
-            using (var fc = new SKCanvas(sourceBitmap))
-            {
-                fc.DrawBitmap(skin,
-                    new SKRect(faceRect.Left, faceRect.Top, faceRect.Right, faceRect.Bottom),
-                    new SKRect(0, 0, 8, 8));
-            }
+            // Shader must outlive DrawVertices
+            using var shader = SKShader.CreateBitmap(sourceBitmap, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp);
+            using var paint = new SKPaint { IsAntialias = true, Shader = shader };
 
-            var matrix = CalculatePerspectiveTransform(s_sourceVertices[index], dst);
-            canvas.SetMatrix(matrix.Matrix);
-
-            using var paint = new SKPaint { IsAntialias = false };
-            canvas.DrawBitmap(sourceBitmap, 0, 0, paint);
-
-            sourceBitmap.Dispose();
+            canvas.DrawVertices(skVertices, SKBlendMode.SrcOver, paint);
         }
-
-        // Reset canvas matrix
-        canvas.ResetMatrix();
-    }
-
-    /// <summary>
-    /// Cross-product Z of the first triangle in the quad.
-    /// Positive = front-facing (counter-clockwise in screen space).
-    /// </summary>
-    private static bool IsFrontFacing(SKPoint[] pts)
-    {
-        float ax = pts[1].X - pts[0].X, ay = pts[1].Y - pts[0].Y;
-        float bx = pts[2].X - pts[0].X, by = pts[2].Y - pts[0].Y;
-        return (ax * by - ay * bx) < 0; // screen Y flipped, so < 0 is front-facing
-    }
-
-    private static void DrawShadow(SKCanvas canvas, int[] face, SKPoint3[] projected)
-    {
-        var ellipseRect = new SKRect(20, 140, 200, 180);
-        using var shadowPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Color = new SKColor(0, 0, 0, 128),
-            ImageFilter = SKImageFilter.CreateBlur(20, 20)
-        };
-        canvas.ResetMatrix();
-        canvas.DrawOval(ellipseRect, shadowPaint);
-    }
-
-    private static SKMatrix44 CalculatePerspectiveTransform(SKPoint[] src, SKPoint[] dst)
-    {
-        float[,] mat = new float[8, 9];
-        for (int i = 0; i < 4; i++)
-        {
-            int r = i * 2;
-            mat[r, 0] = src[i].X;
-            mat[r, 1] = src[i].Y;
-            mat[r, 2] = 1;
-            mat[r, 3] = 0;
-            mat[r, 4] = 0;
-            mat[r, 5] = 0;
-            mat[r, 6] = -src[i].X * dst[i].X;
-            mat[r, 7] = -src[i].Y * dst[i].X;
-            mat[r, 8] = dst[i].X;
-            r++;
-            mat[r, 0] = 0;
-            mat[r, 1] = 0;
-            mat[r, 2] = 0;
-            mat[r, 3] = src[i].X;
-            mat[r, 4] = src[i].Y;
-            mat[r, 5] = 1;
-            mat[r, 6] = -src[i].X * dst[i].Y;
-            mat[r, 7] = -src[i].Y * dst[i].Y;
-            mat[r, 8] = dst[i].Y;
-        }
-
-        // Gaussian elimination
-        for (int i = 0; i < 8; i++)
-        {
-            int maxRow = i;
-            for (int k = i + 1; k < 8; k++)
-                if (MathF.Abs(mat[k, i]) > MathF.Abs(mat[maxRow, i]))
-                    maxRow = k;
-            for (int k = i; k < 9; k++) (mat[i, k], mat[maxRow, k]) = (mat[maxRow, k], mat[i, k]);
-            float pivot = mat[i, i];
-            for (int k = i; k < 9; k++) mat[i, k] /= pivot;
-            for (int k = 0; k < 8; k++)
-            {
-                if (k == i) continue;
-                float f = mat[k, i];
-                for (int j = i; j < 9; j++) mat[k, j] -= f * mat[i, j];
-            }
-        }
-
-        float[] h = new float[9];
-        for (int i = 0; i < 8; i++) h[i] = mat[i, 8];
-        h[8] = 1;
-
-        var m = new SKMatrix44();
-        m[0, 0] = h[0];
-        m[0, 1] = h[1];
-        m[0, 2] = 0;
-        m[0, 3] = h[2];
-        m[1, 0] = h[3];
-        m[1, 1] = h[4];
-        m[1, 2] = 0;
-        m[1, 3] = h[5];
-        m[2, 0] = 0;
-        m[2, 1] = 0;
-        m[2, 2] = 1;
-        m[2, 3] = 0;
-        m[3, 0] = h[6];
-        m[3, 1] = h[7];
-        m[3, 2] = 0;
-        m[3, 3] = h[8];
-        return m;
     }
 }

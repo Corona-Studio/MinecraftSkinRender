@@ -15,23 +15,13 @@ public static class ImageHelper
     public static void MapScalars(SKMatrix44 matrix44, ReadOnlySpan<float> srcVector4, Span<float> dstVector4)
     {
         var vector = new Vector4(srcVector4[0], srcVector4[1], srcVector4[2], srcVector4[3]);
-
-        // SKMatrix44 is column-major, but Vector4.Transform uses row-major (v * M)
-        // So we must transpose first to get correct M * v behavior
-        var m = new Matrix4x4(
-            matrix44[0, 0], matrix44[1, 0], matrix44[2, 0], matrix44[3, 0],
-            matrix44[0, 1], matrix44[1, 1], matrix44[2, 1], matrix44[3, 1],
-            matrix44[0, 2], matrix44[1, 2], matrix44[2, 2], matrix44[3, 2],
-            matrix44[0, 3], matrix44[1, 3], matrix44[2, 3], matrix44[3, 3]
-        );
-
-        var t = Vector4.Transform(vector, m);
+        var t = Vector4.Transform(vector, matrix44);
         dstVector4[0] = t.X;
         dstVector4[1] = t.Y;
         dstVector4[2] = t.Z;
         dstVector4[3] = t.W;
     }
-
+    
     /// <summary>
     /// 复制像素到指定区域，同时每个像素都以填充方式填充
     /// </summary>
