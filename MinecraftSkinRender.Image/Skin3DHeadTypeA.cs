@@ -3,36 +3,32 @@ using SkiaSharp;
 
 namespace MinecraftSkinRender.Image;
 
-/// <summary>
-/// 3D头像生成，生成类似游戏内的
-/// </summary>
 public static class Skin3DHeadTypeA
 {
     private static readonly SKPoint3[] s_cubeVertices =
     [
         // Front face
-        new SKPoint3(-1, -1,  1),
-        new SKPoint3( 1, -1,  1),
-        new SKPoint3( 1,  1,  1),
-        new SKPoint3(-1,  1,  1),
+        new SKPoint3(-1, -1, 1),
+        new SKPoint3(1, -1, 1),
+        new SKPoint3(1, 1, 1),
+        new SKPoint3(-1, 1, 1),
         // Back face
         new SKPoint3(-1, -1, -1),
-        new SKPoint3( 1, -1, -1),
-        new SKPoint3( 1,  1, -1),
-        new SKPoint3(-1,  1, -1),
-        // Front face (Top)
-        new SKPoint3(-1 * 1.125f, -1 * 1.125f,  1 * 1.125f),
-        new SKPoint3( 1 * 1.125f, -1 * 1.125f,  1 * 1.125f),
-        new SKPoint3( 1 * 1.125f,  1 * 1.125f,  1 * 1.125f),
-        new SKPoint3(-1 * 1.125f,  1 * 1.125f,  1 * 1.125f),
-        // Back face (Top)                          
-        new SKPoint3(-1 * 1.125f, -1 * 1.125f, -1 * 1.125f),
-        new SKPoint3( 1 * 1.125f, -1 * 1.125f, -1 * 1.125f),
-        new SKPoint3( 1 * 1.125f,  1 * 1.125f, -1 * 1.125f),
-        new SKPoint3(-1 * 1.125f,  1 * 1.125f, -1 * 1.125f)
+        new SKPoint3(1, -1, -1),
+        new SKPoint3(1, 1, -1),
+        new SKPoint3(-1, 1, -1),
+        // Front face (Top layer, 1.125x scale)
+        new SKPoint3(-1.125f, -1.125f, 1.125f),
+        new SKPoint3(1.125f, -1.125f, 1.125f),
+        new SKPoint3(1.125f, 1.125f, 1.125f),
+        new SKPoint3(-1.125f, 1.125f, 1.125f),
+        // Back face (Top layer)
+        new SKPoint3(-1.125f, -1.125f, -1.125f),
+        new SKPoint3(1.125f, -1.125f, -1.125f),
+        new SKPoint3(1.125f, 1.125f, -1.125f),
+        new SKPoint3(-1.125f, 1.125f, -1.125f)
     ];
 
-    // 定义立方体索引
     private static readonly ushort[] s_cubeIndices =
     [
         8, 12, 15, 11, // Back face (Top)
@@ -49,214 +45,125 @@ public static class Skin3DHeadTypeA
         9, 13, 14, 10, // Front face (Top)
     ];
 
-    // Define the colors for each face
     private static readonly SKRectI[] s_facePos =
     [
         new SKRectI(56, 8, 64, 16), // Back face (Top)
-        new SKRectI(48, 0, 56, 8),  // Bottom face (Top)
+        new SKRectI(48, 0, 56, 8), // Bottom face (Top)
         new SKRectI(48, 8, 56, 16), // Right face (Top)
         new SKRectI(24, 8, 32, 16), // Back face
-        new SKRectI(16, 0, 24, 8),  // Bottom face
+        new SKRectI(16, 0, 24, 8), // Bottom face
         new SKRectI(16, 8, 24, 16), // Right face
-        new SKRectI(8, 0, 16, 8),   // Top face
-        new SKRectI(0, 8, 8, 16),   // Left face
-        new SKRectI(8, 8, 16, 16),  // Front face
-        new SKRectI(40, 0, 48, 8),  // Top face (Top)
+        new SKRectI(8, 0, 16, 8), // Top face
+        new SKRectI(0, 8, 8, 16), // Left face
+        new SKRectI(8, 8, 16, 16), // Front face
+        new SKRectI(40, 0, 48, 8), // Top face (Top)
         new SKRectI(32, 8, 40, 16), // Left face (Top)
         new SKRectI(40, 8, 48, 16), // Front face (Top)
     ];
 
-    // 定义原始图像的四个顶点
     private static readonly SKPoint[] s_sourceVertices =
     [
-        // Back face
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        // Bottom face
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        // Right face
-        new SKPoint(1, 1),
-        new SKPoint(0, 1),
-        new SKPoint(0, 0),
-        new SKPoint(1, 0),
-        // Back face
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        // Bottom face
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        // Right face
-        new SKPoint(1, 1),
-        new SKPoint(0, 1),
-        new SKPoint(0, 0),
-        new SKPoint(1, 0),
-        // Top face
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        // Left face
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        // Front face
-        new SKPoint(1, 1),
-        new SKPoint(0, 1),
-        new SKPoint(0, 0),
-        new SKPoint(1, 0),
-        // Top face
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        // Left face
-        new SKPoint(0, 1),
-        new SKPoint(1, 1),
-        new SKPoint(1, 0),
-        new SKPoint(0, 0),
-        // Front face
-        new SKPoint(1, 1),
-        new SKPoint(0, 1),
-        new SKPoint(0, 0),
-        new SKPoint(1, 0)
+        new SKPoint(0, 1), new SKPoint(1, 1), new SKPoint(1, 0), new SKPoint(0, 0), // Back
+        new SKPoint(1, 0), new SKPoint(0, 0), new SKPoint(0, 1), new SKPoint(1, 1), // Bottom
+        new SKPoint(1, 1), new SKPoint(0, 1), new SKPoint(0, 0), new SKPoint(1, 0), // Right
+        new SKPoint(0, 1), new SKPoint(1, 1), new SKPoint(1, 0), new SKPoint(0, 0), // Back
+        new SKPoint(1, 0), new SKPoint(0, 0), new SKPoint(0, 1), new SKPoint(1, 1), // Bottom
+        new SKPoint(1, 1), new SKPoint(0, 1), new SKPoint(0, 0), new SKPoint(1, 0), // Right
+        new SKPoint(1, 0), new SKPoint(0, 0), new SKPoint(0, 1), new SKPoint(1, 1), // Top
+        new SKPoint(0, 1), new SKPoint(1, 1), new SKPoint(1, 0), new SKPoint(0, 0), // Left
+        new SKPoint(1, 1), new SKPoint(0, 1), new SKPoint(0, 0), new SKPoint(1, 0), // Front
+        new SKPoint(1, 0), new SKPoint(0, 0), new SKPoint(0, 1), new SKPoint(1, 1), // Top
+        new SKPoint(0, 1), new SKPoint(1, 1), new SKPoint(1, 0), new SKPoint(0, 0), // Left
+        new SKPoint(1, 1), new SKPoint(0, 1), new SKPoint(0, 0), new SKPoint(1, 0), // Front
     ];
 
     public static SKImage MakeHeadImage(SKBitmap skin)
     {
-        // 创建绘图表面
-        int width = 400;
-        int height = 400;
+        int width = 400, height = 400;
         using var surface = SKSurface.Create(new SKImageInfo(width, height));
         var canvas = surface.Canvas;
-
-        // 绘制头部
+        canvas.Clear(SKColors.Transparent);
         DrawHead3D(canvas, skin);
-
-        // 保存结果到文件
         return surface.Snapshot();
     }
 
     private static void DrawHead3D(SKCanvas canvas, SKBitmap texture)
     {
         var transform = CreateTransformMatrix();
-
-        for (int i = 0; i < s_cubeIndices.Length / 4; i++)
-        {
+        int faceCount = s_cubeIndices.Length / 4;
+        for (int i = 0; i < faceCount; i++)
             DrawTexturedFace(canvas, texture, transform, i);
-        }
     }
 
-    // 创建3D变换矩阵
-    private static SKMatrix44 CreateTransformMatrix()
+    private static Matrix4x4 CreateTransformMatrix()
     {
-        var transform = SKMatrix44.CreateIdentity();
+        // Build transforms in logical order, then combine with standard multiplication.
+        // All transforms are plain Matrix4x4 — no SKMatrix44 confusion.
 
-        // 平移图像到原点
-        var translateToOrigin = SKMatrix44.CreateTranslation(-100, -100, 0);
+        // Rotate around Y then X (Minecraft-style isometric look)
+        var rotY = Matrix4x4.CreateRotationY(45f * MathF.PI / 180f);
+        var rotX = Matrix4x4.CreateRotationX(-30f * MathF.PI / 180f);
 
-        //// 旋转矩阵
-        var rotationX = CreateRotationMatrix(30, 1, 0, 0);
-        var rotationY = CreateRotationMatrix(45, 0, 1, 0);
+        // Flip Y axis (screen Y is down, 3D Y is up) and scale to fit canvas
+        var scale = Matrix4x4.CreateScale(100f, -100f, 100f);
 
-        // 将旋转矩阵相乘
-        transform.PreConcat(translateToOrigin);
-        transform.PreConcat(rotationX);
-        transform.PreConcat(rotationY);
+        // Translate to center of 400x400 canvas
+        var translate = Matrix4x4.CreateTranslation(200f, 200f, 0f);
 
-        // 缩放
-        var scale = SKMatrix44.CreateScale(110, -110, 110);
-        transform.PreConcat(scale);
-
-        // Step 4: 平移图像到画布中心
-        var translateToCenter = SKMatrix44.CreateTranslation(3.83f, -1.63f, 0);
-        transform.PreConcat(translateToCenter);
-
-        return transform;
+        // Combine: first rotate Y, then X, then scale, then translate
+        // Matrix4x4 uses row-vector convention: result = v * M1 * M2 * ...
+        return rotY * rotX * scale * translate;
     }
 
-    // 创建旋转矩阵
-    private static SKMatrix44 CreateRotationMatrix(float degrees, float x, float y, float z)
+    private static SKPoint Project(Matrix4x4 mat, SKPoint3 v)
     {
-        var radians = degrees * (float)Math.PI / 180.0f;
-        var cos = (float)Math.Cos(radians);
-        var sin = (float)Math.Sin(radians);
-        var oneMinusCos = 1.0f - cos;
+        // Vector4.Transform computes v * M (row-vector convention), which matches Matrix4x4
+        var result = Vector4.Transform(new Vector4(v.X, v.Y, v.Z, 1f), mat);
 
-        var rotation = SKMatrix44.CreateIdentity();
-        rotation[0, 0] = cos + x * x * oneMinusCos;
-        rotation[0, 1] = x * y * oneMinusCos - z * sin;
-        rotation[0, 2] = x * z * oneMinusCos + y * sin;
-        rotation[1, 0] = y * x * oneMinusCos + z * sin;
-        rotation[1, 1] = cos + y * y * oneMinusCos;
-        rotation[1, 2] = y * z * oneMinusCos - x * sin;
-        rotation[2, 0] = z * x * oneMinusCos - y * sin;
-        rotation[2, 1] = z * y * oneMinusCos + x * sin;
-        rotation[2, 2] = cos + z * z * oneMinusCos;
-
-        return rotation;
-    }
-    
-    // 应用3D变换并投影到2D
-    private static SKPoint Project(SKMatrix44 mat, SKPoint3 v)
-    {
-        // 创建一个4D向量
-        float[] vec = [v.X, v.Y, v.Z, 1];
-        float[] result = new float[4];
-
-        // 执行矩阵乘法
-        ImageHelper.MapScalars(mat, vec, result);
-
-        // 进行透视除法
-        if (result[3] != 0)
+        // Perspective divide (W will be 1 for affine transforms, but kept for correctness)
+        if (result.W != 0f)
         {
-            result[0] /= result[3];
-            result[1] /= result[3];
-            result[2] /= result[3];
+            result.X /= result.W;
+            result.Y /= result.W;
         }
 
-        return new SKPoint(result[0], result[1]);
+        return new SKPoint(result.X, result.Y);
     }
 
-    /// <summary>
-    /// 绘制一个面
-    /// </summary>
-    /// <param name="canvas">画布</param>
-    /// <param name="texture">贴图</param>
-    /// <param name="transform">变换</param>
-    /// <param name="index">位于第几个面</param>
-    private static void DrawTexturedFace(SKCanvas canvas, SKBitmap texture, SKMatrix44 transform, int index)
+    private static void DrawTexturedFace(SKCanvas canvas, SKBitmap texture, Matrix4x4 transform, int index)
     {
+        var faceRect = s_facePos[index];
+
+        // Properly copy face pixels into a new bitmap (ExtractSubset only aliases)
+        var sourceBitmap = new SKBitmap(8, 8, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using (var faceCanvas = new SKCanvas(sourceBitmap))
+        {
+            faceCanvas.DrawBitmap(
+                texture,
+                new SKRect(faceRect.Left, faceRect.Top, faceRect.Right, faceRect.Bottom),
+                new SKRect(0, 0, 8, 8));
+        }
+
+        int baseIndex = index * 4;
         var vertices = new SKPoint[4];
         var texCoords = new SKPoint[4];
-        using var sourceBitmap = new SKBitmap(8, 8);
-        texture.ExtractSubset(sourceBitmap, s_facePos[index]);
 
-        index *= 4;
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < 4; j++)
         {
-            vertices[j] = Project(transform, s_cubeVertices[s_cubeIndices[index + j]]);
-            texCoords[j] = new SKPoint(s_sourceVertices[index + j].X * sourceBitmap.Width, s_sourceVertices[index + j].Y * sourceBitmap.Height);
+            vertices[j] = Project(transform, s_cubeVertices[s_cubeIndices[baseIndex + j]]);
+            texCoords[j] = new SKPoint(
+                s_sourceVertices[baseIndex + j].X * 8f,
+                s_sourceVertices[baseIndex + j].Y * 8f);
         }
 
         var skVertices = SKVertices.CreateCopy(SKVertexMode.TriangleFan, vertices, texCoords, null);
 
-        using var paint = new SKPaint
-        {
-            IsAntialias = true,
-            Shader = SKShader.CreateBitmap(sourceBitmap, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp)
-        };
+        // Shader must outlive DrawVertices
+        using var shader = SKShader.CreateBitmap(sourceBitmap, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp);
+        using var paint = new SKPaint { IsAntialias = true, Shader = shader };
 
-        // 绘制带纹理的面
         canvas.DrawVertices(skVertices, SKBlendMode.SrcOver, paint);
+
+        sourceBitmap.Dispose(); // safe — shader has already captured pixel data
     }
 }

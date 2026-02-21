@@ -15,7 +15,17 @@ public static class ImageHelper
     public static void MapScalars(SKMatrix44 matrix44, ReadOnlySpan<float> srcVector4, Span<float> dstVector4)
     {
         var vector = new Vector4(srcVector4[0], srcVector4[1], srcVector4[2], srcVector4[3]);
-        var t = Vector4.Transform(vector, matrix44);
+
+        // SKMatrix44 is column-major, but Vector4.Transform uses row-major (v * M)
+        // So we must transpose first to get correct M * v behavior
+        var m = new Matrix4x4(
+            matrix44[0, 0], matrix44[1, 0], matrix44[2, 0], matrix44[3, 0],
+            matrix44[0, 1], matrix44[1, 1], matrix44[2, 1], matrix44[3, 1],
+            matrix44[0, 2], matrix44[1, 2], matrix44[2, 2], matrix44[3, 2],
+            matrix44[0, 3], matrix44[1, 3], matrix44[2, 3], matrix44[3, 3]
+        );
+
+        var t = Vector4.Transform(vector, m);
         dstVector4[0] = t.X;
         dstVector4[1] = t.Y;
         dstVector4[2] = t.Z;
@@ -35,7 +45,8 @@ public static class ImageHelper
     /// <param name="sheight">读的高度</param>
     /// <param name="width">写像素宽度</param>
     /// <param name="height">写像素高度</param>
-    public static void ExtractSubsetWithFillImage(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int swidth, int sheight, int width, int height)
+    public static void ExtractSubsetWithFillImage(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy,
+        int swidth, int sheight, int width, int height)
     {
         for (int i = 0; i < swidth; i++)
         {
@@ -59,7 +70,8 @@ public static class ImageHelper
     /// <param name="sheight">读的高度</param>
     /// <param name="width">写像素宽度</param>
     /// <param name="height">写像素高度</param>
-    public static void ExtractSubsetWithFillImageMix(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int swidth, int sheight, int width, int height)
+    public static void ExtractSubsetWithFillImageMix(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy,
+        int swidth, int sheight, int width, int height)
     {
         for (int i = 0; i < swidth; i++)
         {
@@ -121,7 +133,8 @@ public static class ImageHelper
     /// <param name="sy">读的Y位置</param>
     /// <param name="width">宽度</param>
     /// <param name="height">高度</param>
-    public static void ExtractSubset(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int width, int height)
+    public static void ExtractSubset(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int width,
+        int height)
     {
         for (int i = 0; i < width; i++)
         {
@@ -143,7 +156,8 @@ public static class ImageHelper
     /// <param name="sy">读的Y位置</param>
     /// <param name="width">宽度</param>
     /// <param name="height">高度</param>
-    public static void ExtractSubsetMix(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int width, int height)
+    public static void ExtractSubsetMix(this SKBitmap image, SKBitmap source, int x, int y, int sx, int sy, int width,
+        int height)
     {
         for (int i = 0; i < width; i++)
         {
@@ -172,6 +186,7 @@ public static class ImageHelper
         {
             return new(red, green, blue, 0);
         }
+
         return new(red, green, blue);
     }
 
