@@ -10,7 +10,7 @@ using var cape = SKBitmap.Decode("cape.png");
 Skin2DHeadTypeA.MakeHeadImage(skin).SavePng("tempa.png");
 Skin2DHeadTypeB.MakeHeadImage(skin).SavePng("tempb.png");
 Skin3DHeadTypeA.MakeHeadImage(skin).SavePng("tempc.png");
-Skin3DHeadTypeB.MakeHeadImage(skin, 0, 15).SavePng("tempd.png");
+Skin3DHeadTypeB.MakeHeadImage(skin, 15, 65).SavePng("tempd.png");
 Skin2DTypeA.MakeSkinImage(skin).SavePng("tempe.png");
 Skin2DTypeB.MakeSkinImage(skin).SavePng("tempf.png");
 Skin2DTypeA.MakeSkinImage(skin, SkinType.NewSlim).SavePng("tempg.png");

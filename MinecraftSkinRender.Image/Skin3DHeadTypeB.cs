@@ -172,7 +172,7 @@ public static class Skin3DHeadTypeB
         canvas.Clear(SKColors.Transparent);
 
         // 绘制头部
-        DrawHead3D(canvas, skin, y, x);
+        DrawHead3D(canvas, skin, x, y);
 
         // 保存结果到文件
         return surface.Snapshot();
@@ -191,8 +191,9 @@ public static class Skin3DHeadTypeB
         var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y); 
         var pos = SKMatrix44.CreateTranslation(0, -6f, 5f);
         var rotation = SKMatrix44.CreateIdentity();
-        rotation = rotation.PreConcat(rotationX);
+        
         rotation = rotation.PreConcat(rotationY);
+        rotation = rotation.PreConcat(rotationX);
         rotation = rotation.PostConcat(pos);
 
         var sKPoints = new SKPoint3[s_cubeVertices.Length];
