@@ -187,10 +187,10 @@ public static class Skin3DHeadTypeB
     private static void DrawHead3D(SKCanvas canvas, SKBitmap skin, int x, int y)
     {
         // Define transformation matrices
-        using var rotationX = SKMatrix44.CreateRotationDegrees(1, 0, 0, x);
-        using var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y);
-        using var pos = SKMatrix44.CreateTranslation(0, -6f, 5f);
-        using var rotation = SKMatrix44.CreateIdentity();
+        var rotationX = SKMatrix44.CreateRotationDegrees(1, 0, 0, x);
+        var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y); 
+        var pos = SKMatrix44.CreateTranslation(0, -6f, 5f);
+        var rotation = SKMatrix44.CreateIdentity();
         rotation.PreConcat(rotationX);
         rotation.PreConcat(rotationY);
         rotation.PostConcat(pos);
@@ -201,7 +201,7 @@ public static class Skin3DHeadTypeB
         for (int i = 0; i < s_cubeVertices.Length; i++)
         {
             float[] vector = [s_cubeVertices[i].X, s_cubeVertices[i].Y, s_cubeVertices[i].Z, 1];
-            var res = rotation.MapScalars(vector);
+            var res = ImageHelper.MapScalars(rotation, vector);
             sKPoints[i] = new SKPoint3(res[0], res[1], res[2]);
         }
 
@@ -265,7 +265,7 @@ public static class Skin3DHeadTypeB
             skin.ExtractSubset(sourceBitmap, s_facePos[index]);
 
             // 计算仿射变换矩阵
-            using var matrix = CalculateAffineTransform(s_sourceVertices[index], projectedVertices);
+            var matrix = CalculateAffineTransform(s_sourceVertices[index], projectedVertices);
 
             // 设置变换矩阵
             canvas.SetMatrix(matrix.Matrix);
