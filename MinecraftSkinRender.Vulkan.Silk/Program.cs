@@ -22,7 +22,7 @@ internal class Program
         }
 
         await SkinDownloader.Download();
-        
+
         //Create a window.
         var options = WindowOptions.DefaultVulkan with
         {
@@ -82,7 +82,7 @@ internal class Program
         _window.Run();
     }
 
-    class VKHandel: IVulkanApi
+    class VKHandel : IVulkanApi
     {
         public unsafe IReadOnlyList<string> GetRequiredExtensions()
         {
@@ -93,7 +93,7 @@ internal class Program
             {
                 Console.WriteLine(item);
             }
-            
+
             return extensions;
         }
 

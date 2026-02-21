@@ -13,25 +13,25 @@ public partial class SkinRenderVulkanKHR
     {
         // 获取基础扩展
         var baseExtensions = ivk.GetRequiredExtensions().ToList();
-        
+
         if (!baseExtensions.Contains("VK_KHR_portability_enumeration"))
         {
             baseExtensions.Add("VK_KHR_portability_enumeration");
         }
-        
+
         // 添加 macOS 表面扩展（如果需要）
         // 检查是否已经有表面扩展，如果没有则添加
-        bool hasSurfaceExt = baseExtensions.Any(ext => 
-            ext == KhrSurface.ExtensionName || 
-            ext == "VK_MVK_macos_surface" || 
+        bool hasSurfaceExt = baseExtensions.Any(ext =>
+            ext == KhrSurface.ExtensionName ||
+            ext == "VK_MVK_macos_surface" ||
             ext == "VK_EXT_metal_surface");
-            
+
         if (!hasSurfaceExt)
         {
             // 优先使用 Metal 表面扩展（较新）
             baseExtensions.Add("VK_EXT_metal_surface");
         }
-        
+
 #if DEBUG
         if (EnableValidationLayers)
         {
@@ -64,7 +64,7 @@ public partial class SkinRenderVulkanKHR
 
         // 获取扩展列表
         var extensions = GetRequiredExtensions();
-        
+
         // 打印扩展信息（用于调试）
         Console.WriteLine("Requesting instance extensions:");
         foreach (var ext in extensions)
@@ -85,7 +85,7 @@ public partial class SkinRenderVulkanKHR
         createInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(extensions);
         createInfo.EnabledLayerCount = 0;
         createInfo.PNext = null;
-        
+
 #if DEBUG
         if (EnableValidationLayers)
         {
@@ -106,7 +106,7 @@ public partial class SkinRenderVulkanKHR
                 // 如果失败，尝试不带标志重新创建（用于调试）
                 Console.WriteLine("Failed to create instance with portability flag, trying without...");
                 createInfo.Flags = 0;
-                
+
                 if (vk.CreateInstance(ref createInfo, null, instancePtr) != Result.Success)
                 {
                     throw new Exception("failed to create instance!");
@@ -118,14 +118,14 @@ public partial class SkinRenderVulkanKHR
         Marshal.FreeHGlobal((IntPtr)appInfo.PApplicationName);
         Marshal.FreeHGlobal((IntPtr)appInfo.PEngineName);
         SilkMarshal.Free((nint)createInfo.PpEnabledExtensionNames);
-        
+
 #if DEBUG
         if (EnableValidationLayers)
         {
             SilkMarshal.Free((nint)createInfo.PpEnabledLayerNames);
         }
 #endif
-        
+
         Console.WriteLine("Vulkan instance created successfully!");
     }
 

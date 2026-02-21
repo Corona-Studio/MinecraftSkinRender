@@ -6,11 +6,11 @@ public partial class SkinRenderOpenGL
 {
     private int _pgModel;
 
-    private const string MacosHeader = 
+    private const string MacosHeader =
 @"#version 150
 #define Macos
 ";
-    
+
     private const string VertexShaderSource =
 @"#if __VERSION__ >= 130
 #define COMPAT_VARYING out
@@ -123,7 +123,7 @@ void main() {
         {
             str = FragmentShaderSource;
         }
-        
+
         var fragmentShader = gl.CreateShader(gl.GL_FRAGMENT_SHADER);
         gl.ShaderSource(fragmentShader, str);
         gl.CompileShader(fragmentShader);

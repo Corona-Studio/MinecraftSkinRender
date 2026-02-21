@@ -34,7 +34,7 @@ public partial class SkinRenderOpenGL
 
     private const string GlesHeader = "#version 300 es\n";
     private const string GlHeader = "#version 150\n";
-    
+
     private const string VertexShaderFXAASource =
 @"
 #if __VERSION__ >= 130
@@ -216,7 +216,7 @@ void main(void)
         {
             str = GlesHeader + VertexShaderFXAASource;
         }
-        
+
         gl.ShaderSource(vertexShader, str);
         gl.CompileShader(vertexShader);
         gl.GetShaderiv(vertexShader, gl.GL_COMPILE_STATUS, out var state);
@@ -234,7 +234,7 @@ void main(void)
         {
             str = GlesHeader + FragmentShaderFXAASource;
         }
-        
+
         var fragmentShader = gl.CreateShader(gl.GL_FRAGMENT_SHADER);
         gl.ShaderSource(fragmentShader, str);
         gl.CompileShader(fragmentShader);

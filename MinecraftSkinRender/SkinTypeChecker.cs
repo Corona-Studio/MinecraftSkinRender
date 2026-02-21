@@ -40,9 +40,9 @@ public static class SkinTypeChecker
     private static bool IsSlimSkin(SKBitmap image)
     {
         var scale = image.Width / 64;
-        return image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty) 
-            && image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale, SKColors.Transparent, SKColors.Empty) 
-            && image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty) 
+        return image.Check(50 * scale, 16 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty)
+            && image.Check(54 * scale, 20 * scale, 2 * scale, 12 * scale, SKColors.Transparent, SKColors.Empty)
+            && image.Check(42 * scale, 48 * scale, 2 * scale, 4 * scale, SKColors.Transparent, SKColors.Empty)
             && image.Check(46 * scale, 52 * scale, 2 * scale, 12 * scale, SKColors.Transparent, SKColors.Empty);
     }
 

@@ -188,10 +188,10 @@ public static class Skin3DHeadTypeB
     {
         // Define transformation matrices
         var rotationX = SKMatrix44.CreateRotationDegrees(1, 0, 0, x);
-        var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y); 
+        var rotationY = SKMatrix44.CreateRotationDegrees(0, 1, 0, y);
         var pos = SKMatrix44.CreateTranslation(0, -6f, 5f);
         var rotation = SKMatrix44.CreateIdentity();
-        
+
         rotation = rotation.PreConcat(rotationY);
         rotation = rotation.PreConcat(rotationX);
         rotation = rotation.PostConcat(pos);
@@ -253,7 +253,7 @@ public static class Skin3DHeadTypeB
 
             using var sourceBitmap = new SKBitmap(8, 8);
             skin.ExtractSubset(sourceBitmap, s_facePos[index]);
-            
+
             var skVertices = SKVertices.CreateCopy(SKVertexMode.TriangleFan, projectedVertices, s_sourceVertices[index], null);
 
             // Shader must outlive DrawVertices

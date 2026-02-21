@@ -1,7 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
-using MinecraftSkinRender.MojangApi;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using SkiaSharp;
 

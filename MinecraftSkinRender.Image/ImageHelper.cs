@@ -21,7 +21,7 @@ public static class ImageHelper
         dstVector4[2] = t.Z;
         dstVector4[3] = t.W;
     }
-    
+
     /// <summary>
     /// 复制像素到指定区域，同时每个像素都以填充方式填充
     /// </summary>
