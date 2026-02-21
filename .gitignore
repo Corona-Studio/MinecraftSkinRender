@@ -12,3 +12,4 @@ publish
 /nuget
 .DS_Store
 MinecraftSkinRender.sln.DotSettings.user
+/.idea
