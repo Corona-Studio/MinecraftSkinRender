@@ -3,6 +3,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace MinecraftSkinRender.MojangApi;
 
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(ProfileNameObj))]
 [JsonSerializable(typeof(UserProfileObj))]
 [JsonSerializable(typeof(TexturesObj))]

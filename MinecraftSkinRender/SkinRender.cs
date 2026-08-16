@@ -322,6 +322,13 @@ public abstract class SkinRender
     /// <param name="cape"></param>
     public void SetCapeTex(SKBitmap? cape)
     {
+        if (ReferenceEquals(_cape, cape))
+        {
+            HaveCape = cape != null;
+            return;
+        }
+
+        _cape?.Dispose();
         _cape = cape;
         if (cape == null)
         {
