@@ -3,6 +3,15 @@
 # CS8618: 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
 dotnet_diagnostic.CS8618.severity = none
 
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{bat,cmd}]
+end_of_line = crlf
+
 [*.cs]
 #### 命名样式 ####
 
@@ -124,4 +133,3 @@ dotnet_style_qualification_for_field = false:silent
 dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_event = false:silent
-end_of_line = crlf
