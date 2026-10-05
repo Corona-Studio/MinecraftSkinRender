@@ -40,4 +40,8 @@
     <ProjectReference Include="..\MinecraftSkinRender\MinecraftSkinRender.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
 </Project>

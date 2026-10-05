@@ -141,7 +141,8 @@ public static class Skin3DHeadTypeA
             faceCanvas.DrawBitmap(
                 texture,
                 new SKRect(faceRect.Left, faceRect.Top, faceRect.Right, faceRect.Bottom),
-                new SKRect(0, 0, 8, 8));
+                new SKRect(0, 0, 8, 8),
+                new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None));
         }
 
         int baseIndex = index * 4;
