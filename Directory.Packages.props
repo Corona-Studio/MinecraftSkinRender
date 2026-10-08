@@ -1,0 +1,18 @@
+<Project>
+  <!-- Use the parent integration policy when embedded; otherwise keep standalone defaults. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <_MinecraftSkinRenderParentPackages Condition="Exists('$(MSBuildThisFileDirectory)../LauncherX.slnx') And Exists('$(MSBuildThisFileDirectory)../Directory.Packages.props')">$(MSBuildThisFileDirectory)../Directory.Packages.props</_MinecraftSkinRenderParentPackages>
+  </PropertyGroup>
+
+  <Import Project="$(_MinecraftSkinRenderParentPackages)" Condition="'$(_MinecraftSkinRenderParentPackages)' != ''" />
+
+  <ItemGroup Condition="'$(_MinecraftSkinRenderParentPackages)' == ''">
+    <PackageVersion Include="Silk.NET.Maths" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.OpenGL" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Windowing" Version="2.23.0" />
+    <PackageVersion Include="SkiaSharp" Version="4.153.1" />
+  </ItemGroup>
+</Project>
